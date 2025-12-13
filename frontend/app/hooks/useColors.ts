@@ -1,25 +1,3 @@
-import { colors } from '@/app/styles/colors';
-
-/**
- * Hook for å bruke fargeprofilen i komponenter
- *
- * @returns Fargeobjektet
- *
- * @example
- * const colors = useColors();
- * <div style={{ backgroundColor: colors.card.light.bg }}>Innhold</div>
- */
-export function useColors() {
-  return colors;
-}
-
-/**
- * Helper for å få CSS-variabel-strenger for inline styles
- *
- * @example
- * const cssVars = getCSSVariables();
- * <div style={{ backgroundColor: cssVars.card.bg }}>Innhold</div>
- */
 export const getCSSVariables = () => ({
   // Bakgrunnsfarger
   background: {
