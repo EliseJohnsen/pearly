@@ -23,7 +23,7 @@ export default function Home() {
           <p className="text-xl text-gray-600 dark:text-gray-300">
             Hvordan funker det?
           </p>
-          <div className="flex max-w-4xl mx-auto mt-4 justify-between">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto mt-4">
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
                 <h2 className="text-2xl font-bold">Last opp ditt bilde</h2>
                 <p>Noe tekst her</p>
