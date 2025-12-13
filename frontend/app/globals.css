@@ -20,7 +20,6 @@
   --primary-dark-pink: #F5B0DF;
   --primary-red: #AC0D2E;
   
-  
   --purple: #BA7EB9;
 
   /* Sekundærfarger */
@@ -51,8 +50,8 @@
   --input-border: #d1d5db;
 
   /* Disabled states */
-  --disabled-bg: #9ca3af;
-  --disabled-text: #6b7280;
+  --disabled-bg: #EAD8EA;
+  --disabled-text: #BA7EB9;
 
   /* Gradient bakgrunn */
   --gradient-from: #eff6ff;
@@ -67,6 +66,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card-bg);
+  --color-disabled: var(--disabled-bg);
 
   /* Primærfarger - bruk som bg-primary, hover:bg-primary-hover */
   --color-primary: var(--primary);
@@ -86,6 +86,7 @@
   --color-app-primary: var(--text-primary);
   --color-app-secondary: var(--text-secondary);
   --color-app-muted: var(--text-muted);
+  --color-app-disabled: var(--disabled-text);
 
   /* Kantfarger - bruk som border-default, border-subtle */
   --color-border-default: var(--border);
@@ -100,7 +101,7 @@
     --foreground: #ffffff;
 
     /* Primærfarger (samme i dark mode) */
-    --primary: #2563eb;
+    --primary: var(--primary);
     --primary-hover: #1d4ed8;
     --primary-light: #1e3a8a;
     --primary-dark: rgb(30 58 138 / 0.2);

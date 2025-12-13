@@ -1,4 +1,5 @@
 import { CloudArrowUpIcon, LockClosedIcon, ServerIcon } from '@heroicons/react/20/solid'
+import Image from 'next/image'
 
 export default function Example() {
   return (
@@ -11,9 +12,9 @@ export default function Example() {
                 Get your hands pearly
               </p>
             </div>
-            <img
-              alt="Product screenshot"
-              src="https://tailwindcss.com/plus-assets/img/component-images/project-app-screenshot.png"
+            <Image
+              alt="beads"
+              src="/images/beads.jpg"
               width={2432}
               height={1442}
               className="justify-self-end w-3/4 max-w-none rounded-xl shadow-xl ring-1 ring-gray-400/10"

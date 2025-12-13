@@ -375,7 +375,7 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
       <button
         onClick={handleUpload}
         disabled={!preview || uploading}
-        className="w-full bg-primary hover:bg-primary-dark-pink disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+        className="w-full bg-primary hover:bg-primary-dark-pink disabled:bg-disabled disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-colors"
       >
         {uploading ? "Genererer mønster..." : "Generer perlemønster"}
       </button>
