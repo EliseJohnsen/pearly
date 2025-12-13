@@ -1,0 +1,96 @@
+/**
+ * Nyttige Tailwind utility-klasser basert på fargeprofilen
+ * Import denne filen i globals.css hvis du vil bruke disse klassene
+ */
+
+@layer utilities {
+  /* Bakgrunnsfarger */
+  .bg-app-primary {
+    background-color: var(--background);
+  }
+
+  .bg-app-secondary {
+    background-color: var(--background-secondary);
+  }
+
+  /* Tekstfarger */
+  .text-app-primary {
+    color: var(--text-primary);
+  }
+
+  .text-app-secondary {
+    color: var(--text-secondary);
+  }
+
+  .text-app-muted {
+    color: var(--text-muted);
+  }
+
+  /* Primærknapp */
+  .btn-primary {
+    background-color: var(--primary);
+    color: white;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    transition: background-color 150ms;
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background-color: var(--primary-hover);
+  }
+
+  .btn-primary:disabled {
+    background-color: var(--disabled-bg);
+    cursor: not-allowed;
+  }
+
+  /* Suksessknapp */
+  .btn-success {
+    background-color: var(--success);
+    color: white;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    transition: background-color 150ms;
+  }
+
+  .btn-success:hover:not(:disabled) {
+    background-color: var(--success-hover);
+  }
+
+  /* Kort-komponent */
+  .card {
+    background-color: var(--card-bg);
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    padding: 2rem;
+  }
+
+  /* Info-boks */
+  .info-box {
+    background-color: var(--info-bg);
+    color: var(--info-text);
+    padding: 1rem;
+    border-radius: 0.5rem;
+  }
+
+  /* Input-felt */
+  .input-field {
+    background-color: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    color: var(--text-primary);
+  }
+
+  .input-field:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+
+  /* Gradient bakgrunn */
+  .gradient-bg {
+    background: linear-gradient(to bottom, var(--gradient-from), var(--gradient-to));
+  }
+}

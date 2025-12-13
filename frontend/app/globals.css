@@ -1,0 +1,140 @@
+@import "tailwindcss";
+
+/**
+ * Fargeprofil for Bead it!
+ * Endre verdiene her for å oppdatere fargene i hele applikasjonen
+ */
+
+:root {
+  /* Bakgrunnsfarger */
+  --background: #FFF8F0;
+  --background-secondary: #f9fafb;
+  --foreground: #111827;
+
+  /* Primærfarger */
+  --primary: #FA5A05;
+  --primary-hover: #1d4ed8;
+  --primary-light: #EECED5;
+  --primary-dark: #1e3a8a;
+  --primary-pink: #FBE7F5;
+  --primary-dark-pink: #F5B0DF;
+  --primary-red: #AC0D2E;
+  
+  
+  --purple: #BA7EB9;
+
+  /* Sekundærfarger */
+  --success: #16a34a;
+  --success-hover: #15803d;
+
+  /* Tekstfarger */
+  --text-primary: #111827;
+  --text-primary-light: var(--primary-pink)
+  --text-secondary: #4b5563;
+  --text-muted: #6b7280;
+
+  /* Kantfarger */
+  --border: #d1d5db;
+  --border-subtle: #e5e7eb;
+
+  /* Kortkomponenter */
+  --card-bg: #ffffff;
+  --card-border: #d1d5db;
+
+  /* Info-bokser */
+  --info-bg: #eff6ff;
+  --info-text: #1e40af;
+  --info-accent: #2563eb;
+
+  /* Input-komponenter */
+  --input-bg: #f9fafb;
+  --input-border: #d1d5db;
+
+  /* Disabled states */
+  --disabled-bg: #9ca3af;
+  --disabled-text: #6b7280;
+
+  /* Gradient bakgrunn */
+  --gradient-from: #eff6ff;
+  --gradient-to: var(--background);
+}
+
+@theme inline {
+  /* Fonter */
+  --font-sans: var(--font-quicksand);
+
+  /* Bakgrunnsfarger - bruk som bg-background, bg-card osv. */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card-bg);
+
+  /* Primærfarger - bruk som bg-primary, hover:bg-primary-hover */
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-light: var(--primary-light);
+  --color-primary-pink: var(--primary-pink);
+  --color-primary-dark-pink: var(--primary-dark-pink);
+  --color-primary-red: var(--primary-red);
+  
+  --color-purple: var(--purple);
+
+  /* Sekundærfarger - bruk som bg-success, hover:bg-success-hover */
+  --color-success: var(--success);
+  --color-success-hover: var(--success-hover);
+
+  /* Tekstfarger - bruk som text-app-primary, text-app-secondary */
+  --color-app-primary: var(--text-primary);
+  --color-app-secondary: var(--text-secondary);
+  --color-app-muted: var(--text-muted);
+
+  /* Kantfarger - bruk som border-default, border-subtle */
+  --color-border-default: var(--border);
+  --color-border-subtle: var(--border-subtle);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Bakgrunnsfarger */
+    --background: #1f2937;
+    --background-secondary: #374151;
+    --foreground: #ffffff;
+
+    /* Primærfarger (samme i dark mode) */
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --primary-light: #1e3a8a;
+    --primary-dark: rgb(30 58 138 / 0.2);
+
+    /* Tekstfarger */
+    --text-primary: #ffffff;
+    --text-secondary: #d1d5db;
+    --text-muted: #9ca3af;
+
+    /* Kantfarger */
+    --border: #4b5563;
+    --border-subtle: #374151;
+
+    /* Kortkomponenter */
+    --card-bg: #1f2937;
+    --card-border: #4b5563;
+
+    /* Info-bokser */
+    --info-bg: rgb(30 58 138 / 0.2);
+    --info-text: #bfdbfe;
+    --info-accent: #60a5fa;
+
+    /* Input-komponenter */
+    --input-bg: #374151;
+    --input-border: #4b5563;
+
+    /* Gradient bakgrunn */
+    --gradient-from: #111827;
+    --gradient-to: #1f2937;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-quicksand), sans-serif;
+}
