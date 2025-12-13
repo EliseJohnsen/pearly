@@ -11,7 +11,6 @@ import numpy as np
 import cv2
 from rembg import remove as rembg_remove
 
-# Optional databutton import - only needed for get_hama_colors()
 try:
     import databutton as db
     DATABUTTON_AVAILABLE = True
@@ -19,9 +18,7 @@ except ImportError:
     DATABUTTON_AVAILABLE = False
     db = None
 
-# --- Hama Colors Handling ---
 ACTIVE_HAMA_COLORS_FILENAME = "hama-colors-v1.json"
-# Get absolute path to perle-colors.json relative to this file
 _CURRENT_DIR = Path(__file__).parent.parent
 PERLE_COLORS_FILEPATH = _CURRENT_DIR / "data" / "perle-colors.json"
 HAMA_COLORS_CACHE: Optional[List[Dict]] = None
@@ -106,7 +103,6 @@ def get_perle_colors() -> List[Dict]:
         print(f"ERROR: Could not load or process Perle colors: {e}")
         raise HTTPException(status_code=500, detail=f"Could not load or process Perle colors: {e}")
 
-# --- Color Matching Logic ---
 def calculate_color_difference(rgb1: Tuple[int, int, int], rgb2: Tuple[int, int, int]) -> float:
     """Calculates the Euclidean distance between two RGB colors."""
     return math.sqrt(sum([(c1 - c2) ** 2 for c1, c2 in zip(rgb1, rgb2)]))
@@ -114,15 +110,14 @@ def calculate_color_difference(rgb1: Tuple[int, int, int], rgb2: Tuple[int, int,
 def find_closest_hama_color(pixel_rgb: Tuple[int, int, int], hama_colors: List[Dict]) -> Dict:
     """Finds the closest Hama color to a given pixel's RGB value."""
     if not hama_colors:
-        # Should not happen if get_hama_colors raises HTTPException properly
         raise ValueError("Hama color list is empty, cannot find closest color.")
 
     min_difference = float('inf')
-    closest_color_info = hama_colors[0] # Default to the first color if something goes wrong
+    closest_color_info = hama_colors[0]
 
     for hama_color in hama_colors:
         hama_rgb = hama_color.get("rgb")
-        if not hama_rgb: # Should not happen if get_hama_colors filters properly
+        if not hama_rgb:
             continue
         difference = calculate_color_difference(pixel_rgb, hama_rgb)
         if difference < min_difference:
@@ -130,7 +125,6 @@ def find_closest_hama_color(pixel_rgb: Tuple[int, int, int], hama_colors: List[D
             closest_color_info = hama_color
     return closest_color_info
 
-# --- Advanced Image Pre-processing ---
 def remove_background(image: Image.Image) -> Image.Image:
     """
     Removes background from image using rembg.
@@ -143,10 +137,8 @@ def remove_background(image: Image.Image) -> Image.Image:
         PIL Image with background removed and replaced with white
     """
     print("Removing background...")
-    # Remove background using rembg
     output = rembg_remove(image)
 
-    # Convert transparent background to white
     bg = Image.new('RGB', output.size, (255, 255, 255))
     if output.mode == 'RGBA':
         bg.paste(output, mask=output.split()[3])
@@ -169,13 +161,10 @@ def apply_bilateral_filter(image: Image.Image, d: int = 9, sigma_color: int = 75
     Returns:
         Filtered PIL Image
     """
-    # Convert PIL to numpy array
     img_array = np.array(image)
 
-    # Apply bilateral filter
     filtered = cv2.bilateralFilter(img_array, d, sigma_color, sigma_space)
 
-    # Convert back to PIL
     return Image.fromarray(filtered)
 
 def apply_mean_shift_filter(image: Image.Image, sp: int = 10, sr: int = 20) -> Image.Image:
@@ -190,13 +179,10 @@ def apply_mean_shift_filter(image: Image.Image, sp: int = 10, sr: int = 20) -> I
     Returns:
         Filtered PIL Image
     """
-    # Convert PIL to numpy array
     img_array = np.array(image)
 
-    # Apply mean shift filtering
     filtered = cv2.pyrMeanShiftFiltering(img_array, sp, sr)
 
-    # Convert back to PIL
     return Image.fromarray(filtered)
 
 def enhanced_preprocess_image(
