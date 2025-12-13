@@ -3,9 +3,16 @@ import { Resend } from 'resend';
 import { render } from '@react-email/components';
 import WelcomeEmail from '@/emails/welcome-email';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export async function POST(request: NextRequest) {
+  // Initialize Resend only when the route is called
+  if (!process.env.RESEND_API_KEY) {
+    return NextResponse.json(
+      { error: 'Email service not configured' },
+      { status: 503 }
+    );
+  }
+
+  const resend = new Resend(process.env.RESEND_API_KEY);
   try {
     const body = await request.json();
     const { to, name, type = 'welcome' } = body;
