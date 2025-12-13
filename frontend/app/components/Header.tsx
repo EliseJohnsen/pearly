@@ -52,7 +52,7 @@ export default function Header() {
         <PopoverGroup className="hidden lg:flex lg:gap-x-12 items-center">
           <Popover className="relative">
             <PopoverButton className="flex items-center gap-x-1 text-sm/6 font-semibold text-gray-900">
-              Product
+              Meny
               <ChevronDownIcon aria-hidden="true" className="size-5 flex-none text-gray-400" />
             </PopoverButton>
 
@@ -99,7 +99,7 @@ export default function Header() {
             </a>
           </h1>
           <a href="#" className="text-sm/6 font-semibold text-gray-900">
-            Company
+            Om oss
           </a>
         </PopoverGroup>
         <div className="hidden lg:flex lg:flex-1 lg:justify-end">
