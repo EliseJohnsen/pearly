@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import LoadingSpinner from "./LoadingSpinner";
 
 interface ImageUploadProps {
   onPatternGenerated: (data: any) => void;
@@ -107,6 +108,14 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
       setUploading(false);
     }
   };
+
+  if (uploading) {
+    return (
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 mb-8">
+        <LoadingSpinner />
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 mb-8">
@@ -377,7 +386,7 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
         disabled={!preview || uploading}
         className="w-full bg-primary hover:bg-primary-dark-pink disabled:bg-disabled disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-colors"
       >
-        {uploading ? "Genererer mønster..." : "Generer perlemønster"}
+        Generer perlemønster
       </button>
     </div>
   );
