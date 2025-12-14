@@ -160,31 +160,6 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
           </p>
         )}
       </div>
-
-      <div className="flex gap-4">
-        <a
-          href={imageUrl}
-          download={`perlemønster-${pattern.uuid}.png`}
-          className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg text-center transition-colors"
-        >
-          Last ned mønster
-        </a>
-        <button
-          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
-          onClick={() => alert("Vipps-betaling kommer snart!")}
-        >
-          Kjøp perlepakke
-        </button>
-      </div>
-
-      <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-        <p className="text-sm text-gray-700 dark:text-gray-300">
-          Del dette mønsteret:{" "}
-          <span className="font-mono text-blue-600 dark:text-blue-400">
-            {typeof window !== "undefined" && `${window.location.origin}/pattern/${pattern.uuid}`}
-          </span>
-        </p>
-      </div>
     </div>
   );
 };
