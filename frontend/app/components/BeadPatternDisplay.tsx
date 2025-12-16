@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import {useUIString} from '@/app/hooks/useSanityData'
 
 interface BeadPatternDisplayProps {
   pattern: {
@@ -38,6 +39,9 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
   const [patternGrid, setPatternGrid] = useState<string[][] | null>(
     pattern.pattern_data?.grid || null
   );
+
+  const colorsYouNeedText = useUIString('colors_you_need')
+  const pearlsText = useUIString('pearls')
 
   // Update pattern grid when pattern data changes
   useEffect(() => {
@@ -116,7 +120,7 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
 
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-          Farger du trenger
+          { colorsYouNeedText }
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {pattern.colors_used.map((color, idx) => (
@@ -133,7 +137,7 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
                   {color.name}
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {color.count} perler
+                  {color.count} { pearlsText }
                 </p>
               </div>
             </div>
@@ -156,7 +160,7 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
           </>
         ) : (
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Størrelse: {pattern.grid_size}x{pattern.grid_size} perler
+            Størrelse: {pattern.grid_size}x{pattern.grid_size} { pearlsText }
           </p>
         )}
       </div>

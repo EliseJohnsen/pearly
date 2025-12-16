@@ -14,12 +14,12 @@ export const bannerQuery = groq`*[_type == "banner" && isActive == true][0]{_id,
 // How It Works query
 export const howItWorksQuery = groq`*[_type == "howItWorks"][0]{_id,sectionTitle,sectionSubtitle,steps[]{title,description,icon,image{asset->{_id,url,metadata{lqip,dimensions{width,height}}},alt},order}|order(order asc)}`
 
-// UI Strings queries
-export const uiStringsQuery = groq`*[_type == "uiStrings"]{_id,key,value,category,description}`
+// UI Strings queries (with i18n support)
+export const uiStringsQuery = (locale: string = 'nb') => groq`*[_type == "uiStrings" && language == "${locale}"]{_id,key,value,category,description}`
 
-export const uiStringsByCategoryQuery = (category: string) => groq`*[_type == "uiStrings" && category == "${category}"]{_id,key,value,category}`
+export const uiStringsByCategoryQuery = (category: string, locale: string = 'nb') => groq`*[_type == "uiStrings" && category == "${category}" && language == "${locale}"]{_id,key,value,category}`
 
-export const uiStringByKeyQuery = (key: string) => groq`*[_type == "uiStrings" && key == "${key}"][0]{_id,key,value}`
+export const uiStringByKeyQuery = (key: string, locale: string = 'nb') => groq`*[_type == "uiStrings" && key == "${key}" && language == "${locale}"][0]{_id,key,value}`
 
 // Page Settings query
 export const pageSettingsQuery = (page: string) => groq`*[_type == "pageSettings" && page == "${page}"][0]{_id,page,title,description,ogImage{asset->{_id,url},alt},favicon{asset->{_id,url}}}`

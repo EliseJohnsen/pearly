@@ -11,11 +11,16 @@ import {
   XMarkIcon,
 } from '@heroicons/react/24/outline'
 import {useNavigationByType} from '@/app/hooks/useSanityData'
+import {useUIString} from '@/app/hooks/useSanityData'
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const {data: mainNav, loading: mainNavLoading} = useNavigationByType('main')
   const {data: ctaNav, loading: ctaNavLoading} = useNavigationByType('cta')
+
+  const openMainMenuText = useUIString('open_main_menu')
+  const loadingText = useUIString('loading')
+  const feelingPearlyText = useUIString('feelin_pearly')
 
   return (
     <header className="bg-primary">
@@ -28,7 +33,7 @@ export default function Header() {
             onClick={() => setMobileMenuOpen(true)}
             className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700"
           >
-            <span className="sr-only">Open main menu</span>
+            <span className="sr-only">{ openMainMenuText }</span>
             <Bars3Icon aria-hidden="true" className="size-6" />
           </button>
         </div>
@@ -37,7 +42,7 @@ export default function Header() {
         <div className="hidden lg:flex lg:gap-x-12 items-center">
           {/* Main navigation items */}
           {mainNavLoading ? (
-            <div className="text-sm/6 font-semibold text-gray-900">Loading...</div>
+            <div className="text-sm/6 font-semibold text-gray-900">{ loadingText }</div>
           ) : mainNav && mainNav.length > 0 ? (
             mainNav.map((item) => (
               <Link
@@ -53,7 +58,7 @@ export default function Header() {
           {/* Logo/Title in center */}
           <h1 className='text-7xl font-semibold tracking-tight text-primary-light leading-tight'>
             <Link href="/">
-              feelin pearly
+              { feelingPearlyText }
             </Link>
           </h1>
 

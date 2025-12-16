@@ -10,6 +10,7 @@ import {
   bannerQuery,
   howItWorksQuery,
   uiStringsQuery,
+  uiStringsByCategoryQuery,
   uiStringByKeyQuery,
   pageSettingsQuery,
   inspirationQuery,
@@ -78,12 +79,19 @@ export function useHowItWorks() {
 
 // UI Strings hooks
 export function useUIStrings() {
-  return useSanityQuery<UIString[]>(uiStringsQuery)
+  const {locale} = useLocale()
+  return useSanityQuery<UIString[]>(uiStringsQuery(locale))
+}
+
+export function useUIStringsByCategory(category: string) {
+  const {locale} = useLocale()
+  return useSanityQuery<UIString[]>(uiStringsByCategoryQuery(category, locale))
 }
 
 export function useUIString(key: string): string {
+  const {locale} = useLocale()
   const {data, loading} = useSanityQuery<{value: string} | null>(
-    uiStringByKeyQuery(key)
+    uiStringByKeyQuery(key, locale)
   )
 
   // Return the value or the key as fallback
