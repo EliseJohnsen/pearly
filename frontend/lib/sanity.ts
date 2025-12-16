@@ -5,8 +5,8 @@ import type {SanityImageSource} from '@sanity/image-url/lib/types/types'
 export const client = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'qpdup7gv',
   dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
-  apiVersion: process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2025-12-16',
-  useCdn: true, // Set to false if you want to ensure fresh data
+  apiVersion: '2024-12-16', // Use a valid API version
+  useCdn: true, // Use CDN for better performance and caching
   perspective: 'published', // Only return published documents
 })
 
