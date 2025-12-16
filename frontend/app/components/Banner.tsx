@@ -30,7 +30,7 @@ export default function Banner() {
   }
 
   const content = (
-    <div className="flex flex-auto items-center gap-x-4 gap-y-2">
+    <div className="flex flex-auto items-center justify-center gap-x-4 gap-y-2">
       <p className="text-sm/6 text-color-primary-red font-bold">
         {banner.text}
       </p>
