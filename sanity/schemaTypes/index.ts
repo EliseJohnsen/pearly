@@ -5,6 +5,7 @@ import howItWorks from './howItWorks'
 import uiStrings from './uiStrings'
 import pageSettings from './pageSettings'
 import emailTemplate from './emailTemplate'
+import inspiration from './inspiration'
 
 export const schemaTypes = [
   navigation,
@@ -14,4 +15,5 @@ export const schemaTypes = [
   uiStrings,
   pageSettings,
   emailTemplate,
+  inspiration,
 ]

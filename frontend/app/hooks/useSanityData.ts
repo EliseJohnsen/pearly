@@ -12,6 +12,9 @@ import {
   uiStringsQuery,
   uiStringByKeyQuery,
   pageSettingsQuery,
+  inspirationQuery,
+  featuredInspirationQuery,
+  inspirationBySlugQuery,
 } from '@/lib/queries'
 import type {
   Navigation,
@@ -20,6 +23,7 @@ import type {
   HowItWorks,
   UIString,
   PageSettings,
+  Inspiration,
 } from '@/types/sanity'
 
 // Generic hook for fetching data
@@ -90,4 +94,17 @@ export function useUIString(key: string): string {
 // Page Settings hook
 export function usePageSettings(page: string = 'home') {
   return useSanityQuery<PageSettings>(pageSettingsQuery(page))
+}
+
+// Inspiration hooks
+export function useInspiration() {
+  return useSanityQuery<Inspiration[]>(inspirationQuery)
+}
+
+export function useFeaturedInspiration() {
+  return useSanityQuery<Inspiration[]>(featuredInspirationQuery)
+}
+
+export function useInspirationBySlug(slug: string) {
+  return useSanityQuery<Inspiration>(inspirationBySlugQuery(slug))
 }

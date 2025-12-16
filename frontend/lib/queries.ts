@@ -26,3 +26,10 @@ export const pageSettingsQuery = (page: string) => groq`*[_type == "pageSettings
 
 // Email Template query
 export const emailTemplateQuery = (templateId: string) => groq`*[_type == "emailTemplate" && templateId == "${templateId}"][0]{_id,templateId,subject,heading,body,ctaText,ctaUrl,footerText}`
+
+// Inspiration queries
+export const inspirationQuery = groq`*[_type == "inspiration"]|order(order asc){_id,title,slug,description,image{asset->{_id,url,metadata{lqip,dimensions{width,height}}},alt,hotspot},category,difficulty,colors,gridSize,tags,isFeatured,order}`
+
+export const featuredInspirationQuery = groq`*[_type == "inspiration" && isFeatured == true]|order(order asc){_id,title,slug,description,image{asset->{_id,url,metadata{lqip,dimensions{width,height}}},alt,hotspot},category,difficulty,colors,gridSize,tags,isFeatured,order}`
+
+export const inspirationBySlugQuery = (slug: string) => groq`*[_type == "inspiration" && slug.current == "${slug}"][0]{_id,title,slug,description,image{asset->{_id,url,metadata{lqip,dimensions{width,height}}},alt,hotspot},category,difficulty,colors,gridSize,tags,isFeatured,order}`

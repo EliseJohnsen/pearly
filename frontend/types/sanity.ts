@@ -102,3 +102,21 @@ export interface EmailTemplate {
   ctaUrl?: string
   footerText?: string
 }
+
+// Inspiration types
+export interface Inspiration {
+  _id: string
+  title: string
+  slug: {
+    current: string
+  }
+  description?: string
+  image: SanityImage
+  category?: 'animals' | 'nature' | 'abstract' | 'characters' | 'holiday' | 'other'
+  difficulty?: 'easy' | 'medium' | 'hard'
+  colors?: number
+  gridSize?: string
+  tags?: string[]
+  isFeatured: boolean
+  order: number
+}

@@ -27,6 +27,7 @@ export default defineConfig({
         'uiStrings',
         'pageSettings',
         'emailTemplate',
+        'inspiration',
       ],
     }),
   ],
