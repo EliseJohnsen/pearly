@@ -1,0 +1,20 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Compiled Sanity Studio
+dist
+
+# Logs
+*.log
+
+# Environment variables
+.env
+.env*.local
+
+# OS
+.DS_Store
+
+# Misc
+*.tsbuildinfo
