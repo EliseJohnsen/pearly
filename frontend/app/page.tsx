@@ -22,8 +22,8 @@ export default function Home() {
   }
 
   const getHowItWorksFontColor = () => {
-    if (howItWorks && howItWorks.backgroundColor) {
-      return howItWorks.backgroundColor
+    if (howItWorks && howItWorks.fontColor) {
+      return howItWorks.fontColor
     } else
       return '#BA7EB9'
   }

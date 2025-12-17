@@ -70,6 +70,7 @@ export interface HowItWorks {
   sectionTitle: string
   sectionSubtitle?: string
   backgroundColor?: string
+  fontColor?: string
   steps: HowItWorksStep[]
 }
 

@@ -20,6 +20,18 @@ export default defineType({
       rows: 3,
     }),
     defineField({
+      name: 'fontColor',
+      title: 'Custom Font Color',
+      type: 'string',
+      description: 'Optional custom font color for icons and text (e.g., #BA7EB9). Leave empty to use default.',
+    }),
+    defineField({
+      name: 'backgroundColor',
+      title: 'Custom Background Color',
+      type: 'string',
+      description: 'Optional custom background color for icon containers (e.g., #F5B0DF). Leave empty to use default.',
+    }),
+    defineField({
       name: 'steps',
       title: 'Steps',
       type: 'array',
