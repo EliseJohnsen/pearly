@@ -28,7 +28,7 @@ export default function Home() {
       return '#BA7EB9'
   }
 
-  const getHowItWorksStepIcon = (index) => {
+  const getHowItWorksStepIcon = (index: number) => {
     switch (index) {
       case 0:
         return <ArrowUpTrayIcon aria-hidden="true" className="size-12 text-white" style={{color: getHowItWorksFontColor()}} />
