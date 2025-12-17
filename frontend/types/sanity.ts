@@ -69,6 +69,7 @@ export interface HowItWorks {
   _id: string
   sectionTitle: string
   sectionSubtitle?: string
+  backgroundColor?: string
   steps: HowItWorksStep[]
 }
 
