@@ -4,16 +4,19 @@ import Image from 'next/image'
 import Header from '../components/Header'
 import {useInspiration} from '../hooks/useSanityData'
 import {urlFor} from '@/lib/sanity'
+import {useUIString} from '@/app/hooks/useSanityData'
 
 export default function InspirationPage() {
   const {data: inspirations, loading} = useInspiration()
+  const noInspirationsFoundText = useUIString('no_inspirations_found')
+  const inspirationText = useUIString('inspiration')
 
   return (
     <div className="min-h-screen bg-[var(--background)]">
       <Header />
       <div className="bg-white">
         <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Inspirasjon</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">{ inspirationText }</h2>
 
           {loading ? (
             <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8">
@@ -74,7 +77,7 @@ export default function InspirationPage() {
             </div>
           ) : (
             <div className="text-center py-12">
-              <p className="text-gray-500">Ingen inspirasjon funnet. Legg til noen i Sanity Studio!</p>
+              <p className="text-gray-500">{ noInspirationsFoundText }</p>
             </div>
           )}
         </div>

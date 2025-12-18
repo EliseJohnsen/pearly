@@ -19,13 +19,13 @@ export default function CTA() {
                   {loading ? 'Loading...' : 'Get your hands pearly'}
                 </p>
               </div>
-              <Image
+              {/* <Image
                 alt="beads"
                 src="/images/unicorn.png"
                 width={2432}
                 height={1442}
                 className="justify-self-end w-3/4 max-w-none shadow-xl ring-1 ring-gray-400/10"
-              />
+              /> */}
             </div>
           </div>
         </div>

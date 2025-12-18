@@ -1,4 +1,5 @@
 "use client";
+import {useUIString} from '@/app/hooks/useSanityData'
 
 interface PatternDisplayProps {
   pattern: {
@@ -21,10 +22,13 @@ export default function PatternDisplay({ pattern }: PatternDisplayProps) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
   const imageUrl = `${apiUrl}${pattern.pattern_image_url}`;
 
+  const yourPatternText = useUIString('your_pattern')
+  const colorsYouNeedText = useUIString('colors_you_need')
+
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
       <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-        Ditt perlemønster
+        { yourPatternText } 
       </h2>
 
       <div className="mb-6">
@@ -37,7 +41,7 @@ export default function PatternDisplay({ pattern }: PatternDisplayProps) {
 
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-          Farger du trenger
+          { colorsYouNeedText }
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {pattern.colors_used.map((color) => (

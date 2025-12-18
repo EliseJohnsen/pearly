@@ -7,8 +7,7 @@ import Header from "./components/Header";
 import CTA from "./components/CTA";
 import Banner from "./components/Banner";
 import {useHowItWorks} from "./hooks/useSanityData";
-import HandRaisedIcon from "@heroicons/react/24/outline/HandRaisedIcon";
-import { ArrowUpCircleIcon, ArrowUpOnSquareIcon, ArrowUpTrayIcon, GifIcon, GiftIcon, GiftTopIcon, PhotoIcon } from "@heroicons/react/24/outline";
+import { ArrowUpTrayIcon, GiftIcon, PhotoIcon } from "@heroicons/react/24/outline";
 
 export default function Home() {
   const [patternData, setPatternData] = useState<any>(null);

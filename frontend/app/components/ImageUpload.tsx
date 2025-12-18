@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import LoadingSpinner from "./LoadingSpinner";
+import {useUIString} from '@/app/hooks/useSanityData'
 
 interface ImageUploadProps {
   onPatternGenerated: (data: any) => void;
@@ -26,6 +27,9 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
   const [simplificationMethod, setSimplificationMethod] = useState<"bilateral" | "mean_shift" | "gaussian">("bilateral");
   const [simplificationStrength, setSimplificationStrength] = useState<"light" | "medium" | "strong">("medium");
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
+
+  const chooseAPhotoText = useUIString('choose_a_photo')
+  const previewText = useUIString('preview')
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -121,9 +125,10 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 mb-8">
       <div className="mb-6">
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Velg et bilde
+          { chooseAPhotoText }
         </label>
         <input
+          id="upload-image"
           ref={fileInputRef}
           type="file"
           accept="image/*"
@@ -135,7 +140,7 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
       {preview && (
         <div className="mb-6">
           <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Forhåndsvisning:
+            { previewText }
           </p>
           <img
             src={preview}
