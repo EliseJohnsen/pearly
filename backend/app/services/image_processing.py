@@ -370,6 +370,8 @@ def suggest_board_dimensions(image: Image.Image) -> Dict:
     else:  # Large images
         base_boards = 4
 
+    base_boards = base_boards * 29
+
     # Adjust for aspect ratio
     if aspect_ratio > 1:  # Wider than tall
         boards_width = base_boards
@@ -460,8 +462,8 @@ def convert_image_to_pattern(
 
     # Calculate total grid size based on boards
     BOARD_SIZE = 29
-    new_width = boards_width * BOARD_SIZE
-    new_height = boards_height * BOARD_SIZE
+    new_width = boards_width
+    new_height = boards_height
 
     # Resize image to grid dimensions
     img_resized = image.resize((new_width, new_height), Image.Resampling.LANCZOS)

@@ -117,6 +117,14 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
     {} as Record<string, { name: string; hex: string }>,
   );
 
+  const calculateBrett = (numberOfBeads: number) => {
+    return ((numberOfBeads / 29)).toPrecision(1)
+  }
+
+  const calculateTotal = (boardsWidth: number, boardsHeight: number) => {
+    return ((boardsWidth / 29) + (boardsHeight / 29)).toPrecision(1)
+  }
+
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
       <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
@@ -203,7 +211,7 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
         {pattern.boards_width && pattern.boards_height ? (
           <>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              <strong>Brett:</strong> {pattern.boards_width} × {pattern.boards_height} brett ({pattern.boards_width * pattern.boards_height} totalt)
+              <strong>Brett:</strong> {calculateBrett(pattern.boards_width)} × {calculateBrett(pattern.boards_height)} brett ({calculateTotal(pattern.boards_width, pattern.boards_height)} totalt)
             </p>
             <p className="text-sm text-gray-600 dark:text-gray-400">
               <strong>Størrelse:</strong> {pattern.boards_width * 29} × {pattern.boards_height * 29} perler
@@ -266,7 +274,7 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
             <button
               onClick={handleSendEmail}
               disabled={sendingEmail || !email}
-              className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+              className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark-pink disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-colors"
             >
               {sendingEmail ? (
                 <>

@@ -40,7 +40,6 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
       };
       reader.readAsDataURL(file);
 
-      // Get board suggestions from backend
       setAnalyzing(true);
       try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -113,6 +112,14 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
     }
   };
 
+  const calculateBrett = (numberOfBeads: number) => {
+    return ((numberOfBeads / 29)).toPrecision(1)
+  }
+
+  const calculateTotal = (boardsWidth: number, boardsHeight: number) => {
+    return ((boardsWidth / 29) + (boardsHeight / 29)).toPrecision(1)
+  }
+
   if (uploading) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 mb-8">
@@ -124,17 +131,27 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 mb-8">
       <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <div className="flex items-center gap-4">
+          <input
+            id="upload-image"
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+          <label
+            htmlFor="upload-image"
+            className="cursor-pointer inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-primary-dark-pink text-white hover:bg-purple hover:text-primary-light dark:bg-blue-900 dark:text-blue-300 dark:hover:bg-blue-800 transition-colors"
+          >
           { chooseAPhotoText }
-        </label>
-        <input
-          id="upload-image"
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={handleFileChange}
-          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-dark-pink file:app-primary hover:file:bg-purple hover:file:text-primary-light dark:file:bg-blue-900 dark:file:text-blue-300"
-        />
+          </label>
+          {preview && (
+            <span className="text-sm text-gray-600 dark:text-gray-400">
+              Bilde valgt
+            </span>
+          )}
+        </div>
       </div>
 
       {preview && (
@@ -162,46 +179,46 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
         <div className="mb-6 space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Antall brett i bredden: {boardsWidth} ({boardsWidth * 29} perler)
+              Antall perler i bredden: {boardsWidth} perler ({calculateBrett(boardsWidth)} brett)
             </label>
             <input
               type="range"
               min="1"
-              max="6"
+              max="174"
               value={boardsWidth}
               onChange={(e) => setBoardsWidth(Number(e.target.value))}
               className="w-full h-2 bg-primary-dark-pink text: rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
             />
             <div className="flex justify-between text-xs text-primary dark:text-gray-400 mt-1">
-              <span>1 brett</span>
-              <span>6 brett</span>
+              <span>1</span>
+              <span>174</span>
             </div>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-primary dark:text-gray-300 mb-2">
-              Antall brett i høyden: {boardsHeight} ({boardsHeight * 29} perler)
+              Antall perler i høyden: {boardsHeight} perler ({calculateBrett(boardsHeight)} brett)
             </label>
             <input
               type="range"
               min="1"
-              max="6"
+              max="174"
               value={boardsHeight}
               onChange={(e) => setBoardsHeight(Number(e.target.value))}
               className="w-full h-2 bg-purple rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
             />
             <div className="flex justify-between text-xs text-purple dark:text-gray-400 mt-1">
-              <span>1 brett</span>
-              <span>6 brett</span>
+              <span>1</span>
+              <span>174</span>
             </div>
           </div>
 
           <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
             <p className="text-sm text-gray-700 dark:text-gray-300">
-              <strong>Total størrelse:</strong> {boardsWidth * 29} × {boardsHeight * 29} perler
+              <strong>Total størrelse:</strong> {boardsWidth} × {boardsHeight} perler
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              {boardsWidth} × {boardsHeight} = {boardsWidth * boardsHeight} brett totalt
+              {boardsWidth} × {boardsHeight} = {calculateTotal(boardsWidth, boardsHeight)} brett totalt
             </p>
           </div>
 
