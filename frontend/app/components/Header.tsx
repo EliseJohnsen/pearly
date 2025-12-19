@@ -24,22 +24,8 @@ export default function Header() {
 
   return (
     <header className="bg-primary">
-      <nav aria-label="Global" className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8">
-        <div className="flex lg:flex-1">
-        </div>
-        <div className="flex lg:hidden">
-          <button
-            type="button"
-            onClick={() => setMobileMenuOpen(true)}
-            className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700"
-          >
-            <span className="sr-only">{ openMainMenuText }</span>
-            <Bars3Icon aria-hidden="true" className="size-6" />
-          </button>
-        </div>
-
-        {/* Desktop Navigation */}
-        <div className="hidden lg:flex lg:gap-x-12 items-center">
+      <nav aria-label="Global" className="mx-auto grid grid-cols-7 gap-4 max-w-7xl items-center justify-between p-6 lg:px-8">
+        <div className="col-span-2 flex justify-around">
           {/* Main navigation items */}
           {mainNavLoading ? (
             <div className="text-sm/6 font-semibold text-gray-900">{ loadingText }</div>
@@ -48,21 +34,22 @@ export default function Header() {
               <Link
                 key={item._id}
                 href={item.href}
-                className="text-sm/6 font-semibold text-gray-900 hover:text-gray-700 transition-colors"
+                className="text-sm/6 font-semibold text-primary-light hover:text-white transition-colors"
               >
-                {item.title}
+                {item.title.toUpperCase()}
               </Link>
             ))
           ) : null}
+        </div>
 
-          {/* Logo/Title in center */}
-          <h1 className='text-7xl font-semibold tracking-tight text-primary-light leading-tight'>
+        <div className="items-center col-span-3">
+
+          <h1 className='text-7xl font-bold tracking-tight text-primary-light leading-tight'>
             <Link href="/">
               { feelingPearlyText }
             </Link>
           </h1>
 
-          {/* CTA navigation items */}
           {!ctaNavLoading && ctaNav && ctaNav.length > 0 && ctaNav.map((item) => (
             <Link
               key={item._id}
@@ -77,8 +64,15 @@ export default function Header() {
             </Link>
           ))}
         </div>
-
-        <div className="hidden lg:flex lg:flex-1 lg:justify-end">
+        <div className="col-span-2 lg:hidden">
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(true)}
+            className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700"
+          >
+            <span className="sr-only">{ openMainMenuText }</span>
+            <Bars3Icon aria-hidden="true" className="size-6" />
+          </button>
         </div>
       </nav>
 
