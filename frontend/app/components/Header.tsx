@@ -42,7 +42,7 @@ export default function Header() {
           ) : null}
         </div>
 
-        <div className="items-center col-span-3">
+        <div className="items-center col-span-3 justify-items-center">
 
           <h1 className='text-7xl font-bold tracking-tight text-primary-light leading-tight'>
             <Link href="/">
