@@ -177,37 +177,7 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
         </div>
       )}
 
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-          { colorsYouNeedText }
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {pattern.colors_used.map((color, idx) => (
-            <div
-              key={color.code || color.hex || idx}
-              className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
-            >
-              <div
-                className="w-10 h-10 rounded-full border-2 border-gray-300 dark:border-gray-500"
-                style={{ backgroundColor: color.hex }}
-              />
-              <div>
-                <p className="font-medium text-gray-900 dark:text-white">
-                  {color.name}
-                </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {color.count} { pearlsText }
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
       <div className="mb-6 space-y-2">
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Mønster ID: <span className="font-mono">{pattern.uuid}</span>
-        </p>
         {pattern.boards_width && pattern.boards_height ? (
           <>
             <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -307,10 +277,6 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
                 </>
               )}
             </button>
-
-            <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-              Du vil motta mønsterbildet og fargeliste på e-post
-            </p>
           </div>
         )}
       </div>
