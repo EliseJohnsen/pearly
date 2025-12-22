@@ -2,7 +2,6 @@
 
 import {useEffect, useState} from 'react'
 import {client} from '@/lib/sanity'
-import {useLocale} from '@/app/contexts/LocaleContext'
 import {
   navigationQuery,
   navigationByTypeQuery,
@@ -16,6 +15,8 @@ import {
   inspirationQuery,
   featuredInspirationQuery,
   inspirationBySlugQuery,
+  footerPagesQuery,
+  footerQuery,
 } from '@/lib/queries'
 import type {
   Navigation,
@@ -25,6 +26,7 @@ import type {
   UIString,
   PageSettings,
   Inspiration,
+  Footer,
 } from '@/types/sanity'
 
 // Generic hook for fetching data
@@ -79,19 +81,16 @@ export function useHowItWorks() {
 
 // UI Strings hooks
 export function useUIStrings() {
-  const {locale} = useLocale()
-  return useSanityQuery<UIString[]>(uiStringsQuery(locale))
+  return useSanityQuery<UIString[]>(uiStringsQuery)
 }
 
 export function useUIStringsByCategory(category: string) {
-  const {locale} = useLocale()
-  return useSanityQuery<UIString[]>(uiStringsByCategoryQuery(category, locale))
+  return useSanityQuery<UIString[]>(uiStringsByCategoryQuery(category))
 }
 
 export function useUIString(key: string): string {
-  const {locale} = useLocale()
   const {data, loading} = useSanityQuery<{value: string} | null>(
-    uiStringByKeyQuery(key, locale)
+    uiStringByKeyQuery(key)
   )
 
   // Return the value or the key as fallback
@@ -115,4 +114,12 @@ export function useFeaturedInspiration() {
 
 export function useInspirationBySlug(slug: string) {
   return useSanityQuery<Inspiration>(inspirationBySlugQuery(slug))
+}
+
+export function useFooterPages() {
+  return useSanityQuery<{slub: string}>(footerPagesQuery)
+}
+
+export function useFooter() {
+  return useSanityQuery<Footer>(footerQuery)
 }

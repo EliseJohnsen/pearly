@@ -6,8 +6,12 @@ export const client = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'qpdup7gv',
   dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
   apiVersion: '2024-12-16',
-  useCdn: true, // Use CDN for better performance and caching
-  perspective: 'published', // Only return published documents
+  useCdn: true,
+  perspective: 'published',
+  stega: {
+    enabled: false,
+    studioUrl: '/studio',
+  },
 })
 
 // Helper function to generate image URLs from Sanity image objects

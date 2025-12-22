@@ -36,6 +36,7 @@ export interface Hero {
   heading: string
   subheading?: string
   image?: SanityImage
+  imageWidth?: string
   ctaButton?: {
     text: string
     href: string
@@ -121,4 +122,12 @@ export interface Inspiration {
   tags?: string[]
   isFeatured: boolean
   order: number
+}
+
+export interface Footer {
+  _id: string,
+  title: string,
+  comapnyInfo: {
+    companyName: string,
+  }
 }

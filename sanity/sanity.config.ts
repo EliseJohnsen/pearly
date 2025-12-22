@@ -1,7 +1,7 @@
 import {defineConfig} from 'sanity'
 import {structureTool} from 'sanity/structure'
 import {visionTool} from '@sanity/vision'
-import {documentInternationalization} from '@sanity/document-internationalization'
+import {presentationTool} from 'sanity/presentation'
 import {schemaTypes} from './schemaTypes'
 
 export default defineConfig({
@@ -14,21 +14,34 @@ export default defineConfig({
   plugins: [
     structureTool(),
     visionTool(),
-    documentInternationalization({
-      supportedLanguages: [
-        {id: 'nb', title: 'Norsk Bokmål'},
-        {id: 'en', title: 'English'},
-      ],
-      schemaTypes: [
-        'navigation',
-        'hero',
-        'banner',
-        'howItWorks',
-        'uiStrings',
-        'pageSettings',
-        'emailTemplate',
-        'inspiration',
-      ],
+    presentationTool({
+      previewUrl: {
+        origin:
+          typeof window !== 'undefined' && window.location.hostname === 'localhost'
+            ? 'http://localhost:3000'
+            : 'https://pearly-bice.vercel.app',
+        previewMode: {
+          enable: '/api/draft',
+        },
+      },
+      resolve: {
+        locations: {
+          page: {
+            select: {
+              title: 'title',
+              slug: 'slug.current',
+            },
+            resolve: (doc) => ({
+              locations: [
+                {
+                  title: doc?.title || 'Side',
+                  href: `/${doc?.slug}`,
+                },
+              ],
+            }),
+          },
+        },
+      },
     }),
   ],
 

@@ -3,7 +3,7 @@ import {defineField, defineType} from 'sanity'
 export default defineType({
   name: 'hero',
   title: 'Hero Section',
-  type: 'document',
+  type: 'object',
   fields: [
     defineField({
       name: 'heading',
@@ -36,6 +36,12 @@ export default defineType({
           validation: (Rule) => Rule.required(),
         },
       ],
+    }),
+    defineField({
+      name: 'imageWidth',
+      title: 'ImageWidth',
+      type: 'text',
+      description: 'CSS styling for image width',
     }),
     defineField({
       name: 'ctaButton',

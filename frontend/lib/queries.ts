@@ -1,9 +1,9 @@
 import {groq} from 'next-sanity'
 
 // Navigation queries
-export const navigationQuery = groq`*[_type == "navigation"]|order(order asc){_id,title,href,order,type,variant}`
+export const navigationQuery = groq`*[_type == "navigation"]|order(order asc){_id,title,"href": "/" + page->slug.current,order,type,variant}`
 
-export const navigationByTypeQuery = (type: string) => groq`*[_type == "navigation" && type == "${type}"]|order(order asc){_id,title,href,order,type,variant}`
+export const navigationByTypeQuery = (type: string) => groq`*[_type == "navigation" && type == "${type}"]|order(order asc){_id,title,"href": "/" + page->slug.current,order,type,variant}`
 
 // Hero/CTA query
 export const heroQuery = groq`*[_type == "hero" && isActive == true][0]{_id,heading,subheading,image{asset->{_id,url,metadata{lqip,dimensions{width,height}}},alt,hotspot},ctaButton{text,href},isActive}`
@@ -14,12 +14,12 @@ export const bannerQuery = groq`*[_type == "banner" && isActive == true][0]{_id,
 // How It Works query
 export const howItWorksQuery = groq`*[_type == "howItWorks"][0]{_id,sectionTitle,sectionSubtitle,steps[]{title,description,icon,image{asset->{_id,url,metadata{lqip,dimensions{width,height}}},alt},order}|order(order asc)}`
 
-// UI Strings queries (with i18n support)
-export const uiStringsQuery = (locale: string = 'nb') => groq`*[_type == "uiStrings" && language == "${locale}"]{_id,key,value,category,description}`
+// UI Strings queries
+export const uiStringsQuery = groq`*[_type == "uiStrings"]{_id,key,value,category,description}`
 
-export const uiStringsByCategoryQuery = (category: string, locale: string = 'nb') => groq`*[_type == "uiStrings" && category == "${category}" && language == "${locale}"]{_id,key,value,category}`
+export const uiStringsByCategoryQuery = (category: string) => groq`*[_type == "uiStrings" && category == "${category}"]{_id,key,value,category}`
 
-export const uiStringByKeyQuery = (key: string, locale: string = 'nb') => groq`*[_type == "uiStrings" && key == "${key}" && language == "${locale}"][0]{_id,key,value}`
+export const uiStringByKeyQuery = (key: string) => groq`*[_type == "uiStrings" && key == "${key}"][0]{_id,key,value}`
 
 // Page Settings query
 export const pageSettingsQuery = (page: string) => groq`*[_type == "pageSettings" && page == "${page}"][0]{_id,page,title,description,ogImage{asset->{_id,url},alt},favicon{asset->{_id,url}}}`
@@ -33,3 +33,79 @@ export const inspirationQuery = groq`*[_type == "inspiration"]|order(order asc){
 export const featuredInspirationQuery = groq`*[_type == "inspiration" && isFeatured == true]|order(order asc){_id,title,slug,description,image{asset->{_id,url,metadata{lqip,dimensions{width,height}}},alt,hotspot},category,difficulty,colors,gridSize,tags,isFeatured,order}`
 
 export const inspirationBySlugQuery = (slug: string) => groq`*[_type == "inspiration" && slug.current == "${slug}"][0]{_id,title,slug,description,image{asset->{_id,url,metadata{lqip,dimensions{width,height}}},alt,hotspot},category,difficulty,colors,gridSize,tags,isFeatured,order}`
+
+// Page queries
+export const pageBySlugQuery = (slug: string) => groq`*[_type == "page" && slug.current == "${slug}"][0]{
+  _id,
+  title,
+  slug,
+  seoMetadata,
+  uiStrings,
+  sections[]{
+    _type,
+    _type == "hero" => {
+      heading,
+      subheading,
+      image{asset->{_id,url,metadata{lqip,dimensions{width,height}}},alt,hotspot},
+      imageWidth,
+      ctaButton{text,href},
+      isActive
+    },
+    _type == "banner" => {
+      text,
+      type,
+      backgroundColor,
+      isActive,
+      link{text,href}
+    },
+    _type == "howItWorks" => {
+      sectionTitle,
+      sectionSubtitle,
+      fontColor,
+      backgroundColor,
+      steps[]{title,description,icon,image{asset->{_id,url,metadata{lqip,dimensions{width,height}}},alt},order}
+    },
+    _type == "productsSection" => {
+      sectionTitle,
+      sectionSubtitle,
+      products[]->{_id,title,slug,description,image{asset->{_id,url,metadata{lqip,dimensions{width,height}}},alt},category,difficulty,isFeatured},
+      showFeaturedOnly
+    },
+    _type == "content" => {
+      title,
+      backgroundColor,
+      body
+    }
+  },
+}`
+
+export const allPublishedPagesQuery = groq`*[_type == "page"]{_id,title,slug}`
+
+// Footer queries
+export const footerQuery = groq`*[_type == "footer"][0]{
+  _id,
+  title,
+  companyInfo{
+    companyName,
+    description,
+    logo{asset->{_id,url}}
+  },
+  navigationColumns[]{
+    columnTitle,
+    links[]{
+      linkText,
+      page->{_id,title,slug}
+    },
+    order
+  }|order(order asc),
+  autoPopulateFromPages,
+  autoColumnTitle,
+  socialMedia[]{
+    platform,
+    url
+  },
+  copyrightText,
+  additionalText
+}`
+
+export const footerPagesQuery = groq`*[_type == "page" && showInFooter == true]|order(footerOrder asc){_id,title,slug,footerOrder}`

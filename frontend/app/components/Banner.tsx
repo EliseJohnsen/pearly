@@ -2,11 +2,22 @@
 
 import {useBanner} from '@/app/hooks/useSanityData'
 
-export default function Banner() {
-  const {data: banner, loading} = useBanner()
+interface BannerProps {
+  data?: any
+}
+
+export default function Banner({ data }: BannerProps = {}) {
+  const {data: fetchedBanner, loading} = useBanner()
+
+  // Use provided data if available, otherwise use fetched data
+  const banner = data || fetchedBanner
 
   // Don't render if no banner, loading, or not active
-  if (loading || !banner || !banner.isActive) {
+  if (!data && (loading || !banner)) {
+    return null
+  }
+
+  if (!banner || !banner.isActive) {
     return null
   }
 

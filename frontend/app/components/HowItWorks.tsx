@@ -3,8 +3,15 @@
 import {useHowItWorks} from "../hooks/useSanityData";
 import { ArrowUpTrayIcon, GiftIcon, PhotoIcon } from "@heroicons/react/24/outline";
 
-export default function HowItWorks() {
-  const {data: howItWorks, loading: howItWorksLoading} = useHowItWorks();
+interface HowItWorksProps {
+  data?: any
+}
+
+export default function HowItWorks({ data }: HowItWorksProps = {}) {
+  const {data: fetchedHowItWorks, loading: howItWorksLoading} = useHowItWorks();
+
+  // Use provided data if available, otherwise use fetched data
+  const howItWorks = data || fetchedHowItWorks;
 
   const getHowItWorksBgColor = () => {
     if (howItWorks && howItWorks.backgroundColor) {
@@ -49,27 +56,27 @@ export default function HowItWorks() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto mt-4">
           {howItWorksLoading ? (
             <>
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 animate-pulse">
+              <div key="skeleton-1" className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 animate-pulse">
                 <div className="h-8 bg-gray-200 rounded mb-4"></div>
                 <div className="h-4 bg-gray-200 rounded"></div>
               </div>
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 animate-pulse">
+              <div key="skeleton-2" className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 animate-pulse">
                 <div className="h-8 bg-gray-200 rounded mb-4"></div>
                 <div className="h-4 bg-gray-200 rounded"></div>
               </div>
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 animate-pulse">
+              <div key="skeleton-3" className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 animate-pulse">
                 <div className="h-8 bg-gray-200 rounded mb-4"></div>
                 <div className="h-4 bg-gray-200 rounded"></div>
               </div>
             </>
           ) : howItWorks?.steps && howItWorks.steps.length > 0 ? (
-            howItWorks.steps.map((step, index) => (
-              <div className="justify-items-center">
+            howItWorks.steps.map((step: any, index: number) => (
+              <div key={index} className="justify-items-center">
                 <div className="w-32 h-32 rounded-full flex items-center justify-center"
                   style={{backgroundColor: getHowItWorksBgColor()}}>
                     {getHowItWorksStepIcon(index)}
               </div>
-              <div key={index} className="p-8" style={{color: getHowItWorksFontColor()}}>
+              <div className="p-8" style={{color: getHowItWorksFontColor()}}>
                 <h2 className="text-2xl font-bold mb-4">{step.title}</h2>
                 <p className="text-xl">{step.description}</p>
               </div>

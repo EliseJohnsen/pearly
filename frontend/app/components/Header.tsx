@@ -25,21 +25,25 @@ export default function Header() {
   return (
     <header className="bg-primary">
       <nav aria-label="Global" className="mx-auto grid grid-cols-7 gap-4 max-w-7xl items-center justify-between p-6 lg:px-8">
-        <div className="col-span-2 flex justify-around sm:hidden lg:show">
-          {/* Main navigation items */}
-          {mainNavLoading ? (
-            <div className="text-sm/6 font-semibold text-gray-900">{ loadingText }</div>
-          ) : mainNav && mainNav.length > 0 ? (
-            mainNav.map((item) => (
-              <Link
-                key={item._id}
-                href={item.href}
-                className="text-sm/6 font-semibold text-primary-light hover:text-white transition-colors"
-              >
-                {item.title.toUpperCase()}
-              </Link>
-            ))
-          ) : null}
+        <div className="col-span-2">
+          <div className="justify-evenly hidden lg:flex">
+            {/* Main navigation items */}
+            {mainNavLoading ? (
+              <div className="text-sm/6 font-semibold text-gray-900">{ loadingText }</div>
+            ) : mainNav && mainNav.length > 0 ? (
+              mainNav
+                .filter((item) => item.order <= 2)
+                .map((item) => (
+                <Link
+                  key={item._id}
+                  href={item.href || '/'}
+                  className="text-sm/6 font-semibold text-primary-light hover:text-white transition-colors"
+                >
+                  {item.title.toUpperCase()}
+                </Link>
+              ))
+            ) : null}
+          </div>
         </div>
 
         <div className="items-center col-span-3 justify-items-center">
@@ -53,7 +57,7 @@ export default function Header() {
           {!ctaNavLoading && ctaNav && ctaNav.length > 0 && ctaNav.map((item) => (
             <Link
               key={item._id}
-              href={item.href}
+              href={item.href || '/'}
               className={`text-sm/6 font-semibold ${
                 item.variant === 'primary'
                   ? 'bg-primary-red text-white px-4 py-2 rounded-md hover:bg-primary-red/90'
@@ -64,15 +68,34 @@ export default function Header() {
             </Link>
           ))}
         </div>
-        <div className="col-span-2 lg:hidden align-text-end">
-          <button
-            type="button"
-            onClick={() => setMobileMenuOpen(true)}
-            className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700"
-          >
-            <span className="sr-only">{ openMainMenuText }</span>
-            <Bars3Icon aria-hidden="true" className="size-6" />
-          </button>
+        <div className="col-span-2 sm:justify-end">
+          <div className="flex justify-evenly hidden lg:flex">
+            {mainNavLoading ? (
+              <div className="text-sm/6 font-semibold text-gray-900">{ loadingText }</div>
+            ) : mainNav && mainNav.length > 2 ? (
+              mainNav
+                .filter((item) => item.order > 2)
+                .map((item) => (
+                  <Link
+                    key={item._id}
+                    href={item.href || '/'}
+                    className="text-sm/6 font-semibold text-primary-light hover:text-white transition-colors"
+                  >
+                    {item.title.toUpperCase()}
+                  </Link>
+                ))
+            ) : null}
+          </div>
+          <div className="lg:hidden float-end">
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(true)}
+              className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700"
+            >
+              <span className="sr-only">{ openMainMenuText }</span>
+              <Bars3Icon aria-hidden="true" className="size-6" />
+            </button>
+          </div>
         </div>
       </nav>
 
@@ -100,7 +123,7 @@ export default function Header() {
                 {!mainNavLoading && mainNav && mainNav.map((item) => (
                   <Link
                     key={item._id}
-                    href={item.href}
+                    href={item.href || '/'}
                     onClick={() => setMobileMenuOpen(false)}
                     className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
                   >
@@ -112,7 +135,7 @@ export default function Header() {
                 {!ctaNavLoading && ctaNav && ctaNav.map((item) => (
                   <Link
                     key={item._id}
-                    href={item.href}
+                    href={item.href || '/'}
                     onClick={() => setMobileMenuOpen(false)}
                     className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
                   >

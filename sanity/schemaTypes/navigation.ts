@@ -2,21 +2,22 @@ import {defineField, defineType} from 'sanity'
 
 export default defineType({
   name: 'navigation',
-  title: 'Navigation Item',
+  title: 'Toppmeny',
   type: 'document',
   fields: [
     defineField({
       name: 'title',
-      title: 'Title',
+      title: 'Tittel',
       type: 'string',
-      description: 'The text displayed in the navigation menu',
+      description: 'Teksten som vises i navigasjonsmenyen',
       validation: (Rule) => Rule.required(),
     }),
     defineField({
-      name: 'href',
-      title: 'Link URL',
-      type: 'string',
-      description: 'The URL or path this navigation item links to',
+      name: 'page',
+      title: 'Side',
+      type: 'reference',
+      to: [{type: 'page'}],
+      description: 'Velg en side fra systemet',
       validation: (Rule) => Rule.required(),
     }),
     defineField({
@@ -60,13 +61,18 @@ export default defineType({
   preview: {
     select: {
       title: 'title',
-      subtitle: 'type',
+      type: 'type',
       order: 'order',
+      pageSlug: 'page.slug.current',
     },
-    prepare({title, subtitle, order}) {
+    prepare({title, type, order, pageSlug}) {
       return {
         title: `${order}. ${title}`,
-        subtitle: subtitle ? `Type: ${subtitle}` : 'No type set',
+        subtitle: pageSlug
+          ? `${type} → /${pageSlug}`
+          : type
+            ? `Type: ${type}`
+            : 'Ingen side valgt',
       }
     },
   },

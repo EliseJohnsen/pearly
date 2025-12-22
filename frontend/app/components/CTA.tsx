@@ -4,11 +4,18 @@ import Image from 'next/image'
 import {useHero} from '@/app/hooks/useSanityData'
 import {urlFor} from '@/lib/sanity'
 
-export default function CTA() {
-  const {data: hero, loading} = useHero()
+interface CTAProps {
+  data?: any
+}
 
-  // Fallback to hardcoded values while loading or if no data
-  if (loading || !hero) {
+export default function CTA({ data }: CTAProps = {}) {
+  const {data: fetchedHero, loading} = useHero()
+
+  // Use provided data if available, otherwise use fetched data
+  const hero = data || fetchedHero
+
+  // Fallback to hardcoded values while loading or if no data (only when not using provided data)
+  if (!data && (loading || !hero)) {
     return (
       <div className="overflow-hidden bg-background">
         <div className="">
@@ -19,13 +26,13 @@ export default function CTA() {
                   {loading ? 'Loading...' : 'Get your hands pearly'}
                 </p>
               </div>
-              {/* <Image
+              <Image
                 alt="beads"
                 src="/images/unicorn.png"
                 width={2432}
                 height={1442}
                 className="justify-self-end w-3/4 max-w-none shadow-xl ring-1 ring-gray-400/10"
-              /> */}
+              />
             </div>
           </div>
         </div>
@@ -39,6 +46,13 @@ export default function CTA() {
     : '/images/unicorn.png'
 
   const imageAlt = hero.image?.alt || 'Hero image'
+
+  const getImageWidth = () => {
+    if (hero && hero.imageWidth) {
+      return hero.imageWidth
+    } else
+      return '75%'
+  }
 
   return (
     <div className="overflow-hidden bg-background">
@@ -68,7 +82,8 @@ export default function CTA() {
               src={imageSrc}
               width={2432}
               height={1442}
-              className="justify-self-end w-3/4 max-w-none shadow-xl ring-1 ring-gray-400/10"
+              className="justify-self-end max-w-none shadow-xl"
+              style={{ width: getImageWidth() }}
             />
           </div>
         </div>
