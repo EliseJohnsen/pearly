@@ -19,6 +19,9 @@ COPY backend/ .
 
 RUN mkdir -p uploads
 
+# Pre-download rembg model to avoid runtime memory issues
+RUN python -c "from rembg import new_session; new_session('u2net')"
+
 EXPOSE 8000
 
 # Use shell form to properly expand PORT environment variable
