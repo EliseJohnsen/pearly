@@ -12,7 +12,7 @@ const quicksand = Quicksand({
 });
 
 export const metadata: Metadata = {
-  title: "feelin pearly",
+  title: "feel pearly",
   description: "get your hands pearly",
 };
 
