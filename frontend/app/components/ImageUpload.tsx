@@ -8,12 +8,25 @@ interface ImageUploadProps {
   onPatternGenerated: (data: any) => void;
 }
 
+interface SizeOption {
+  boards_width: number;
+  boards_height: number;
+  total_beads: number;
+}
+
+interface SizeOptions {
+  small: SizeOption;
+  medium: SizeOption;
+  large: SizeOption;
+}
+
 export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
-  const [boardsWidth, setBoardsWidth] = useState(1);
-  const [boardsHeight, setBoardsHeight] = useState(1);
+  const [sizeOptions, setSizeOptions] = useState<SizeOptions | null>(null);
+  const [selectedSize, setSelectedSize] = useState<"small" | "medium" | "large">("medium");
+  const [suggestedSize, setSuggestedSize] = useState<"small" | "medium" | "large">("medium");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Advanced preprocessing options
@@ -53,8 +66,9 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
 
         if (response.ok) {
           const suggestion = await response.json();
-          setBoardsWidth(suggestion.boards_width);
-          setBoardsHeight(suggestion.boards_height);
+          setSizeOptions(suggestion.sizes);
+          setSuggestedSize(suggestion.suggested_size);
+          setSelectedSize(suggestion.suggested_size);
         }
       } catch (error) {
         console.error("Error getting board suggestions:", error);
@@ -66,7 +80,7 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
   };
 
   const handleUpload = async () => {
-    if (!fileInputRef.current?.files?.[0]) return;
+    if (!fileInputRef.current?.files?.[0] || !sizeOptions) return;
 
     setUploading(true);
     const formData = new FormData();
@@ -75,10 +89,13 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
+      // Get selected size dimensions
+      const selectedDimensions = sizeOptions[selectedSize];
+
       // Build query parameters
       const params = new URLSearchParams({
-        boards_width: boardsWidth.toString(),
-        boards_height: boardsHeight.toString(),
+        boards_width: selectedDimensions.boards_width.toString(),
+        boards_height: selectedDimensions.boards_height.toString(),
         use_advanced_preprocessing: useAdvancedPreprocessing.toString(),
         remove_bg: removeBackground.toString(),
         enhance_colors: enhanceColors.toString(),
@@ -111,14 +128,6 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
       setUploading(false);
     }
   };
-
-  const calculateBrett = (numberOfBeads: number) => {
-    return ((numberOfBeads / 29)).toPrecision(1)
-  }
-
-  const calculateTotal = (boardsWidth: number, boardsHeight: number) => {
-    return ((boardsWidth / 29) + (boardsHeight / 29)).toPrecision(1)
-  }
 
   if (uploading) {
     return (
@@ -175,50 +184,58 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
         </div>
       )}
 
-      {preview && !analyzing && (
+      {preview && !analyzing && sizeOptions && (
         <div className="mb-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Antall perler i bredden: {boardsWidth} perler ({calculateBrett(boardsWidth)} brett)
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+              Velg størrelse på mønsteret:
             </label>
-            <input
-              type="range"
-              min="1"
-              max="174"
-              value={boardsWidth}
-              onChange={(e) => setBoardsWidth(Number(e.target.value))}
-              className="w-full h-2 bg-primary-dark-pink text: rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
-            />
-            <div className="flex justify-between text-xs text-primary dark:text-gray-400 mt-1">
-              <span>1</span>
-              <span>174</span>
-            </div>
-          </div>
+            <div className="grid grid-cols-3 gap-3">
+              {(["small", "medium", "large"] as const).map((size) => {
+                const option = sizeOptions[size];
+                const isSelected = selectedSize === size;
+                const isSuggested = suggestedSize === size;
+                const sizeLabel = size === "small" ? "Liten" : size === "medium" ? "Medium" : "Stor";
 
-          <div>
-            <label className="block text-sm font-medium text-primary dark:text-gray-300 mb-2">
-              Antall perler i høyden: {boardsHeight} perler ({calculateBrett(boardsHeight)} brett)
-            </label>
-            <input
-              type="range"
-              min="1"
-              max="174"
-              value={boardsHeight}
-              onChange={(e) => setBoardsHeight(Number(e.target.value))}
-              className="w-full h-2 bg-purple rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
-            />
-            <div className="flex justify-between text-xs text-purple dark:text-gray-400 mt-1">
-              <span>1</span>
-              <span>174</span>
+                return (
+                  <button
+                    key={size}
+                    type="button"
+                    onClick={() => setSelectedSize(size)}
+                    className={`relative p-4 rounded-lg border-2 transition-all ${
+                      isSelected
+                        ? "border-primary bg-primary/10 dark:border-blue-500 dark:bg-blue-900/30"
+                        : "border-gray-300 dark:border-gray-600 hover:border-primary-dark-pink dark:hover:border-blue-400"
+                    }`}
+                  >
+                    {isSuggested && (
+                      <span className="absolute -top-2 -right-2 bg-primary text-white text-xs px-2 py-0.5 rounded-full">
+                        Anbefalt
+                      </span>
+                    )}
+                    <div className="text-center">
+                      <p className="font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                        {sizeLabel}
+                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {option.boards_width} × {option.boards_height}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                        {option.total_beads} perler
+                      </p>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
           <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
             <p className="text-sm text-gray-700 dark:text-gray-300">
-              <strong>Total størrelse:</strong> {boardsWidth} × {boardsHeight} perler
+              <strong>Valgt størrelse:</strong> {sizeOptions[selectedSize].boards_width} × {sizeOptions[selectedSize].boards_height} perler
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              {boardsWidth} × {boardsHeight} = {calculateTotal(boardsWidth, boardsHeight)} brett totalt
+              Max {selectedSize === "small" ? "58×58" : selectedSize === "medium" ? "116×116" : "174×174"} perler
             </p>
           </div>
 
@@ -405,7 +422,7 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
 
       <button
         onClick={handleUpload}
-        disabled={!preview || uploading}
+        disabled={uploading}
         className="w-full bg-primary hover:bg-primary-dark-pink disabled:bg-disabled disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-colors"
       >
         Generer perlemønster

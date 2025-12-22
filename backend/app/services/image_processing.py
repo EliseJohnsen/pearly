@@ -350,39 +350,54 @@ def quantize_to_perle_colors(
 # --- Board Dimensions and Pattern Conversion ---
 def suggest_board_dimensions(image: Image.Image) -> Dict:
     """
-    Analyzes image and suggests number of boards in width and height.
-    Each board is 29x29 beads.
+    Analyzes image and suggests three size options: small, medium, and large.
+    Small: max 58x58 beads (2x2 boards)
+    Medium: max 116x116 beads (4x4 boards)
+    Large: max 174x174 beads (6x6 boards)
+    Each size maintains the aspect ratio of the original image.
     """
     # Calculate aspect ratio
     aspect_ratio = image.width / image.height
 
-    # Calculate complexity score based on image size
+    # Define max dimensions for each size
+    sizes = {
+        "small": {"max_beads": 58, "boards": 2},
+        "medium": {"max_beads": 116, "boards": 4},
+        "large": {"max_beads": 174, "boards": 6}
+    }
+
+    # Calculate dimensions for each size while maintaining aspect ratio
+    size_options = {}
+    for size_name, size_config in sizes.items():
+        max_beads = size_config["max_beads"]
+
+        if aspect_ratio > 1:  # Wider than tall
+            width = max_beads
+            height = max(1, round(max_beads / aspect_ratio))
+        else:  # Taller than wide or square
+            height = max_beads
+            width = max(1, round(max_beads * aspect_ratio))
+
+        size_options[size_name] = {
+            "boards_width": int(width),
+            "boards_height": int(height),
+            "total_beads": int(width * height)
+        }
+
+    # Suggest best size based on image complexity (megapixels)
     total_pixels = image.width * image.height
     megapixels = total_pixels / 1_000_000
 
-    # Base suggestion: 1 board for small images, scale up with size
-    if megapixels < 0.5:  # < 0.5MP (e.g., 700x700)
-        base_boards = 1
-    elif megapixels < 2:  # < 2MP (e.g., 1400x1400)
-        base_boards = 2
-    elif megapixels < 5:  # < 5MP (e.g., 2200x2200)
-        base_boards = 3
-    else:  # Large images
-        base_boards = 4
-
-    base_boards = base_boards * 29
-
-    # Adjust for aspect ratio
-    if aspect_ratio > 1:  # Wider than tall
-        boards_width = base_boards
-        boards_height = max(1, round(base_boards / aspect_ratio))
-    else:  # Taller than wide
-        boards_height = base_boards
-        boards_width = max(1, round(base_boards * aspect_ratio))
+    if megapixels < 0.5:
+        suggested_size = "small"
+    elif megapixels < 2:
+        suggested_size = "medium"
+    else:
+        suggested_size = "large"
 
     return {
-        "boards_width": int(boards_width),
-        "boards_height": int(boards_height),
+        "sizes": size_options,
+        "suggested_size": suggested_size,
         "aspect_ratio": aspect_ratio,
         "image_dimensions": {"width": image.width, "height": image.height}
     }
