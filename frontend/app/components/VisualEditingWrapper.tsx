@@ -9,7 +9,7 @@ export function VisualEditingWrapper() {
   return (
     <VisualEditing
       portal={true}
-      refresh={(payload) => {
+      refresh={async (payload) => {
         router.refresh();
       }}
     />
