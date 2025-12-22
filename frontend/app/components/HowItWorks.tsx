@@ -48,11 +48,6 @@ export default function HowItWorks({ data }: HowItWorksProps = {}) {
             ? 'Hvordan funker det?'
             : howItWorks?.sectionTitle || 'Hvordan funker det?'}
         </p>
-        {howItWorks?.sectionSubtitle && (
-          <p className="text-lg mt-2" style={{color: getHowItWorksFontColor()}}>
-            {howItWorks.sectionSubtitle}
-          </p>
-        )}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto mt-4">
           {howItWorksLoading ? (
             <>
