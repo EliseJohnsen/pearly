@@ -25,7 +25,7 @@ export default function Header() {
   return (
     <header className="bg-primary">
       <nav aria-label="Global" className="mx-auto grid grid-cols-7 gap-4 max-w-7xl items-center justify-between p-6 lg:px-8">
-        <div className="col-span-2 flex justify-around">
+        <div className="col-span-2 flex justify-around sm:hidden lg:show">
           {/* Main navigation items */}
           {mainNavLoading ? (
             <div className="text-sm/6 font-semibold text-gray-900">{ loadingText }</div>
@@ -64,7 +64,7 @@ export default function Header() {
             </Link>
           ))}
         </div>
-        <div className="col-span-2 lg:hidden">
+        <div className="col-span-2 lg:hidden align-text-end">
           <button
             type="button"
             onClick={() => setMobileMenuOpen(true)}
