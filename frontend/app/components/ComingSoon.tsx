@@ -32,7 +32,7 @@ export default function ComingSoon() {
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-16">
         {/* Logo */}
         {logo && logo.asset && (
-          <div className="mb-8 animate-fade-in">
+          <div className="mb-18 animate-fade-in">
             <Image
               src={logo.asset.url}
               alt={logo.alt || "Logo"}
@@ -46,7 +46,7 @@ export default function ComingSoon() {
 
         {/* Heading */}
         <h1
-          className="font-bold text-center mb-6 animate-fade-in-up"
+          className="font-bold text-center mb-2 animate-fade-in-up"
           style={{
             color: textColor || "#000000",
             fontSize: headingFontSize ? `${headingFontSize}px` : '3rem'
