@@ -131,3 +131,14 @@ export interface Footer {
     companyName: string,
   }
 }
+
+// Coming Soon types
+export interface ComingSoon {
+  _id: string
+  logo: SanityImage
+  heading: string
+  subheading?: string
+  backgroundColor: string
+  textColor: string
+  isActive: boolean
+}

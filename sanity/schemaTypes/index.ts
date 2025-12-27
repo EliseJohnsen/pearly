@@ -9,6 +9,7 @@ import emailTemplate from './emailTemplate'
 import products from './products'
 import page from './page'
 import footer from './footer'
+import comingSoon from './comingSoon'
 
 export const schemaTypes = [
   page,
@@ -22,4 +23,5 @@ export const schemaTypes = [
   pageSettings,
   emailTemplate,
   products,
+  comingSoon,
 ]

@@ -8,9 +8,17 @@ import CTA from "./components/CTA";
 import Banner from "./components/Banner";
 import HowItWorks from "./components/HowItWorks";
 import Footer from "./components/Footer";
+import ComingSoon from "./components/ComingSoon";
+import { useComingSoon } from "./hooks/useSanityData";
 
 export default function Home() {
   const [patternData, setPatternData] = useState<any>(null);
+  const { data: comingSoonData } = useComingSoon();
+
+  // Show Coming Soon page if it's active
+  if (comingSoonData?.isActive) {
+    return <ComingSoon />;
+  }
 
   return (
     <div className="min-h-screen bg-[var(--background)]">

@@ -17,6 +17,7 @@ import {
   inspirationBySlugQuery,
   footerPagesQuery,
   footerQuery,
+  comingSoonQuery,
 } from '@/lib/queries'
 import type {
   Navigation,
@@ -27,6 +28,7 @@ import type {
   PageSettings,
   Inspiration,
   Footer,
+  ComingSoon,
 } from '@/types/sanity'
 
 // Generic hook for fetching data
@@ -122,4 +124,8 @@ export function useFooterPages() {
 
 export function useFooter() {
   return useSanityQuery<Footer>(footerQuery)
+}
+
+export function useComingSoon() {
+  return useSanityQuery<ComingSoon>(comingSoonQuery)
 }
