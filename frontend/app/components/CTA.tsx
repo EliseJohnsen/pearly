@@ -70,14 +70,16 @@ export default function CTA({ data }: CTAProps = {}) {
                 </a>
               )}
             </div>
-            <Image
-              alt={imageAlt}
-              src={imageSrc}
-              width={2432}
-              height={1442}
-              className="justify-self-end max-w-none shadow-xl"
-              style={{ width: getImageWidth() }}
-            />
+            {imageSrc && 
+              <Image
+                alt={imageAlt}
+                src={imageSrc}
+                width={2432}
+                height={1442}
+                className="justify-self-end max-w-none shadow-xl"
+                style={{ width: getImageWidth() }}
+              />
+            }
           </div>
         </div>
       </div>
