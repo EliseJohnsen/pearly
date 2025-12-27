@@ -19,7 +19,7 @@ export default function ComingSoon() {
     return null;
   }
 
-  const { logo, heading, subheading, backgroundColor, textColor } = comingSoonData;
+  const { logo, heading, headingFontSize, subheading, subheadingFontSize, backgroundColor, textColor } = comingSoonData;
 
   return (
     <div
@@ -36,8 +36,8 @@ export default function ComingSoon() {
             <Image
               src={logo.asset.url}
               alt={logo.alt || "Logo"}
-              width={logo.asset.metadata?.dimensions?.width || 300}
-              height={logo.asset.metadata?.dimensions?.height || 300}
+              width={logo.width || 350}
+              height={logo.width || 350}
               className="max-w-xs md:max-w-md object-contain"
               priority
             />
@@ -46,8 +46,11 @@ export default function ComingSoon() {
 
         {/* Heading */}
         <h1
-          className="text-4xl md:text-6xl font-bold text-center mb-6 animate-fade-in-up"
-          style={{ color: textColor || "#000000" }}
+          className="font-bold text-center mb-6 animate-fade-in-up"
+          style={{
+            color: textColor || "#000000",
+            fontSize: headingFontSize ? `${headingFontSize}px` : '3rem'
+          }}
         >
           {heading}
         </h1>
@@ -55,8 +58,12 @@ export default function ComingSoon() {
         {/* Subheading */}
         {subheading && (
           <p
-            className="text-xl md:text-2xl text-center max-w-2xl animate-fade-in-up-delay"
-            style={{ color: textColor || "#000000", opacity: 0.8 }}
+            className="text-center max-w-2xl animate-fade-in-up-delay"
+            style={{
+              color: textColor || "#000000",
+              opacity: 0.8,
+              fontSize: subheadingFontSize ? `${subheadingFontSize}px` : '1.5rem'
+            }}
           >
             {subheading}
           </p>

@@ -12,6 +12,7 @@ export interface SanityImage {
     }
   }
   alt?: string
+  width?: number,
   hotspot?: {
     x: number
     y: number
@@ -137,7 +138,9 @@ export interface ComingSoon {
   _id: string
   logo: SanityImage
   heading: string
+  headingFontSize?: number
   subheading?: string
+  subheadingFontSize?: number
   backgroundColor: string
   textColor: string
   isActive: boolean

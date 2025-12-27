@@ -111,4 +111,4 @@ export const footerQuery = groq`*[_type == "footer"][0]{
 export const footerPagesQuery = groq`*[_type == "page" && showInFooter == true]|order(footerOrder asc){_id,title,slug,footerOrder}`
 
 // Coming Soon query
-export const comingSoonQuery = groq`*[_type == "comingSoon" && isActive == true][0]{_id,logo{asset->{_id,url,metadata{lqip,dimensions{width,height}}},alt},heading,subheading,backgroundColor,textColor,isActive}`
+export const comingSoonQuery = groq`*[_type == "comingSoon" && isActive == true][0]{_id,logo{asset->{_id,url,metadata{lqip,dimensions{width,height}}},alt,width},heading,headingFontSize,subheading,subheadingFontSize,backgroundColor,textColor,isActive}`
