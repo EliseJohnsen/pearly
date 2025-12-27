@@ -26,13 +26,6 @@ export default function CTA({ data }: CTAProps = {}) {
                   {loading ? 'Loading...' : 'Get your hands pearly'}
                 </p>
               </div>
-              <Image
-                alt="beads"
-                src="/images/unicorn.png"
-                width={2432}
-                height={1442}
-                className="justify-self-end w-3/4 max-w-none shadow-xl ring-1 ring-gray-400/10"
-              />
             </div>
           </div>
         </div>
@@ -43,7 +36,7 @@ export default function CTA({ data }: CTAProps = {}) {
   // Use Sanity image if available, otherwise fallback
   const imageSrc = hero.image?.asset?.url
     ? urlFor(hero.image).width(2432).height(1442).url()
-    : '/images/unicorn.png'
+    : null
 
   const imageAlt = hero.image?.alt || 'Hero image'
 
