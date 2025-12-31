@@ -87,6 +87,7 @@ export const footerQuery = groq`*[_type == "footer"][0]{
   title,
   companyInfo{
     companyName,
+    email,
     description,
     logo{asset->{_id,url}}
   },

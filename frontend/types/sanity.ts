@@ -130,6 +130,7 @@ export interface Footer {
   title: string,
   comapnyInfo: {
     companyName: string,
+    email: string,
   }
 }
 

@@ -12,11 +12,25 @@ export default function Footer({ data, footerPages }: FooterProps = {}) {
     // const {footerPages: fetchedFooterPages} = useFooterPages();
 
     const footer = data || fetchedFooter;
+
+    const handleEmailClick = () => {
+        if (footer?.companyInfo?.email) {
+            navigator.clipboard.writeText(footer.companyInfo.email);
+        }
+    };
+
     return (
-        <footer className="bg-white dark:bg-gray-800 shadow-lg p-8">
+        <footer className="bg-purple shadow-lg p-8">
             {footer && footer.companyInfo && (
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                    {footer.companyInfo.companyName}
+                <h2 className="text-xl font-bold text-white text-center">
+                    <a
+                        href={`mailto:${footer.companyInfo.email}`}
+                        onClick={handleEmailClick}
+                        className="hover:text-blue-600 transition-colors"
+                        title="Åpner epost og kopierer epost-adressen til utklippstavle"
+                    >
+                        {footer.companyInfo.email}
+                    </a>
                 </h2>
             )}
         </footer>

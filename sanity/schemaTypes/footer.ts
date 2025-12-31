@@ -25,6 +25,11 @@ export default defineType({
           title: 'Bedriftsnavn',
         },
         {
+          name: 'email',
+          type: 'string',
+          title: 'E-post',
+        },
+        {
           name: 'description',
           type: 'text',
           title: 'Beskrivelse',
