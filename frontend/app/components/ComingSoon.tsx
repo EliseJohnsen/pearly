@@ -7,14 +7,6 @@ import Footer from "./Footer";
 export default function ComingSoon() {
   const { data: comingSoonData, loading, error } = useComingSoon();
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl">Laster...</div>
-      </div>
-    );
-  }
-
   if (error || !comingSoonData) {
     return null;
   }
