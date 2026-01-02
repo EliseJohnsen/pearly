@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql+psycopg://user:password@localhost:5432/perle_db"
     BACKEND_CORS_ORIGINS: Union[List[str], str] = ["http://localhost:3000"]
     UPLOAD_DIR: str = "./uploads"
+    REPLICATE_API_TOKEN: str = ""
 
     class Config:
         env_file = ".env"
