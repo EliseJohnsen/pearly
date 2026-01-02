@@ -28,7 +28,7 @@ export default function PatternDisplay({ pattern }: PatternDisplayProps) {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
       <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-        { yourPatternText } 
+        { yourPatternText }
       </h2>
 
       <div className="mb-6">

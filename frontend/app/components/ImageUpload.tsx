@@ -5,7 +5,7 @@ import LoadingSpinner from "./LoadingSpinner";
 import {useUIString} from '@/app/hooks/useSanityData'
 
 interface ImageUploadProps {
-  onPatternGenerated: (data: any) => void;
+  onPatternGenerated: (data: any, popArtUrl: string | null) => void;
 }
 
 interface SizeOption {
@@ -71,13 +71,34 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
           setSelectedSize(suggestion.suggested_size);
         }
       } catch (error) {
-        console.error("Error getting board suggestions:", error);
-        // Keep default values on error
       } finally {
         setAnalyzing(false);
       }
     }
   };
+
+  const handleUpdatePopArt = async (fileInputRef: any, apiUrl: string, selectedDimensions: any): Promise<string | null> => {
+      const wpapFormData = new FormData();
+      wpapFormData.append("file", fileInputRef.current.files[0]);
+      wpapFormData.append("boards_width", selectedDimensions.boards_width.toString());
+      wpapFormData.append("boards_height", selectedDimensions.boards_height.toString());
+      wpapFormData.append("num_points", "6000"); // Fewer points = larger, simpler shapes
+      wpapFormData.append("detect_face", "true"); // Don't use face detection for patterns
+      wpapFormData.append("use_perle_colors", "true"); // Use perle bead colors
+
+      const wpapResponse = await fetch(`${apiUrl}/api/patterns/wpap-simple`, {
+        method: "POST",
+        body: wpapFormData,
+      });
+
+      if (wpapResponse.ok) {
+        const blob = await wpapResponse.blob();
+        const wpapUrl = URL.createObjectURL(blob);
+        return wpapUrl;
+      } else {
+        return null;
+      }
+  }
 
   const handleUpload = async () => {
     if (!fileInputRef.current?.files?.[0] || !sizeOptions) return;
@@ -92,7 +113,6 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
       // Get selected size dimensions
       const selectedDimensions = sizeOptions[selectedSize];
 
-      // Build query parameters
       const params = new URLSearchParams({
         boards_width: selectedDimensions.boards_width.toString(),
         boards_height: selectedDimensions.boards_height.toString(),
@@ -107,7 +127,9 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
         simplification_strength: simplificationStrength,
       });
 
-      const response = await fetch(
+      const popArtUrl = await handleUpdatePopArt(fileInputRef, apiUrl, selectedDimensions);
+
+      const patternResponse = await fetch(
         `${apiUrl}/api/patterns/upload?${params.toString()}`,
         {
           method: "POST",
@@ -115,12 +137,13 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
         }
       );
 
-      if (!response.ok) {
-        throw new Error("Upload failed");
+      if (!patternResponse.ok) {
+        throw new Error("Pattern upload failed");
       }
 
-      const data = await response.json();
-      onPatternGenerated(data);
+      const patternData = await patternResponse.json();
+
+      onPatternGenerated(patternData, popArtUrl);
     } catch (error) {
       console.error("Error uploading image:", error);
       alert("Feil ved opplasting av bilde. Prøv igjen.");
@@ -218,7 +241,7 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
                         {sizeLabel}
                       </p>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {option.boards_width} × {option.boards_height}
+                        {option.boards_width} × {option.boards_height} brett á 29 perler
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
                         {option.total_beads} perler
@@ -232,7 +255,7 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
 
           <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
             <p className="text-sm text-gray-700 dark:text-gray-300">
-              <strong>Valgt størrelse:</strong> {sizeOptions[selectedSize].boards_width} × {sizeOptions[selectedSize].boards_height} perler
+              <strong>Valgt størrelse:</strong> {sizeOptions[selectedSize].boards_width} × {sizeOptions[selectedSize].boards_height} brett
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               Max {selectedSize === "small" ? "58×58" : selectedSize === "medium" ? "116×116" : "174×174"} perler

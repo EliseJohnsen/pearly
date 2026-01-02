@@ -1,8 +1,7 @@
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Dict, Tuple, Optional
-from PIL import Image, ImageEnhance, ImageFilter
-import io
+from PIL import Image, ImageEnhance, ImageFilter, ImageOps
 import math # For sqrt in color difference calculation
 from collections import Counter # For bead counts
 import json
@@ -10,6 +9,13 @@ from pathlib import Path
 import numpy as np
 import cv2
 from rembg import remove as rembg_remove
+
+try:
+    import mediapipe as mp
+    MEDIAPIPE_AVAILABLE = True
+except ImportError:
+    MEDIAPIPE_AVAILABLE = False
+    mp = None
 
 try:
     import databutton as db
@@ -215,34 +221,27 @@ def enhanced_preprocess_image(
     """
     print(f"Starting enhanced preprocessing (bg_removal={remove_bg}, enhance_colors={enhance_colors}, simplify={simplify_details})...")
 
-    # Step 1: Remove background if requested
     if remove_bg:
         image = remove_background(image)
 
-    # Step 2: Convert to RGB if needed
     if image.mode != 'RGB':
         image = image.convert('RGB')
 
-    # Step 3: Enhance colors
     if enhance_colors:
         print(f"Enhancing colors (saturation={color_boost}, contrast={contrast_boost}, brightness={brightness_boost})...")
 
-        # Color saturation
         if color_boost != 1.0:
             enhancer = ImageEnhance.Color(image)
             image = enhancer.enhance(color_boost)
 
-        # Contrast
         if contrast_boost != 1.0:
             enhancer = ImageEnhance.Contrast(image)
             image = enhancer.enhance(contrast_boost)
 
-        # Brightness
         if brightness_boost != 1.0:
             enhancer = ImageEnhance.Brightness(image)
             image = enhancer.enhance(brightness_boost)
 
-    # Step 4: Simplify details
     if simplify_details:
         print(f"Simplifying details using {simplification_method} filter (strength={simplification_strength})...")
 
@@ -302,16 +301,13 @@ def preprocess_image(image: Image.Image, enhance_contrast: float = 1.2) -> Image
     Returns:
         Pre-processed PIL Image
     """
-    # Convert to RGB if needed
     if image.mode != 'RGB':
         image = image.convert('RGB')
 
-    # Slight contrast enhancement to make colors more distinct
     if enhance_contrast != 1.0:
         enhancer = ImageEnhance.Contrast(image)
         image = enhancer.enhance(enhance_contrast)
 
-    # Light blur to reduce noise and smooth color transitions
     image = image.filter(ImageFilter.GaussianBlur(radius=0.8))
 
     return image
@@ -332,19 +328,15 @@ def quantize_to_perle_colors(
     Returns:
         Quantized PIL Image (RGB)
     """
-    # Create palette image
     palette_img = create_perle_palette_image(bead_colors)
 
-    # Quantize using PIL's adaptive palette
     dither = Image.Dither.FLOYDSTEINBERG if use_dithering else Image.Dither.NONE
 
-    # Quantize to palette
     quantized = image.quantize(
         palette=palette_img,
         dither=dither
     )
 
-    # Convert back to RGB
     return quantized.convert('RGB')
 
 # --- Board Dimensions and Pattern Conversion ---
@@ -356,32 +348,45 @@ def suggest_board_dimensions(image: Image.Image) -> Dict:
     Large: max 174x174 beads (6x6 boards)
     Each size maintains the aspect ratio of the original image.
     """
+    BOARD_SIZE = 29
+
     # Calculate aspect ratio
     aspect_ratio = image.width / image.height
 
-    # Define max dimensions for each size
+    # Define max dimensions for each size (in boards)
     sizes = {
-        "small": {"max_beads": 58, "boards": 2},
-        "medium": {"max_beads": 116, "boards": 4},
-        "large": {"max_beads": 174, "boards": 6}
+        "small": {"max_boards": 2},
+        "medium": {"max_boards": 4},
+        "large": {"max_boards": 6}
     }
 
     # Calculate dimensions for each size while maintaining aspect ratio
     size_options = {}
     for size_name, size_config in sizes.items():
-        max_beads = size_config["max_beads"]
+        max_boards = size_config["max_boards"]
+        max_beads = max_boards * BOARD_SIZE
 
         if aspect_ratio > 1:  # Wider than tall
-            width = max_beads
-            height = max(1, round(max_beads / aspect_ratio))
+            beads_width = max_beads
+            beads_height = max(1, round(max_beads / aspect_ratio))
         else:  # Taller than wide or square
-            height = max_beads
-            width = max(1, round(max_beads * aspect_ratio))
+            beads_height = max_beads
+            beads_width = max(1, round(max_beads * aspect_ratio))
+
+        # Convert beads to boards (round up to nearest board)
+        boards_width = max(1, math.ceil(beads_width / BOARD_SIZE))
+        boards_height = max(1, math.ceil(beads_height / BOARD_SIZE))
+
+        # Calculate actual beads based on board count
+        actual_beads_width = boards_width * BOARD_SIZE
+        actual_beads_height = boards_height * BOARD_SIZE
 
         size_options[size_name] = {
-            "boards_width": int(width),
-            "boards_height": int(height),
-            "total_beads": int(width * height)
+            "boards_width": boards_width,
+            "boards_height": boards_height,
+            "total_beads": actual_beads_width * actual_beads_height,
+            "beads_width": actual_beads_width,
+            "beads_height": actual_beads_height
         }
 
     # Suggest best size based on image complexity (megapixels)
@@ -420,7 +425,8 @@ def convert_image_to_pattern(
     brightness_boost: float = 1.0,
     simplify_details: bool = True,
     simplification_method: str = "bilateral",
-    simplification_strength: str = "medium"
+    simplification_strength: str = "medium",
+    use_nearest_neighbor: bool = False
 ) -> Tuple[str, List[Dict], Dict]:
     """
     Converts an image to a bead pattern with advanced processing options.
@@ -477,12 +483,14 @@ def convert_image_to_pattern(
 
     # Calculate total grid size based on boards
     BOARD_SIZE = 29
-    new_width = boards_width
-    new_height = boards_height
+    new_width = boards_width * BOARD_SIZE
+    new_height = boards_height * BOARD_SIZE
 
     # Resize image to grid dimensions
-    img_resized = image.resize((new_width, new_height), Image.Resampling.LANCZOS)
-    print(f"Image resized to: {img_resized.size}")
+    # Use NEAREST for styled images to avoid color blending at edges
+    resampling_method = Image.Resampling.NEAREST if use_nearest_neighbor else Image.Resampling.LANCZOS
+    img_resized = image.resize((new_width, new_height), resampling_method)
+    print(f"Image resized to: {img_resized.size} using {resampling_method}")
 
     # Apply color quantization if enabled
     if use_quantization:
@@ -512,29 +520,23 @@ def convert_image_to_pattern(
 
     print("Color matching complete.")
 
-    # Filter out colors that are less than 0.1% (1 promille) of total beads
     total_beads = new_width * new_height
     min_bead_count = max(1, int(total_beads * 0.01))  # 1 promille, minimum 1 bead
     print(f"Total beads: {total_beads}, Minimum beads per color: {min_bead_count}")
 
-    # Identify colors to remove
     colors_to_remove = {hex_color for hex_color, count in color_counts.items() if count < min_bead_count}
 
     if colors_to_remove:
         print(f"Removing {len(colors_to_remove)} colors that appear less than {min_bead_count} times")
 
-        # Find most common color to use as replacement
         most_common_color = max(color_counts.items(), key=lambda x: x[1])[0]
 
-        # Replace rare colors in pattern_data and update color_counts
         for y in range(len(pattern_data)):
             for x in range(len(pattern_data[y])):
                 if pattern_data[y][x] in colors_to_remove:
-                    # Find closest non-rare color
                     pixel_hex = pattern_data[y][x]
                     pixel_rgb = tuple(int(pixel_hex.lstrip('#')[i:i+2], 16) for i in (0, 2, 4))
 
-                    # Filter out rare colors from consideration
                     available_colors = [bc for bc in bead_colors if bc["hex"] not in colors_to_remove]
                     if available_colors:
                         replacement_bead = find_closest_hama_color(pixel_rgb, available_colors)
@@ -545,13 +547,11 @@ def convert_image_to_pattern(
                     pattern_data[y][x] = replacement_hex
                     color_counts[replacement_hex] = color_counts.get(replacement_hex, 0) + 1
 
-        # Remove the rare colors from color_counts
         for color in colors_to_remove:
             del color_counts[color]
 
         print(f"After filtering: {len(color_counts)} unique colors remaining")
 
-    # Generate pattern image (20x20 pixels per bead)
     pattern_img = Image.new('RGB', (new_width * 20, new_height * 20), 'white')
 
     for y, row in enumerate(pattern_data):
@@ -564,7 +564,6 @@ def convert_image_to_pattern(
     pattern_img.save(output_path)
     print(f"Pattern image saved to: {output_path}")
 
-    # Prepare colors_used list with counts
     colors_used = []
     bead_color_lookup = {bc["hex"]: bc for bc in bead_colors}
 
@@ -624,7 +623,8 @@ def convert_image_to_pattern_from_file(
     brightness_boost: float = 1.0,
     simplify_details: bool = True,
     simplification_method: str = "bilateral",
-    simplification_strength: str = "medium"
+    simplification_strength: str = "medium",
+    use_nearest_neighbor: bool = False
 ) -> Tuple[str, List[Dict], Dict]:
     """
     Wrapper function that accepts file paths instead of Image objects.
@@ -668,136 +668,76 @@ def convert_image_to_pattern_from_file(
         brightness_boost=brightness_boost,
         simplify_details=simplify_details,
         simplification_method=simplification_method,
-        simplification_strength=simplification_strength
+        simplification_strength=simplification_strength,
+        use_nearest_neighbor=use_nearest_neighbor
     )
 
-# --- API Endpoint ---
+def create_bead_pop_art_pattern(
+    image: Image.Image,
+    output_path: str,
+    boards_width: int = 1,
+    boards_height: int = 1,
+    num_points: int = 300,
+    detect_face: bool = False,
+    use_perle_colors: bool = True
+) -> str:
+    """
+    Creates a pop-art pattern by first converting to bead pattern (simplified colors),
+    then applying geometric triangulation. Best of both worlds!
+
+    Args:
+        image: Input PIL Image
+        output_path: Path to save the pattern
+        boards_width: Number of 29x29 boards in width
+        boards_height: Number of 29x29 boards in height
+        num_points: Number of triangulation points (default: 300, fewer = larger shapes)
+        detect_face: Whether to use facial landmarks (default: False for patterns)
+        use_perle_colors: Use perle colors instead of hama (default: True)
+
+    Returns:
+        Path to the saved pop-art pattern
+    """
+    print(f"Creating bead pop-art pattern ({boards_width}x{boards_height} boards, {num_points} points)...")
+
+    print("Converting to bead pattern for color simplification...")
+    temp_pattern_path = output_path.replace(".png", "_temp_pattern.png")
+
+    convert_image_to_pattern(
+        image,
+        temp_pattern_path,
+        boards_width=boards_width,
+        boards_height=boards_height,
+        use_perle_colors=use_perle_colors,
+        use_quantization=True,
+        use_dithering=False,  # No dithering for cleaner colors
+        enhance_contrast=1.2
+    )
+
+    bead_pattern_image = Image.open(temp_pattern_path)
+
+    print("Applying pop-art triangulation to bead pattern...")
+    create_pop_art_image(
+        bead_pattern_image,
+        output_path,
+        num_colors=12,  # Will be reduced by bead colors anyway
+        posterize_bits=6,  # Light posterization since colors already simplified
+        contrast_boost=1.2,
+        saturation_boost=1.3,
+        use_kmeans=False,  # Don't change colors - keep bead colors!
+        remove_bg=False,
+        num_points=num_points,
+        detect_face=detect_face,
+        use_superpixels=False,
+        num_superpixels=0,
+        superpixel_algorithm="SLIC"
+    )
+
+    import os
+    if os.path.exists(temp_pattern_path):
+        os.remove(temp_pattern_path)
+
+    print(f"Bead pop-art pattern saved to {output_path}")
+    return output_path
+
 router = APIRouter(prefix="/api/v1/image-processing", tags=["Image Processing"])
-
-class BeadColorInfo(BaseModel):
-    name: str
-    code: str
-    hex: Optional[str] = None
-
-class ProcessImageResponse(BaseModel):
-    pattern: List[List[str]] # 2D array of Hama color codes
-    bead_counts: Dict[str, int] # Key: Hama color code, Value: count
-    colors_used: List[BeadColorInfo]
-
-@router.post("/process-image", response_model=ProcessImageResponse)
-async def process_image_endpoint(
-    image: UploadFile = File(...),
-    grid_width: int = Form(...),
-    grid_height: int = Form(...)
-):
-    print(f"Received image: {image.filename}, grid_width: {grid_width}, grid_height: {grid_height}")
-
-    hama_colors_with_rgb = get_hama_colors() # This now contains RGB tuples
-    if not hama_colors_with_rgb:
-        raise HTTPException(status_code=500, detail="Hama color data is not available for processing.")
-
-    try:
-        image_bytes = await image.read()
-        img = Image.open(io.BytesIO(image_bytes))
-        img = img.convert("RGB")
-        img_resized = img.resize((grid_width, grid_height), Image.Resampling.LANCZOS)
-        print(f"Image resized to: {img_resized.size}")
-    except Exception as e:
-        print(f"Error processing image: {e}")
-        raise HTTPException(status_code=400, detail=f"Could not read or process image file: {e}")
-
-    pattern_grid: List[List[str]] = []
-    bead_color_codes_flat_list: List[str] = []
-
-    print("Starting pixel-by-pixel color matching...")
-    for y in range(grid_height):
-        row = []
-        for x in range(grid_width):
-            pixel_rgb = img_resized.getpixel((x, y))
-            closest_hama = find_closest_hama_color(pixel_rgb, hama_colors_with_rgb)
-            row.append(closest_hama["code"])
-            bead_color_codes_flat_list.append(closest_hama["code"])
-        pattern_grid.append(row)
-    
-    print("Color matching complete.")
-
-    bead_counts = dict(Counter(bead_color_codes_flat_list))
-    print(f"Bead counts: {bead_counts}")
-
-    # Filter out colors that are less than 0.1% (1 promille) of total beads
-    total_beads = grid_width * grid_height
-    min_bead_count = max(1, int(total_beads * 0.001))  # 1 promille, minimum 1 bead
-    print(f"Total beads: {total_beads}, Minimum beads per color: {min_bead_count}")
-
-    # Identify colors to remove
-    colors_to_remove = {code for code, count in bead_counts.items() if count < min_bead_count}
-
-    if colors_to_remove:
-        print(f"Removing {len(colors_to_remove)} colors that appear less than {min_bead_count} times")
-
-        # Find most common color to use as replacement
-        most_common_code = max(bead_counts.items(), key=lambda x: x[1])[0]
-
-        # Create a lookup from code to color data
-        hama_color_by_code = {hc["code"]: hc for hc in hama_colors_with_rgb}
-
-        # Replace rare colors in pattern_grid
-        for y in range(len(pattern_grid)):
-            for x in range(len(pattern_grid[y])):
-                if pattern_grid[y][x] in colors_to_remove:
-                    # Find closest non-rare color
-                    pixel_code = pattern_grid[y][x]
-                    pixel_color = hama_color_by_code.get(pixel_code)
-
-                    if pixel_color and "rgb" in pixel_color:
-                        pixel_rgb = pixel_color["rgb"]
-
-                        # Filter out rare colors from consideration
-                        available_colors = [bc for bc in hama_colors_with_rgb if bc["code"] not in colors_to_remove]
-                        if available_colors:
-                            replacement_bead = find_closest_hama_color(pixel_rgb, available_colors)
-                            replacement_code = replacement_bead["code"]
-                        else:
-                            replacement_code = most_common_code
-                    else:
-                        replacement_code = most_common_code
-
-                    pattern_grid[y][x] = replacement_code
-                    bead_counts[replacement_code] = bead_counts.get(replacement_code, 0) + 1
-
-        # Remove the rare colors from bead_counts
-        for code in colors_to_remove:
-            del bead_counts[code]
-
-        print(f"After filtering: {len(bead_counts)} unique colors remaining")
-
-    # Get full info for unique colors used
-    unique_codes_used = bead_counts.keys()
-    colors_used_info: List[BeadColorInfo] = []
-    # Create a lookup for faster access to color details by code
-    hama_color_details_lookup = {hc["code"]: hc for hc in hama_colors_with_rgb}
-
-    for code in unique_codes_used:
-        if code in hama_color_details_lookup:
-            color_detail = hama_color_details_lookup[code]
-            colors_used_info.append(
-                BeadColorInfo(
-                    name=color_detail["name"],
-                    code=color_detail["code"],
-                    hex=color_detail.get("hex")
-                )
-            )
-        else:
-            # This should ideally not happen if all codes in bead_counts come from valid Hama colors
-            print(f"Warning: Hama color code {code} found in pattern but not in loaded Hama color details.")
-            colors_used_info.append(BeadColorInfo(name="Unknown Color", code=code, hex="#000000"))
-            
-    print(f"Unique colors used: {len(colors_used_info)}")
-
-    return ProcessImageResponse(
-        pattern=pattern_grid,
-        bead_counts=bead_counts,
-        colors_used=colors_used_info
-    )
-
 
