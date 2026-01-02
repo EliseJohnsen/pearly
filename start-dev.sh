@@ -20,6 +20,12 @@ echo -e "${BLUE}========================================${NC}"
 echo -e "${BLUE}Starting Perle Development Mode${NC}"
 echo -e "${BLUE}========================================${NC}"
 
+# Clean up any existing processes first
+echo -e "\n${YELLOW}Cleaning up any existing processes...${NC}"
+pkill -f "debugpy.*uvicorn" 2>/dev/null || true
+pkill -f "npm run dev" 2>/dev/null || true
+sleep 1
+
 # Function to cleanup background processes on exit
 cleanup() {
     echo -e "\n${YELLOW}Shutting down services...${NC}"

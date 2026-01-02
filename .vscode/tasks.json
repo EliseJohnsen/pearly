@@ -26,6 +26,9 @@
         "panel": "dedicated",
         "showReuseMessage": false,
         "clear": true
+      },
+      "runOptions": {
+        "instanceLimit": 1
       }
     }
   ]
