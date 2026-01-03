@@ -176,68 +176,6 @@ def get_styled_image(pattern_uuid: str, db: Session = Depends(get_db)):
 
     return FileResponse(styled_image_path)
 
-@router.post("/patterns/wpap-simple")
-async def create_wpap_simple(
-    file: UploadFile = File(...),
-    boards_width: int = 1,
-    boards_height: int = 1,
-    num_points: int = 300,
-    detect_face: bool = False,
-    use_perle_colors: bool = True
-):
-    """
-    Creates a bead pop-art pattern by combining bead pattern simplification
-    with geometric triangulation. Uses actual bead colors + geometric shapes!
-
-    Args:
-        file: The image file to process
-        boards_width: Number of 29x29 boards in width (default: 1)
-        boards_height: Number of 29x29 boards in height (default: 1)
-        num_points: Number of triangulation points (default: 300, fewer = larger shapes)
-        detect_face: Use facial landmarks for portraits (default: False)
-        use_perle_colors: Use perle colors vs hama (default: True)
-
-    Returns:
-        FileResponse with the bead pop-art pattern
-    """
-    from fastapi.responses import FileResponse
-    from app.services.image_processing import create_bead_pop_art_pattern
-
-    if not file.content_type.startswith("image/"):
-        raise HTTPException(status_code=400, detail="File must be an image")
-
-    file_uuid = str(uuid.uuid4())
-    original_path = UPLOAD_DIR / f"{file_uuid}_original{Path(file.filename).suffix}"
-    wpap_path = UPLOAD_DIR / f"{file_uuid}_wpap.png"
-
-    try:
-        with open(original_path, "wb") as buffer:
-            content = await file.read()
-            buffer.write(content)
-
-        from PIL import Image
-        img = Image.open(original_path)
-        create_bead_pop_art_pattern(
-            img,
-            str(wpap_path),
-            boards_width=boards_width,
-            boards_height=boards_height,
-            num_points=num_points,
-            detect_face=detect_face,
-            use_perle_colors=use_perle_colors
-        )
-
-        return FileResponse(
-            wpap_path,
-            media_type="image/png",
-            filename=f"bead_popart_{file.filename}"
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error creating bead pop-art pattern: {str(e)}")
-    finally:
-        if original_path.exists():
-            original_path.unlink()
-
 class AIGenerationRequest(BaseModel):
     subject: str
     style: str = "pop-art"

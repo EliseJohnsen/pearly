@@ -5,7 +5,7 @@ import LoadingSpinner from "./LoadingSpinner";
 import { useUIString } from '@/app/hooks/useSanityData';
 
 interface ImageUploadProps {
-  onPatternGenerated: (data: any, popArtUrl?: string | null) => void;
+  onPatternGenerated: (data: any) => void;
 }
 
 interface SizeOption {
@@ -132,29 +132,6 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
     }
   };
 
-  const handleUpdatePopArt = async (apiUrl: string, selectedDimensions: SizeOption): Promise<string | null> => {
-    if (!uploadedFile) return null;
-
-    const wpapFormData = new FormData();
-    wpapFormData.append("file", uploadedFile);
-    wpapFormData.append("boards_width", selectedDimensions.boards_width.toString());
-    wpapFormData.append("boards_height", selectedDimensions.boards_height.toString());
-    wpapFormData.append("num_points", "6000");
-    wpapFormData.append("detect_face", "true");
-    wpapFormData.append("use_perle_colors", "true");
-
-    const wpapResponse = await fetch(`${apiUrl}/api/patterns/wpap-simple`, {
-      method: "POST",
-      body: wpapFormData,
-    });
-
-    if (wpapResponse.ok) {
-      const blob = await wpapResponse.blob();
-      const wpapUrl = URL.createObjectURL(blob);
-      return wpapUrl;
-    }
-    return null;
-  };
 
   const handleGenerateRealistic = async () => {
     if (!uploadedFile || !sizeOptions) return;
@@ -181,8 +158,6 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
         simplification_strength: simplificationStrength,
       });
 
-      const popArtUrl = await handleUpdatePopArt(apiUrl, selectedDimensions);
-
       const patternResponse = await fetch(
         `${apiUrl}/api/patterns/upload?${params.toString()}`,
         {
@@ -196,9 +171,8 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
       }
 
       const patternData = await patternResponse.json();
-      onPatternGenerated(patternData, popArtUrl);
+      onPatternGenerated(patternData);
     } catch (error) {
-      console.error("Error uploading image:", error);
       alert("Feil ved opplasting av bilde. Prøv igjen.");
     } finally {
       setUploading(false);

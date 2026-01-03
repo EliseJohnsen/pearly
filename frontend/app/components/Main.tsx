@@ -11,11 +11,9 @@ import Footer from "./Footer";
 
 export default function Main() {
   const [patternData, setPatternData] = useState<any>(null);
-  const [popArtUrl, setPopArtUrl] = useState<string | null>(null);
 
-  const handlePatternGenerated = (data: any, popArt: string | null = null) => {
+  const handlePatternGenerated = (data: any) => {
     setPatternData(data);
-    setPopArtUrl(popArt);
   };
 
   return (
@@ -27,7 +25,7 @@ export default function Main() {
       <div className="overflow-hidden bg-primary-light py-12">
         <div className="max-w-4xl mx-auto px-4">
           <ImageUpload onPatternGenerated={handlePatternGenerated} />
-          {patternData && <BeadPatternDisplay pattern={patternData} pop_art_url={popArtUrl || undefined} />}
+          {patternData && <BeadPatternDisplay pattern={patternData} />}
         </div>
       </div>
       <Footer />
