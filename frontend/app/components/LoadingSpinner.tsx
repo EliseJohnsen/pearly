@@ -13,7 +13,7 @@ export default function LoadingSpinner() {
         Genererer mønster...
       </p>
 
-      <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+      <p className="mt-2 text-sm text-gray-500">
         Dette kan ta noen sekunder
       </p>
     </div>

@@ -189,9 +189,9 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
 
   if (uploading) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 mb-8">
+      <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
         <LoadingSpinner />
-        <p className="text-center mt-4 text-gray-600 dark:text-gray-400">
+        <p className="text-center mt-4 text-gray-600">
           {processingMode === "ai-style"
             ? `Transformerer bildet ditt til ${styleInfo[selectedStyle].name} stil...`
             : "Genererer perlemønster..."
@@ -202,10 +202,10 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 mb-8">
+    <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
       {/* Step 1: Upload Image */}
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">
+        <h3 className="text-lg font-semibold text-gray-900 mb-3">
           1. Last opp bilde
         </h3>
         <div className="flex items-center gap-4">
@@ -219,12 +219,12 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
           />
           <label
             htmlFor="upload-image-unified"
-            className="cursor-pointer inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-primary-dark-pink text-white hover:bg-purple hover:text-primary-light dark:bg-blue-900 dark:text-blue-300 dark:hover:bg-blue-800 transition-colors"
+            className="cursor-pointer inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-primary-dark-pink text-white hover:bg-purple hover:text-primary-light transition-colors"
           >
             {chooseAPhotoText}
           </label>
           {preview && (
-            <span className="text-sm text-gray-600 dark:text-gray-400">
+            <span className="text-sm text-gray-600">
               Bilde valgt ✓
             </span>
           )}
@@ -233,20 +233,20 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
 
       {preview && (
         <div className="mb-6">
-          <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <p className="text-sm font-medium text-gray-700 mb-2">
             {previewText}
           </p>
           <img
             src={preview}
             alt="Preview"
-            className="max-w-full h-auto rounded-lg border border-gray-300 dark:border-gray-600"
+            className="max-w-full h-auto rounded-lg border border-gray-300"
           />
         </div>
       )}
 
       {analyzing && (
-        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-          <p className="text-sm text-blue-700 dark:text-blue-300">
+        <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+          <p className="text-sm text-blue-700">
             Analyserer bilde og foreslår brett-dimensjoner...
           </p>
         </div>
@@ -256,7 +256,7 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
         <div className="mb-6 space-y-6">
           {/* Step 2: Choose Size */}
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">
               2. Velg størrelse
             </h3>
             <div className="grid grid-cols-3 gap-3">
@@ -273,8 +273,8 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
                     onClick={() => setSelectedSize(size)}
                     className={`relative p-4 rounded-lg border-2 transition-all ${
                       isSelected
-                        ? "border-primary bg-primary/10 dark:border-blue-500 dark:bg-blue-900/30"
-                        : "border-gray-300 dark:border-gray-600 hover:border-primary-dark-pink dark:hover:border-blue-400"
+                        ? "border-primary bg-primary/10"
+                        : "border-gray-300 hover:border-primary-dark-pink"
                     }`}
                   >
                     {isSuggested && (
@@ -283,13 +283,13 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
                       </span>
                     )}
                     <div className="text-center">
-                      <p className="font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                      <p className="font-semibold text-gray-900 mb-1">
                         {sizeLabel}
                       </p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <p className="text-sm text-gray-600">
                         {option.boards_width} × {option.boards_height} brett
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                      <p className="text-xs text-gray-500 mt-1">
                         {option.total_beads} perler
                       </p>
                     </div>
@@ -301,7 +301,7 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
 
           {/* Step 3: Choose Processing Mode */}
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">
               3. Velg stil
             </h3>
             <div className="space-y-3">
@@ -309,8 +309,8 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
               <label
                 className={`flex items-start p-4 rounded-lg border-2 cursor-pointer transition-all ${
                   processingMode === "ai-style"
-                    ? "border-primary bg-primary/10 dark:border-blue-500 dark:bg-blue-900/30"
-                    : "border-gray-300 dark:border-gray-600 hover:border-primary-dark-pink dark:hover:border-blue-400"
+                    ? "border-primary bg-primary/10"
+                    : "border-gray-300 hover:border-primary-dark-pink"
                 }`}
               >
                 <input
@@ -324,11 +324,11 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
                 <div className="ml-3 flex-1">
                   <div className="flex items-center gap-2">
                     <span className="text-2xl">{styleInfo[selectedStyle].icon}</span>
-                    <p className="font-semibold text-gray-900 dark:text-gray-100">
+                    <p className="font-semibold text-gray-900">
                       Med AI-stil (redigert)
                     </p>
                   </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <p className="text-sm text-gray-600 mt-1">
                     {styleInfo[selectedStyle].description} - Gir bildet en kunstnerisk, geometrisk stil
                   </p>
                 </div>
@@ -338,8 +338,8 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
               <label
                 className={`flex items-start p-4 rounded-lg border-2 cursor-pointer transition-all ${
                   processingMode === "realistic"
-                    ? "border-primary bg-primary/10 dark:border-blue-500 dark:bg-blue-900/30"
-                    : "border-gray-300 dark:border-gray-600 hover:border-primary-dark-pink dark:hover:border-blue-400"
+                    ? "border-primary bg-primary/10"
+                    : "border-gray-300 hover:border-primary-dark-pink"
                 }`}
               >
                 <input
@@ -353,11 +353,11 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
                 <div className="ml-3 flex-1">
                   <div className="flex items-center gap-2">
                     <span className="text-2xl">📸</span>
-                    <p className="font-semibold text-gray-900 dark:text-gray-100">
+                    <p className="font-semibold text-gray-900">
                       Realistisk
                     </p>
                   </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <p className="text-sm text-gray-600 mt-1">
                     Bevarer originalbildets utseende med avanserte bildebehandlingsinnstillinger
                   </p>
                 </div>
@@ -367,21 +367,21 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
 
           {/* Advanced Options for Realistic Mode */}
           {processingMode === "realistic" && (
-            <div className="border-t border-gray-200 dark:border-gray-600 pt-4">
+            <div className="border-t border-gray-200 pt-4">
               <button
                 type="button"
                 onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
-                className="flex items-center justify-between w-full text-left text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100"
+                className="flex items-center justify-between w-full text-left text-sm font-medium text-gray-700 hover:text-gray-900"
               >
                 <span>Avanserte innstillinger</span>
                 <span className="text-xl">{showAdvancedOptions ? "−" : "+"}</span>
               </button>
 
               {showAdvancedOptions && (
-                <div className="mt-4 space-y-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <div className="mt-4 space-y-4 p-4 bg-gray-50 rounded-lg">
                   {/* Enable Advanced Preprocessing */}
                   <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <label className="text-sm font-medium text-gray-700">
                       Bruk avansert forbehandling
                     </label>
                     <input
@@ -396,7 +396,7 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
                     <>
                       {/* Remove Background */}
                       <div className="flex items-center justify-between">
-                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <label className="text-sm font-medium text-gray-700">
                           Fjern bakgrunn
                         </label>
                         <input
@@ -409,7 +409,7 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
 
                       {/* Enhance Colors */}
                       <div className="flex items-center justify-between">
-                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <label className="text-sm font-medium text-gray-700">
                           Forsterke farger
                         </label>
                         <input
@@ -424,7 +424,7 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
                         <>
                           {/* Color Boost */}
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
                               Fargemetning: {colorBoost.toFixed(1)}x
                             </label>
                             <input
@@ -434,9 +434,9 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
                               step="0.1"
                               value={colorBoost}
                               onChange={(e) => setColorBoost(Number(e.target.value))}
-                              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                             />
-                            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            <div className="flex justify-between text-xs text-gray-500 mt-1">
                               <span>Normal (1.0x)</span>
                               <span>Maks (2.0x)</span>
                             </div>
@@ -444,7 +444,7 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
 
                           {/* Contrast Boost */}
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
                               Kontrast: {contrastBoost.toFixed(1)}x
                             </label>
                             <input
@@ -454,9 +454,9 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
                               step="0.1"
                               value={contrastBoost}
                               onChange={(e) => setContrastBoost(Number(e.target.value))}
-                              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                             />
-                            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            <div className="flex justify-between text-xs text-gray-500 mt-1">
                               <span>Normal (1.0x)</span>
                               <span>Maks (2.0x)</span>
                             </div>
@@ -464,7 +464,7 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
 
                           {/* Brightness Boost */}
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
                               Lysstyrke: {brightnessBoost.toFixed(1)}x
                             </label>
                             <input
@@ -474,9 +474,9 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
                               step="0.1"
                               value={brightnessBoost}
                               onChange={(e) => setBrightnessBoost(Number(e.target.value))}
-                              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                             />
-                            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            <div className="flex justify-between text-xs text-gray-500 mt-1">
                               <span>Mørk (0.5x)</span>
                               <span>Lys (1.5x)</span>
                             </div>
@@ -486,7 +486,7 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
 
                       {/* Simplify Details */}
                       <div className="flex items-center justify-between">
-                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <label className="text-sm font-medium text-gray-700">
                           Forenkle detaljer
                         </label>
                         <input
@@ -501,13 +501,13 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
                         <>
                           {/* Simplification Method */}
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
                               Forenklings-metode
                             </label>
                             <select
                               value={simplificationMethod}
                               onChange={(e) => setSimplificationMethod(e.target.value as "bilateral" | "mean_shift" | "gaussian")}
-                              className="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
+                              className="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                             >
                               <option value="bilateral">Bilateral (bevarer kanter)</option>
                               <option value="mean_shift">Mean Shift (kunstnerisk)</option>
@@ -517,13 +517,13 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
 
                           {/* Simplification Strength */}
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
                               Forenklings-styrke
                             </label>
                             <select
                               value={simplificationStrength}
                               onChange={(e) => setSimplificationStrength(e.target.value as "light" | "medium" | "strong")}
-                              className="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
+                              className="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                             >
                               <option value="light">Lett</option>
                               <option value="medium">Medium</option>
@@ -535,8 +535,8 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
                     </>
                   )}
 
-                  <div className="pt-3 border-t border-gray-200 dark:border-gray-600">
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <div className="pt-3 border-t border-gray-200">
+                    <p className="text-xs text-gray-500">
                       💡 Tips: Start med standardinnstillingene og juster etter behov.
                     </p>
                   </div>
@@ -546,8 +546,8 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
           )}
 
           {/* Summary */}
-          <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-            <p className="text-sm text-gray-700 dark:text-gray-300">
+          <div className="p-3 bg-gray-50 rounded-lg">
+            <p className="text-sm text-gray-700">
               <strong>Valgt:</strong> {processingMode === "ai-style" ? `${styleInfo[selectedStyle].name} stil` : "Realistisk"}, {sizeOptions[selectedSize].boards_width} × {sizeOptions[selectedSize].boards_height} brett
             </p>
           </div>
