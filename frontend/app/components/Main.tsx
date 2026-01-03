@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import ImageUpload from "./ImageUpload";
-import ImageUploadWithStyle from "./ImageUploadWithStyle";
 import BeadPatternDisplay from "./BeadPatternDisplay";
 import Header from "./Header";
 import CTA from "./CTA";
@@ -13,7 +12,6 @@ import Footer from "./Footer";
 export default function Main() {
   const [patternData, setPatternData] = useState<any>(null);
   const [popArtUrl, setPopArtUrl] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"upload" | "upload-style">("upload-style");
 
   const handlePatternGenerated = (data: any, popArt: string | null = null) => {
     setPatternData(data);
@@ -28,37 +26,7 @@ export default function Main() {
       <HowItWorks />
       <div className="overflow-hidden bg-primary-light py-12">
         <div className="max-w-4xl mx-auto px-4">
-          {/* Tab Navigation */}
-          <div className="flex gap-2 mb-6">
-            <button
-              onClick={() => setActiveTab("upload-style")}
-              className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${
-                activeTab === "upload-style"
-                  ? "bg-primary text-white shadow-lg"
-                  : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-              }`}
-            >
-              🎨 Last opp med stil
-            </button>
-            <button
-              onClick={() => setActiveTab("upload")}
-              className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${
-                activeTab === "upload"
-                  ? "bg-primary text-white shadow-lg"
-                  : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-              }`}
-            >
-              📸 Last opp (avansert)
-            </button>
-          </div>
-
-          {/* Content based on active tab */}
-          {activeTab === "upload-style" ? (
-            <ImageUploadWithStyle onPatternGenerated={handlePatternGenerated} />
-          ) : (
-            <ImageUpload onPatternGenerated={handlePatternGenerated} />
-          ) }
-
+          <ImageUpload onPatternGenerated={handlePatternGenerated} />
           {patternData && <BeadPatternDisplay pattern={patternData} pop_art_url={popArtUrl || undefined} />}
         </div>
       </div>

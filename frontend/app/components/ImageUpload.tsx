@@ -2,10 +2,10 @@
 
 import { useState, useRef } from "react";
 import LoadingSpinner from "./LoadingSpinner";
-import {useUIString} from '@/app/hooks/useSanityData'
+import { useUIString } from '@/app/hooks/useSanityData';
 
 interface ImageUploadProps {
-  onPatternGenerated: (data: any, popArtUrl: string | null) => void;
+  onPatternGenerated: (data: any, popArtUrl?: string | null) => void;
 }
 
 interface SizeOption {
@@ -20,16 +20,31 @@ interface SizeOptions {
   large: SizeOption;
 }
 
+type ProcessingMode = "realistic" | "ai-style";
+type Style = "wpap";
+
+const styleInfo: Record<Style, { name: string; description: string; icon: string }> = {
+  "wpap": {
+    name: "WPAP",
+    description: "Angular facets, geometric portrait style",
+    icon: "🔷"
+  }
+};
+
 export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [sizeOptions, setSizeOptions] = useState<SizeOptions | null>(null);
   const [selectedSize, setSelectedSize] = useState<"small" | "medium" | "large">("medium");
   const [suggestedSize, setSuggestedSize] = useState<"small" | "medium" | "large">("medium");
+  const [processingMode, setProcessingMode] = useState<ProcessingMode>("ai-style");
+  const [selectedStyle, setSelectedStyle] = useState<Style>("wpap");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Advanced preprocessing options
+  // Advanced preprocessing options (for realistic mode)
+  const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
   const [useAdvancedPreprocessing, setUseAdvancedPreprocessing] = useState(true);
   const [removeBackground, setRemoveBackground] = useState(false);
   const [enhanceColors, setEnhanceColors] = useState(true);
@@ -39,14 +54,14 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
   const [simplifyDetails, setSimplifyDetails] = useState(true);
   const [simplificationMethod, setSimplificationMethod] = useState<"bilateral" | "mean_shift" | "gaussian">("bilateral");
   const [simplificationStrength, setSimplificationStrength] = useState<"light" | "medium" | "strong">("medium");
-  const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
 
-  const chooseAPhotoText = useUIString('choose_a_photo')
-  const previewText = useUIString('preview')
+  const chooseAPhotoText = useUIString('choose_a_photo');
+  const previewText = useUIString('preview');
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setUploadedFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreview(reader.result as string);
@@ -71,46 +86,85 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
           setSelectedSize(suggestion.suggested_size);
         }
       } catch (error) {
+        console.error("Error getting board suggestions:", error);
       } finally {
         setAnalyzing(false);
       }
     }
   };
 
-  const handleUpdatePopArt = async (fileInputRef: any, apiUrl: string, selectedDimensions: any): Promise<string | null> => {
-      const wpapFormData = new FormData();
-      wpapFormData.append("file", fileInputRef.current.files[0]);
-      wpapFormData.append("boards_width", selectedDimensions.boards_width.toString());
-      wpapFormData.append("boards_height", selectedDimensions.boards_height.toString());
-      wpapFormData.append("num_points", "6000"); // Fewer points = larger, simpler shapes
-      wpapFormData.append("detect_face", "true"); // Don't use face detection for patterns
-      wpapFormData.append("use_perle_colors", "true"); // Use perle bead colors
-
-      const wpapResponse = await fetch(`${apiUrl}/api/patterns/wpap-simple`, {
-        method: "POST",
-        body: wpapFormData,
-      });
-
-      if (wpapResponse.ok) {
-        const blob = await wpapResponse.blob();
-        const wpapUrl = URL.createObjectURL(blob);
-        return wpapUrl;
-      } else {
-        return null;
-      }
-  }
-
-  const handleUpload = async () => {
-    if (!fileInputRef.current?.files?.[0] || !sizeOptions) return;
+  const handleGenerateWithAIStyle = async () => {
+    if (!uploadedFile || !sizeOptions) return;
 
     setUploading(true);
     const formData = new FormData();
-    formData.append("file", fileInputRef.current.files[0]);
+    formData.append("file", uploadedFile);
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const selectedDimensions = sizeOptions[selectedSize];
 
-      // Get selected size dimensions
+      const params = new URLSearchParams({
+        style: selectedStyle,
+        boards_width: selectedDimensions.boards_width.toString(),
+        boards_height: selectedDimensions.boards_height.toString(),
+      });
+
+      const response = await fetch(
+        `${apiUrl}/api/patterns/upload-with-style?${params.toString()}`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Upload failed");
+      }
+
+      const patternData = await response.json();
+      onPatternGenerated(patternData);
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      alert("Feil ved opplasting av bilde. Prøv igjen.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleUpdatePopArt = async (apiUrl: string, selectedDimensions: SizeOption): Promise<string | null> => {
+    if (!uploadedFile) return null;
+
+    const wpapFormData = new FormData();
+    wpapFormData.append("file", uploadedFile);
+    wpapFormData.append("boards_width", selectedDimensions.boards_width.toString());
+    wpapFormData.append("boards_height", selectedDimensions.boards_height.toString());
+    wpapFormData.append("num_points", "6000");
+    wpapFormData.append("detect_face", "true");
+    wpapFormData.append("use_perle_colors", "true");
+
+    const wpapResponse = await fetch(`${apiUrl}/api/patterns/wpap-simple`, {
+      method: "POST",
+      body: wpapFormData,
+    });
+
+    if (wpapResponse.ok) {
+      const blob = await wpapResponse.blob();
+      const wpapUrl = URL.createObjectURL(blob);
+      return wpapUrl;
+    }
+    return null;
+  };
+
+  const handleGenerateRealistic = async () => {
+    if (!uploadedFile || !sizeOptions) return;
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append("file", uploadedFile);
+
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
       const selectedDimensions = sizeOptions[selectedSize];
 
       const params = new URLSearchParams({
@@ -127,7 +181,7 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
         simplification_strength: simplificationStrength,
       });
 
-      const popArtUrl = await handleUpdatePopArt(fileInputRef, apiUrl, selectedDimensions);
+      const popArtUrl = await handleUpdatePopArt(apiUrl, selectedDimensions);
 
       const patternResponse = await fetch(
         `${apiUrl}/api/patterns/upload?${params.toString()}`,
@@ -142,7 +196,6 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
       }
 
       const patternData = await patternResponse.json();
-
       onPatternGenerated(patternData, popArtUrl);
     } catch (error) {
       console.error("Error uploading image:", error);
@@ -152,20 +205,38 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
     }
   };
 
+  const handleGeneratePattern = () => {
+    if (processingMode === "ai-style") {
+      handleGenerateWithAIStyle();
+    } else {
+      handleGenerateRealistic();
+    }
+  };
+
   if (uploading) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 mb-8">
         <LoadingSpinner />
+        <p className="text-center mt-4 text-gray-600 dark:text-gray-400">
+          {processingMode === "ai-style"
+            ? `Transformerer bildet ditt til ${styleInfo[selectedStyle].name} stil...`
+            : "Genererer perlemønster..."
+          }
+        </p>
       </div>
     );
   }
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 mb-8">
+      {/* Step 1: Upload Image */}
       <div className="mb-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">
+          1. Last opp bilde
+        </h3>
         <div className="flex items-center gap-4">
           <input
-            id="upload-image"
+            id="upload-image-unified"
             ref={fileInputRef}
             type="file"
             accept="image/*"
@@ -173,14 +244,14 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
             className="hidden"
           />
           <label
-            htmlFor="upload-image"
+            htmlFor="upload-image-unified"
             className="cursor-pointer inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-primary-dark-pink text-white hover:bg-purple hover:text-primary-light dark:bg-blue-900 dark:text-blue-300 dark:hover:bg-blue-800 transition-colors"
           >
-          { chooseAPhotoText }
+            {chooseAPhotoText}
           </label>
           {preview && (
             <span className="text-sm text-gray-600 dark:text-gray-400">
-              Bilde valgt
+              Bilde valgt ✓
             </span>
           )}
         </div>
@@ -189,7 +260,7 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
       {preview && (
         <div className="mb-6">
           <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            { previewText }
+            {previewText}
           </p>
           <img
             src={preview}
@@ -208,11 +279,12 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
       )}
 
       {preview && !analyzing && sizeOptions && (
-        <div className="mb-6 space-y-4">
+        <div className="mb-6 space-y-6">
+          {/* Step 2: Choose Size */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-              Velg størrelse på mønsteret:
-            </label>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">
+              2. Velg størrelse
+            </h3>
             <div className="grid grid-cols-3 gap-3">
               {(["small", "medium", "large"] as const).map((size) => {
                 const option = sizeOptions[size];
@@ -241,7 +313,7 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
                         {sizeLabel}
                       </p>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {option.boards_width} × {option.boards_height} brett á 29 perler
+                        {option.boards_width} × {option.boards_height} brett
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
                         {option.total_beads} perler
@@ -253,202 +325,267 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
             </div>
           </div>
 
-          <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-            <p className="text-sm text-gray-700 dark:text-gray-300">
-              <strong>Valgt størrelse:</strong> {sizeOptions[selectedSize].boards_width} × {sizeOptions[selectedSize].boards_height} brett
-            </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              Max {selectedSize === "small" ? "58×58" : selectedSize === "medium" ? "116×116" : "174×174"} perler
-            </p>
-          </div>
-
-          {/* Advanced Preprocessing Options */}
-          <div className="border-t border-gray-200 dark:border-gray-600 pt-4 mt-4">
-            <button
-              type="button"
-              onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
-              className="flex items-center justify-between w-full text-left text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100"
-            >
-              <span>Avanserte bildebehandlingsinnstillinger</span>
-              <span className="text-xl">{showAdvancedOptions ? "−" : "+"}</span>
-            </button>
-
-            {showAdvancedOptions && (
-              <div className="mt-4 space-y-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                {/* Enable Advanced Preprocessing */}
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Bruk avansert forbehandling
-                  </label>
-                  <input
-                    type="checkbox"
-                    checked={useAdvancedPreprocessing}
-                    onChange={(e) => setUseAdvancedPreprocessing(e.target.checked)}
-                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                </div>
-
-                {useAdvancedPreprocessing && (
-                  <>
-                    {/* Remove Background */}
-                    <div className="flex items-center justify-between">
-                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Fjern bakgrunn
-                      </label>
-                      <input
-                        type="checkbox"
-                        checked={removeBackground}
-                        onChange={(e) => setRemoveBackground(e.target.checked)}
-                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-                      />
-                    </div>
-
-                    {/* Enhance Colors */}
-                    <div className="flex items-center justify-between">
-                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Forsterke farger
-                      </label>
-                      <input
-                        type="checkbox"
-                        checked={enhanceColors}
-                        onChange={(e) => setEnhanceColors(e.target.checked)}
-                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-                      />
-                    </div>
-
-                    {enhanceColors && (
-                      <>
-                        {/* Color Boost */}
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Fargemetning: {colorBoost.toFixed(1)}x
-                          </label>
-                          <input
-                            type="range"
-                            min="1.0"
-                            max="2.0"
-                            step="0.1"
-                            value={colorBoost}
-                            onChange={(e) => setColorBoost(Number(e.target.value))}
-                            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
-                          />
-                          <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            <span>Normal (1.0x)</span>
-                            <span>Maks (2.0x)</span>
-                          </div>
-                        </div>
-
-                        {/* Contrast Boost */}
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Kontrast: {contrastBoost.toFixed(1)}x
-                          </label>
-                          <input
-                            type="range"
-                            min="1.0"
-                            max="2.0"
-                            step="0.1"
-                            value={contrastBoost}
-                            onChange={(e) => setContrastBoost(Number(e.target.value))}
-                            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
-                          />
-                          <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            <span>Normal (1.0x)</span>
-                            <span>Maks (2.0x)</span>
-                          </div>
-                        </div>
-
-                        {/* Brightness Boost */}
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Lysstyrke: {brightnessBoost.toFixed(1)}x
-                          </label>
-                          <input
-                            type="range"
-                            min="0.5"
-                            max="1.5"
-                            step="0.1"
-                            value={brightnessBoost}
-                            onChange={(e) => setBrightnessBoost(Number(e.target.value))}
-                            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
-                          />
-                          <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            <span>Mørk (0.5x)</span>
-                            <span>Lys (1.5x)</span>
-                          </div>
-                        </div>
-                      </>
-                    )}
-
-                    {/* Simplify Details */}
-                    <div className="flex items-center justify-between">
-                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Forenkle detaljer
-                      </label>
-                      <input
-                        type="checkbox"
-                        checked={simplifyDetails}
-                        onChange={(e) => setSimplifyDetails(e.target.checked)}
-                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-                      />
-                    </div>
-
-                    {simplifyDetails && (
-                      <>
-                        {/* Simplification Method */}
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Forenklings-metode
-                          </label>
-                          <select
-                            value={simplificationMethod}
-                            onChange={(e) => setSimplificationMethod(e.target.value as "bilateral" | "mean_shift" | "gaussian")}
-                            className="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
-                          >
-                            <option value="bilateral">Bilateral (bevarer kanter)</option>
-                            <option value="mean_shift">Mean Shift (kunstnerisk)</option>
-                            <option value="gaussian">Gaussian (enkel blur)</option>
-                          </select>
-                        </div>
-
-                        {/* Simplification Strength */}
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Forenklings-styrke
-                          </label>
-                          <select
-                            value={simplificationStrength}
-                            onChange={(e) => setSimplificationStrength(e.target.value as "light" | "medium" | "strong")}
-                            className="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
-                          >
-                            <option value="light">Lett</option>
-                            <option value="medium">Medium</option>
-                            <option value="strong">Sterk</option>
-                          </select>
-                        </div>
-                      </>
-                    )}
-                  </>
-                )}
-
-                <div className="pt-3 border-t border-gray-200 dark:border-gray-600">
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    💡 Tips: Start med standardinnstillingene og juster etter behov.
-                    Fjern bakgrunn fungerer best med enkle motiver på ensfarget bakgrunn.
+          {/* Step 3: Choose Processing Mode */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">
+              3. Velg stil
+            </h3>
+            <div className="space-y-3">
+              {/* AI Style Option */}
+              <label
+                className={`flex items-start p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                  processingMode === "ai-style"
+                    ? "border-primary bg-primary/10 dark:border-blue-500 dark:bg-blue-900/30"
+                    : "border-gray-300 dark:border-gray-600 hover:border-primary-dark-pink dark:hover:border-blue-400"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="processing-mode"
+                  value="ai-style"
+                  checked={processingMode === "ai-style"}
+                  onChange={(e) => setProcessingMode(e.target.value as ProcessingMode)}
+                  className="mt-1 w-4 h-4 text-primary bg-gray-100 border-gray-300 focus:ring-primary"
+                />
+                <div className="ml-3 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">{styleInfo[selectedStyle].icon}</span>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">
+                      Med AI-stil (redigert)
+                    </p>
+                  </div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    {styleInfo[selectedStyle].description} - Gir bildet en kunstnerisk, geometrisk stil
                   </p>
                 </div>
-              </div>
-            )}
+              </label>
+
+              {/* Realistic Option */}
+              <label
+                className={`flex items-start p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                  processingMode === "realistic"
+                    ? "border-primary bg-primary/10 dark:border-blue-500 dark:bg-blue-900/30"
+                    : "border-gray-300 dark:border-gray-600 hover:border-primary-dark-pink dark:hover:border-blue-400"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="processing-mode"
+                  value="realistic"
+                  checked={processingMode === "realistic"}
+                  onChange={(e) => setProcessingMode(e.target.value as ProcessingMode)}
+                  className="mt-1 w-4 h-4 text-primary bg-gray-100 border-gray-300 focus:ring-primary"
+                />
+                <div className="ml-3 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">📸</span>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">
+                      Realistisk
+                    </p>
+                  </div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    Bevarer originalbildets utseende med avanserte bildebehandlingsinnstillinger
+                  </p>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          {/* Advanced Options for Realistic Mode */}
+          {processingMode === "realistic" && (
+            <div className="border-t border-gray-200 dark:border-gray-600 pt-4">
+              <button
+                type="button"
+                onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
+                className="flex items-center justify-between w-full text-left text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100"
+              >
+                <span>Avanserte innstillinger</span>
+                <span className="text-xl">{showAdvancedOptions ? "−" : "+"}</span>
+              </button>
+
+              {showAdvancedOptions && (
+                <div className="mt-4 space-y-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                  {/* Enable Advanced Preprocessing */}
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Bruk avansert forbehandling
+                    </label>
+                    <input
+                      type="checkbox"
+                      checked={useAdvancedPreprocessing}
+                      onChange={(e) => setUseAdvancedPreprocessing(e.target.checked)}
+                      className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                  </div>
+
+                  {useAdvancedPreprocessing && (
+                    <>
+                      {/* Remove Background */}
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Fjern bakgrunn
+                        </label>
+                        <input
+                          type="checkbox"
+                          checked={removeBackground}
+                          onChange={(e) => setRemoveBackground(e.target.checked)}
+                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                        />
+                      </div>
+
+                      {/* Enhance Colors */}
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Forsterke farger
+                        </label>
+                        <input
+                          type="checkbox"
+                          checked={enhanceColors}
+                          onChange={(e) => setEnhanceColors(e.target.checked)}
+                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                        />
+                      </div>
+
+                      {enhanceColors && (
+                        <>
+                          {/* Color Boost */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                              Fargemetning: {colorBoost.toFixed(1)}x
+                            </label>
+                            <input
+                              type="range"
+                              min="1.0"
+                              max="2.0"
+                              step="0.1"
+                              value={colorBoost}
+                              onChange={(e) => setColorBoost(Number(e.target.value))}
+                              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                            />
+                            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              <span>Normal (1.0x)</span>
+                              <span>Maks (2.0x)</span>
+                            </div>
+                          </div>
+
+                          {/* Contrast Boost */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                              Kontrast: {contrastBoost.toFixed(1)}x
+                            </label>
+                            <input
+                              type="range"
+                              min="1.0"
+                              max="2.0"
+                              step="0.1"
+                              value={contrastBoost}
+                              onChange={(e) => setContrastBoost(Number(e.target.value))}
+                              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                            />
+                            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              <span>Normal (1.0x)</span>
+                              <span>Maks (2.0x)</span>
+                            </div>
+                          </div>
+
+                          {/* Brightness Boost */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                              Lysstyrke: {brightnessBoost.toFixed(1)}x
+                            </label>
+                            <input
+                              type="range"
+                              min="0.5"
+                              max="1.5"
+                              step="0.1"
+                              value={brightnessBoost}
+                              onChange={(e) => setBrightnessBoost(Number(e.target.value))}
+                              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                            />
+                            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              <span>Mørk (0.5x)</span>
+                              <span>Lys (1.5x)</span>
+                            </div>
+                          </div>
+                        </>
+                      )}
+
+                      {/* Simplify Details */}
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Forenkle detaljer
+                        </label>
+                        <input
+                          type="checkbox"
+                          checked={simplifyDetails}
+                          onChange={(e) => setSimplifyDetails(e.target.checked)}
+                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                        />
+                      </div>
+
+                      {simplifyDetails && (
+                        <>
+                          {/* Simplification Method */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                              Forenklings-metode
+                            </label>
+                            <select
+                              value={simplificationMethod}
+                              onChange={(e) => setSimplificationMethod(e.target.value as "bilateral" | "mean_shift" | "gaussian")}
+                              className="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            >
+                              <option value="bilateral">Bilateral (bevarer kanter)</option>
+                              <option value="mean_shift">Mean Shift (kunstnerisk)</option>
+                              <option value="gaussian">Gaussian (enkel blur)</option>
+                            </select>
+                          </div>
+
+                          {/* Simplification Strength */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                              Forenklings-styrke
+                            </label>
+                            <select
+                              value={simplificationStrength}
+                              onChange={(e) => setSimplificationStrength(e.target.value as "light" | "medium" | "strong")}
+                              className="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            >
+                              <option value="light">Lett</option>
+                              <option value="medium">Medium</option>
+                              <option value="strong">Sterk</option>
+                            </select>
+                          </div>
+                        </>
+                      )}
+                    </>
+                  )}
+
+                  <div className="pt-3 border-t border-gray-200 dark:border-gray-600">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      💡 Tips: Start med standardinnstillingene og juster etter behov.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Summary */}
+          <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <p className="text-sm text-gray-700 dark:text-gray-300">
+              <strong>Valgt:</strong> {processingMode === "ai-style" ? `${styleInfo[selectedStyle].name} stil` : "Realistisk"}, {sizeOptions[selectedSize].boards_width} × {sizeOptions[selectedSize].boards_height} brett
+            </p>
           </div>
         </div>
       )}
 
       <button
-        onClick={handleUpload}
-        disabled={uploading}
+        onClick={handleGeneratePattern}
+        disabled={!preview || uploading || !sizeOptions}
         className="w-full bg-primary hover:bg-primary-dark-pink disabled:bg-disabled disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-colors"
       >
-        Generer perlemønster
+        {uploading ? 'Genererer...' : 'Generer perlemønster'}
       </button>
     </div>
   );
