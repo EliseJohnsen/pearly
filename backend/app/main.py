@@ -1,28 +1,37 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 from app.core.config import settings
 from app.core.database import engine, Base
 from app.api import patterns
-from app.models import pattern  # Import models to register them
+from app.models import pattern, product  # Import models to register them
 import logging
 
 logger = logging.getLogger(__name__)
 
-app = FastAPI(
-    title="Perle Pattern API",
-    description="API for converting images to bead patterns",
-    version="1.0.0"
-)
 
-@app.on_event("startup")
-async def startup_event():
-    """Create database tables on startup"""
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    """Lifespan context manager for startup and shutdown events"""
+    # Startup
     try:
         Base.metadata.create_all(bind=engine)
         logger.info("Database tables created successfully")
     except Exception as e:
         logger.error(f"Error creating database tables: {e}")
         # Don't crash the app if tables already exist
+
+    yield
+
+    # Shutdown (cleanup code goes here if needed)
+
+
+app = FastAPI(
+    title="Perle Pattern API",
+    description="API for converting images to bead patterns",
+    version="1.0.0",
+    lifespan=lifespan
+)
 
 app.add_middleware(
     CORSMiddleware,
