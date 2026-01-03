@@ -81,6 +81,7 @@ async def upload_image(
             boards_width=boards_width,
             boards_height=boards_height,
             use_perle_colors=True,
+            use_dithering=False,  # No dithering to avoid checkered patterns on solid areas
             use_advanced_preprocessing=use_advanced_preprocessing,
             remove_bg=remove_bg,
             enhance_colors=enhance_colors,
@@ -89,7 +90,8 @@ async def upload_image(
             brightness_boost=brightness_boost,
             simplify_details=simplify_details,
             simplification_method=simplification_method,
-            simplification_strength=simplification_strength
+            simplification_strength=simplification_strength,
+            use_nearest_neighbor=True  # Preserve sharp edges and avoid color blending at boundaries
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")

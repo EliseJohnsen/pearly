@@ -315,7 +315,7 @@ def preprocess_image(image: Image.Image, enhance_contrast: float = 1.2) -> Image
 def quantize_to_perle_colors(
     image: Image.Image,
     bead_colors: List[Dict],
-    use_dithering: bool = True
+    use_dithering: bool = False
 ) -> Image.Image:
     """
     Quantizes image to perle color palette using PIL's built-in quantization.
@@ -414,7 +414,7 @@ def convert_image_to_pattern(
     boards_height: int = 1,
     use_perle_colors: bool = True,
     use_quantization: bool = True,
-    use_dithering: bool = True,
+    use_dithering: bool = False,
     enhance_contrast: float = 1.2,
     # New advanced preprocessing parameters
     use_advanced_preprocessing: bool = False,
