@@ -51,15 +51,15 @@ export default function HowItWorks({ data }: HowItWorksProps = {}) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto mt-4">
           {howItWorksLoading ? (
             <>
-              <div key="skeleton-1" className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 animate-pulse">
+              <div key="skeleton-1" className="bg-white rounded-lg shadow-lg p-8 animate-pulse">
                 <div className="h-8 bg-gray-200 rounded mb-4"></div>
                 <div className="h-4 bg-gray-200 rounded"></div>
               </div>
-              <div key="skeleton-2" className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 animate-pulse">
+              <div key="skeleton-2" className="bg-white rounded-lg shadow-lg p-8 animate-pulse">
                 <div className="h-8 bg-gray-200 rounded mb-4"></div>
                 <div className="h-4 bg-gray-200 rounded"></div>
               </div>
-              <div key="skeleton-3" className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 animate-pulse">
+              <div key="skeleton-3" className="bg-white rounded-lg shadow-lg p-8 animate-pulse">
                 <div className="h-8 bg-gray-200 rounded mb-4"></div>
                 <div className="h-4 bg-gray-200 rounded"></div>
               </div>
@@ -80,15 +80,15 @@ export default function HowItWorks({ data }: HowItWorksProps = {}) {
           ) : (
             // Fallback to hardcoded content
             <>
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+              <div className="bg-white rounded-lg shadow-lg p-8">
                 <h2 className="text-2xl font-bold">Last opp ditt bilde</h2>
                 <p>Velg et bilde eller tegning, og velg hvor stort du vil at din ferdig perling skal bli</p>
               </div>
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+              <div className="bg-white rounded-lg shadow-lg p-8">
                 <h2 className="text-2xl font-bold">Motta perlepakke</h2>
                 <p>Du får ditt skreddersydde mønster og alle perlene du trenger tilsendt i posten</p>
               </div>
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+              <div className="bg-white rounded-lg shadow-lg p-8">
                 <h2 className="text-2xl font-bold">Lag ditt mesterverk!</h2>
                 <p>Følg mønsteret og kos deg med å lage din egen perlemønster</p>
               </div>
