@@ -131,15 +131,15 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+    <div className="bg-white rounded-lg shadow-lg p-8">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+        <h2 className="text-2xl font-bold text-gray-900">
           Ditt perlemønster
         </h2>
         {pattern.pattern_data?.ai_generated && (
-          <div className="flex items-center gap-2 px-3 py-1 bg-purple/10 dark:bg-blue-900/30 rounded-full">
+          <div className="flex items-center gap-2 px-3 py-1 bg-purple/10 rounded-full">
             <span className="text-xl">✨</span>
-            <span className="text-sm font-semibold text-purple dark:text-blue-300">
+            <span className="text-sm font-semibold text-purple">
               AI-generert
             </span>
           </div>
@@ -147,12 +147,12 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
       </div>
 
       {pattern.pattern_data?.ai_generated && pattern.pattern_data?.ai_prompt && (
-        <div className="mb-6 p-4 bg-purple/5 dark:bg-blue-900/20 rounded-lg border border-purple/20 dark:border-blue-700">
-          <p className="text-sm text-gray-700 dark:text-gray-300">
+        <div className="mb-6 p-4 bg-purple/5 rounded-lg border border-purple/20">
+          <p className="text-sm text-gray-700">
             <strong>AI Prompt:</strong> {pattern.pattern_data.ai_prompt}
           </p>
           {pattern.pattern_data.ai_style && (
-            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-xs text-gray-600 mt-1">
               Stil: {pattern.pattern_data.ai_style} | Modell: {pattern.pattern_data.ai_model || 'sdxl'}
             </p>
           )}
@@ -162,14 +162,14 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
       <div className="grid grid-cols-1 gap-6 mb-6">
         {pattern.pattern_data?.styled && (
           <div>
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">
               Stilisert bilde ({pattern.pattern_data.style})
             </h3>
             <div className="overflow-auto">
               <img
                 src={`${apiUrl}/api/patterns/${pattern.uuid}/styled-image`}
                 alt="Stilisert versjon"
-                className="w-full h-auto rounded-lg border-2 border-gray-300 dark:border-gray-600 shadow-md"
+                className="w-full h-auto rounded-lg border-2 border-gray-300 shadow-md"
               />
             </div>
           </div>
@@ -177,27 +177,27 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
 
         {pop_art_url && (
           <div>
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">
               Pop-art forhåndsvisning
             </h3>
             <div className="overflow-auto">
               <img
                 src={pop_art_url}
                 alt="Pop-art version"
-                className="w-full h-auto rounded-lg border-2 border-gray-300 dark:border-gray-600 shadow-md"
+                className="w-full h-auto rounded-lg border-2 border-gray-300 shadow-md"
               />
             </div>
           </div>
         )}
 
         <div>
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">
+          <h3 className="text-lg font-semibold text-gray-800 mb-3">
             Perlemønster
           </h3>
           {patternGrid && patternGrid.length > 0 ? (
             <div className="overflow-auto">
               <div
-                className="grid border border-slate-300 shadow-inner bg-white dark:bg-gray-700 rounded-md p-1 mx-auto"
+                className="grid border border-slate-300 shadow-inner bg-white rounded-md p-1 mx-auto"
                 style={{
                   gridTemplateColumns: `repeat(${patternGrid[0]?.length || 0}, ${beadSize}px)`,
                   gridTemplateRows: `repeat(${patternGrid.length}, ${beadSize}px)`,
@@ -234,7 +234,7 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
               <img
                 src={imageUrl}
                 alt="Pattern"
-                className="max-w-full h-auto rounded-lg border-2 border-gray-300 dark:border-gray-600"
+                className="max-w-full h-auto rounded-lg border-2 border-gray-300"
               />
             </div>
           )}
@@ -244,15 +244,15 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
       <div className="mb-6 space-y-2">
         {pattern.boards_width && pattern.boards_height ? (
           <>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-gray-600">
               <strong>Brett:</strong> {calculateBrett(pattern.boards_width)} × {calculateBrett(pattern.boards_height)} brett ({calculateTotal(pattern.boards_width, pattern.boards_height)} totalt)
             </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-gray-600">
               <strong>Størrelse:</strong> {pattern.boards_width * 29} × {pattern.boards_height * 29} perler
             </p>
           </>
         ) : (
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-gray-600">
             Størrelse: {pattern.grid_size}x{pattern.grid_size} { pearlsText }
           </p>
         )}
