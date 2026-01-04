@@ -26,3 +26,14 @@ class PatternResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class PatternGenerateResponse(BaseModel):
+    """Response for pattern generation without persistence - used for product creation"""
+    pattern_image_base64: str
+    styled_image_base64: Optional[str] = None
+    grid_size: int
+    colors_used: List[Dict[str, Any]]
+    boards_width: int
+    boards_height: int
+    pattern_data: Dict[str, Any]
