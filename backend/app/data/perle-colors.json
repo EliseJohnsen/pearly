@@ -115,6 +115,11 @@
     "hex": "#468a99"
   },
   {
+    "name": "Neon pink",
+    "code": "32",
+    "hex": "#FF0098"
+  },
+  {
     "name": "Pastel yellow",
     "code": "43",
     "hex": "#f0df24"
@@ -242,7 +247,7 @@
   {
     "name": "Lime",
     "code": "104",
-    "hex": "#aaa703"
+    "hex": "#c2e90b"
   },
   {
     "name": "Light apricot",
