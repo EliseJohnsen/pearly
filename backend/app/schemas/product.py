@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import datetime
 from decimal import Decimal
@@ -31,16 +31,12 @@ class CategoryBase(BaseModel):
 
 
 class CategoryCreate(CategoryBase):
+    """Schema for creating a category"""
     pass
 
 
-class CategoryUpdate(BaseModel):
-    name: Optional[str] = None
-    slug: Optional[str] = None
-    parent_id: Optional[int] = None
-
-
 class CategoryResponse(CategoryBase):
+    """Schema for category responses with metadata"""
     id: int
     created_at: datetime
     updated_at: Optional[datetime] = None
@@ -57,11 +53,8 @@ class ProductImageBase(BaseModel):
     is_primary: bool = False
 
 
-class ProductImageCreate(ProductImageBase):
-    pass
-
-
 class ProductImageResponse(ProductImageBase):
+    """Schema for product image responses with metadata"""
     id: int
     product_id: int
     created_at: datetime
@@ -76,11 +69,8 @@ class ProductVariantOptionBase(BaseModel):
     option_value: str = Field(..., description="e.g., 'Large', 'Vivid'")
 
 
-class ProductVariantOptionCreate(ProductVariantOptionBase):
-    pass
-
-
 class ProductVariantOptionResponse(ProductVariantOptionBase):
+    """Schema for product variant option responses with metadata"""
     id: int
     variant_id: int
 
@@ -104,24 +94,12 @@ class ProductVariantBase(BaseModel):
 
 
 class ProductVariantCreate(ProductVariantBase):
-    options: List[ProductVariantOptionCreate] = []
-
-
-class ProductVariantUpdate(BaseModel):
-    sku: Optional[str] = None
-    name: Optional[str] = None
-    price: Optional[Decimal] = None
-    compare_at_price: Optional[Decimal] = None
-    weight: Optional[Decimal] = None
-    width: Optional[Decimal] = None
-    height: Optional[Decimal] = None
-    depth: Optional[Decimal] = None
-    shipping_class: Optional[ShippingClassEnum] = None
-    stock_quantity: Optional[int] = None
-    is_active: Optional[bool] = None
+    """Schema for creating a product variant"""
+    options: List[ProductVariantOptionBase] = []
 
 
 class ProductVariantResponse(ProductVariantBase):
+    """Schema for product variant responses with metadata"""
     id: int
     product_id: int
     options: List[ProductVariantOptionResponse] = []
@@ -134,8 +112,8 @@ class ProductVariantResponse(ProductVariantBase):
 
 # Product Schemas
 class ProductBase(BaseModel):
+    """Base schema for product with common fields"""
     sku: str
-    pattern_id: int
     name: str
     description: Optional[str] = None
     long_description: Optional[str] = None
@@ -150,13 +128,24 @@ class ProductBase(BaseModel):
     tags: Optional[List[str]] = None
 
 
-class ProductCreate(ProductBase):
+class ProductCreateFromPatternData(ProductBase):
+    """
+    Schema for creating a product directly from pattern generation.
+    Includes pattern data and images that will be uploaded to Sanity.
+    """
+    # Pattern data (from generation)
+    pattern_image_base64: str
+    styled_image_base64: Optional[str] = None
+    pattern_data: dict
+    colors_used: List[dict]
+
+    # Product variants and categories
     variants: List[ProductVariantCreate] = []
-    images: List[ProductImageCreate] = []
     category_ids: List[int] = []
 
 
 class ProductUpdate(BaseModel):
+    """Schema for updating a product - all fields optional"""
     sku: Optional[str] = None
     pattern_id: Optional[int] = None
     name: Optional[str] = None
@@ -174,7 +163,9 @@ class ProductUpdate(BaseModel):
 
 
 class ProductResponse(ProductBase):
+    """Schema for complete product response with all relationships"""
     id: int
+    pattern_id: int
     variants: List[ProductVariantResponse] = []
     images: List[ProductImageResponse] = []
     categories: List[CategoryResponse] = []
@@ -186,6 +177,7 @@ class ProductResponse(ProductBase):
 
 
 class ProductListResponse(BaseModel):
+    """Schema for simplified product list response"""
     id: int
     sku: str
     name: str

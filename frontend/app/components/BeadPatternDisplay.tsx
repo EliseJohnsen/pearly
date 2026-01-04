@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import {useUIString} from '@/app/hooks/useSanityData'
-import { EnvelopeIcon } from "@heroicons/react/24/outline";
+import { ShoppingBagIcon } from "@heroicons/react/24/outline";
+import CreateProductModal from "./CreateProductModal";
 
 interface BeadPatternDisplayProps {
   pattern: {
@@ -53,6 +54,9 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
+  const [showProductModal, setShowProductModal] = useState(false);
+  const [productCreated, setProductCreated] = useState(false);
+  const [productId, setProductId] = useState<number | null>(null);
 
   const colorsYouNeedText = useUIString('colors_you_need')
   const pearlsText = useUIString('pearls')
@@ -112,14 +116,14 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
 
   const colorInfoMap = pattern.colors_used.reduce(
     (acc, color) => {
-      const info = { name: color.name, hex: color.hex };
+      const info = { name: color.name, hex: color.hex, code: color.code };
       acc[color.hex] = info;
       if (color.code) {
         acc[color.code] = info;
       }
       return acc;
     },
-    {} as Record<string, { name: string; hex: string }>,
+    {} as Record<string, { name: string; hex: string; code?: string }>,
   );
 
   const calculateBrett = (numberOfBeads: number) => {
@@ -130,21 +134,54 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
     return ((boardsWidth / 29) + (boardsHeight / 29)).toPrecision(1)
   }
 
+  const handleProductCreated = (createdProductId: number) => {
+    setProductId(createdProductId);
+    setProductCreated(true);
+    setShowProductModal(false);
+  };
+
   return (
-    <div className="bg-white rounded-lg shadow-lg p-8">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-bold text-gray-900">
-          Ditt perlemønster
-        </h2>
-        {pattern.pattern_data?.ai_generated && (
-          <div className="flex items-center gap-2 px-3 py-1 bg-purple/10 rounded-full">
-            <span className="text-xl">✨</span>
-            <span className="text-sm font-semibold text-purple">
-              AI-generert
-            </span>
+    <>
+      {showProductModal && (
+        <CreateProductModal
+          pattern={pattern}
+          onClose={() => setShowProductModal(false)}
+          onSuccess={handleProductCreated}
+        />
+      )}
+
+      <div className="bg-white rounded-lg shadow-lg p-8">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-bold text-gray-900">
+            Ditt perlemønster
+          </h2>
+          <div className="flex items-center gap-3">
+            {pattern.pattern_data?.ai_generated && (
+              <div className="flex items-center gap-2 px-3 py-1 bg-purple/10 rounded-full">
+                <span className="text-xl">✨</span>
+                <span className="text-sm font-semibold text-purple">
+                  AI-generert
+                </span>
+              </div>
+            )}
+
+            <button
+              onClick={() => setShowProductModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark-pink text-white rounded-lg font-semibold transition-colors"
+            >
+              <ShoppingBagIcon className="w-5 h-5" />
+              <span>Opprett produkt</span>
+            </button>
+          </div>
+        </div>
+
+        {productCreated && productId && (
+          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <p className="text-sm text-green-800">
+              ✅ Produkt opprettet! Du kan nå redigere produktet i Sanity Studio.
+            </p>
           </div>
         )}
-      </div>
 
       {pattern.pattern_data?.ai_generated && pattern.pattern_data?.ai_prompt && (
         <div className="mb-6 p-4 bg-purple/5 rounded-lg border border-purple/20">
@@ -209,7 +246,7 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
                 {patternGrid.map((row, rowIndex) =>
                   row.map((colorCode, colIndex) => {
                     const beadInfo = colorInfoMap[colorCode] || { name: "Unknown Color", hex: "#FFFFFF" };
-                    const tooltipText = `${beadInfo.name} (${colorCode}) | Row: ${rowIndex + 1}, Col: ${colIndex + 1}`;
+                    const tooltipText = `${beadInfo.name}${beadInfo.code ? ` (${beadInfo.code})` : ''} | Row: ${rowIndex + 1}, Col: ${colIndex + 1}`;
 
                     return (
                       <div
@@ -219,7 +256,6 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
                           width: `${beadSize}px`,
                           height: `${beadSize}px`,
                           backgroundColor: beadInfo.hex,
-                          border: "1px solid rgba(0, 0, 0, 0.1)",
                           borderRadius: "50%",
                           cursor: "pointer",
                         }}
@@ -257,7 +293,8 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
           </p>
         )}
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

@@ -10,6 +10,10 @@ class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: Union[List[str], str] = ["http://localhost:3000"]
     UPLOAD_DIR: str = "./uploads"
     REPLICATE_API_TOKEN: str = ""
+    SANITY_PROJECT_ID: str = ""
+    SANITY_DATASET: str = "production"
+    SANITY_API_TOKEN: str = ""
+    SANITY_API_VERSION: str = "2024-12-16"
 
     class Config:
         env_file = ".env"
