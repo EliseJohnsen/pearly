@@ -2,22 +2,23 @@ from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional
 from datetime import datetime
 from decimal import Decimal
+from enum import Enum
 
 
 # Enums
-class ProductStatusEnum(str):
+class ProductStatusEnum(str, Enum):
     IN_STOCK = "in_stock"
     OUT_OF_STOCK = "out_of_stock"
     COMING_SOON = "coming_soon"
 
 
-class DifficultyLevelEnum(str):
+class DifficultyLevelEnum(str, Enum):
     EASY = "easy"
     MEDIUM = "medium"
     HARD = "hard"
 
 
-class ShippingClassEnum(str):
+class ShippingClassEnum(str, Enum):
     LETTER = "letter"
     PACKAGE = "package"
 
