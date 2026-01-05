@@ -2,7 +2,7 @@
   {
     "name": "White",
     "code": "01",
-    "hex": "#f5f3e7"
+    "hex": "#FDFCF5"
   },
   {
     "name": "Cream",
@@ -17,7 +17,7 @@
   {
     "name": "Orange",
     "code": "04",
-    "hex": "#df4704"
+    "hex": "#FF7300"
   },
   {
     "name": "Red",
@@ -57,12 +57,12 @@
   {
     "name": "Brown",
     "code": "12",
-    "hex": "#4b392e"
+    "hex": "#432716"
   },
   {
     "name": "Grey",
     "code": "17",
-    "hex": "#7b7d7b"
+    "hex": "#D2D3D5"
   },
   {
     "name": "Black",
@@ -87,12 +87,12 @@
   {
     "name": "Flesh",
     "code": "26",
-    "hex": "#e19079"
+    "hex": "#EEB4A4"
   },
   {
     "name": "Beige",
     "code": "27",
-    "hex": "#d6a170"
+    "hex": "#E8C696"
   },
   {
     "name": "Dark green",
@@ -112,7 +112,7 @@
   {
     "name": "Turquoise",
     "code": "31",
-    "hex": "#468a99"
+    "hex": "#4796A8"
   },
   {
     "name": "Neon pink",
@@ -122,7 +122,7 @@
   {
     "name": "Pastel yellow",
     "code": "43",
-    "hex": "#f0df24"
+    "hex": "#FFFE4C"
   },
   {
     "name": "Pastel red",
@@ -157,12 +157,12 @@
   {
     "name": "Teddybear brown",
     "code": "60",
-    "hex": "#e18d25"
+    "hex": "#F2B31B"
   },
   {
     "name": "Light grey",
     "code": "70",
-    "hex": "#9c9fa3"
+    "hex": "#D2D3D5"
   },
   {
     "name": "Dark grey",
@@ -182,7 +182,7 @@
   {
     "name": "Cloudy white",
     "code": "77",
-    "hex": "#cdc4ad"
+    "hex": "#E6DFCE"
   },
   {
     "name": "Light flesh",
@@ -192,7 +192,7 @@
   {
     "name": "Apricot",
     "code": "79",
-    "hex": "#f46e2f"
+    "hex": "#FFA037"
   },
   {
     "name": "Plum",
@@ -217,7 +217,7 @@
   {
     "name": "Pastel lilac",
     "code": "96",
-    "hex": "#c09ec8"
+    "hex": "#F2DAFF"
   },
   {
     "name": "Pastel ice blue",
