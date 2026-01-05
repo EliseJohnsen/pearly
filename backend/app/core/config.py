@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     SANITY_DATASET: str = "production"
     SANITY_API_TOKEN: str = ""
     SANITY_API_VERSION: str = "2024-12-16"
+    SANITY_WEBHOOK_SECRET: str = ""  # Optional: For verifying webhook signatures
 
     class Config:
         env_file = ".env"

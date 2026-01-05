@@ -96,6 +96,7 @@ async def create_product_from_pattern_data(
 
     db_product = Product(
         sku=product_data.sku,
+        product_type="pattern",  # Pattern products from generator
         pattern_id=db_pattern.id,
         name=product_data.name,
         description=product_data.description,
@@ -103,6 +104,8 @@ async def create_product_from_pattern_data(
         status=product_data.status,
         slug=product_data.slug,
         difficulty_level=product_data.difficulty_level,
+        colors_used=len(product_data.colors_used),
+        grid_size=f"{product_data.pattern_data.get('boards_width', 1)}x{product_data.pattern_data.get('boards_height', 1)} boards",
         meta_title=product_data.meta_title,
         meta_description=product_data.meta_description,
         keywords=product_data.keywords,
@@ -166,17 +169,33 @@ async def create_product_from_pattern_data(
         boards_h = product_data.pattern_data.get("boards_height", 1)
         grid_size_desc = f"{boards_w}x{boards_h} boards"
 
+        # Collect all image asset IDs
+        image_asset_ids = [pattern_upload_result['asset_id']]
+        if styled_image_asset_id:
+            image_asset_ids.append(styled_image_asset_id)
+
         sanity_product_result = await sanity_service.create_product_document(
+            sku=product_data.sku,
+            product_type="pattern",  # Pattern products from generator
             title=product_data.name,
             slug=product_data.slug,
             description=product_data.description,
-            image_asset_id=pattern_upload_result['asset_id'],
-            difficulty=product_data.difficulty_level,
+            image_asset_ids=image_asset_ids,
+            status=product_data.status.value if product_data.status else "in_stock",
+            difficulty=product_data.difficulty_level.value if product_data.difficulty_level else None,
             colors_count=len(product_data.colors_used),
             grid_size=grid_size_desc,
             tags=product_data.tags,
             category=None,  # Can be added later
+            pattern_id=str(db_pattern.id),
         )
+
+        # Store Sanity document ID in database
+        if "results" in sanity_product_result and len(sanity_product_result["results"]) > 0:
+            sanity_doc_id = sanity_product_result["results"][0].get("id")
+            if sanity_doc_id:
+                db_product.sanity_document_id = sanity_doc_id
+                db.commit()
 
         logger.info(f"Successfully created product in Sanity: {sanity_product_result}")
     except Exception as e:

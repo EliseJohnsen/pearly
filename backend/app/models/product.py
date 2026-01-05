@@ -22,18 +22,34 @@ class ShippingClass(str, enum.Enum):
     PACKAGE = "package"
 
 
+class ProductType(str, enum.Enum):
+    PATTERN = "pattern"
+    KIT = "kit"
+    BEADS = "beads"
+    TOOLS = "tools"
+    PEGBOARDS = "pegboards"
+    OTHER = "other"
+
+
 class Product(Base):
     __tablename__ = "products"
 
     id = Column(Integer, primary_key=True, index=True)
     sku = Column(String, unique=True, nullable=False, index=True)
-    pattern_id = Column(Integer, ForeignKey("patterns.id"), nullable=False)
+    product_type = Column(SQLEnum(ProductType), nullable=False, default=ProductType.PATTERN)
+    pattern_id = Column(Integer, ForeignKey("patterns.id"), nullable=True)  # Now optional
+    sanity_document_id = Column(String, unique=True, nullable=True, index=True)  # Link to Sanity
     name = Column(String, nullable=False)
     description = Column(Text)
     long_description = Column(Text)
     status = Column(SQLEnum(ProductStatus), default=ProductStatus.IN_STOCK)
     slug = Column(String, unique=True, nullable=False, index=True)
     difficulty_level = Column(SQLEnum(DifficultyLevel))
+
+    # Pattern-specific fields (optional)
+    category = Column(String)  # For pattern products
+    colors_used = Column(Integer)  # Number of colors in pattern
+    grid_size = Column(String)  # Grid size description
 
     # SEO fields
     meta_title = Column(String)
@@ -46,6 +62,10 @@ class Product(Base):
 
     # Tags
     tags = Column(JSON)  # Array of strings
+
+    # Display settings
+    is_featured = Column(Boolean, default=False)
+    display_order = Column(Integer, default=0)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

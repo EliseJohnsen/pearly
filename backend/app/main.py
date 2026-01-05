@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.core.config import settings
 from app.core.database import engine, Base
-from app.api import patterns, products
+from app.api import patterns, products, webhooks
 from app.models import pattern, product  # Import models to register them
 import logging
 
@@ -43,6 +43,7 @@ app.add_middleware(
 
 app.include_router(patterns.router, prefix="/api", tags=["patterns"])
 app.include_router(products.router, prefix="/api", tags=["products"])
+app.include_router(webhooks.router, prefix="/api", tags=["webhooks"])
 
 @app.get("/")
 def read_root():

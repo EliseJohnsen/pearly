@@ -181,32 +181,54 @@ class SanityService:
 
     async def create_product_document(
         self,
+        sku: str,
+        product_type: str,
         title: str,
         slug: str,
         description: Optional[str],
-        image_asset_id: str,
+        image_asset_ids: list[str],
+        status: str = "in_stock",
+        long_description: Optional[list] = None,
         difficulty: Optional[str] = None,
         colors_count: Optional[int] = None,
         grid_size: Optional[str] = None,
         tags: Optional[list] = None,
         category: Optional[str] = None,
+        variants: Optional[list] = None,
+        currency: str = "NOK",
+        vat_rate: float = 25.0,
+        is_featured: bool = False,
+        display_order: int = 0,
+        seo: Optional[dict] = None,
+        pattern_id: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
-        Create a product document in Sanity CMS.
+        Create a unified product document in Sanity CMS.
 
         Args:
+            sku: Product SKU
+            product_type: Type of product (pattern, kit, beads, tools, pegboards, other)
             title: Product title
             slug: Product slug
-            description: Product description
-            image_asset_id: Sanity asset ID for the product image
-            difficulty: Difficulty level (easy, medium, hard)
-            colors_count: Number of colors used
-            grid_size: Grid size description
+            description: Short description
+            image_asset_ids: List of Sanity asset IDs for product images
+            status: Product status (in_stock, out_of_stock, coming_soon)
+            long_description: Rich text description (array of blocks)
+            difficulty: Difficulty level (easy, medium, hard) - for patterns/kits
+            colors_count: Number of colors used - for patterns/kits
+            grid_size: Grid size description - for patterns/kits
             tags: List of tags
-            category: Product category
+            category: Product category - for patterns
+            variants: List of product variants with pricing
+            currency: Currency code (default: NOK)
+            vat_rate: VAT rate percentage (default: 25)
+            is_featured: Whether to feature on homepage
+            display_order: Display order (lower first)
+            seo: SEO metadata dict
+            pattern_id: Database pattern ID (optional)
 
         Returns:
-            Dict with created document information
+            Dict with created document information including _id
         """
         url = f"https://{self.project_id}.api.sanity.io/v{self.api_version}/data/mutate/{self.dataset}"
 
@@ -215,27 +237,58 @@ class SanityService:
             "Content-Type": "application/json",
         }
 
-        # Create the product document
+        # Create images array with first as primary
+        images = []
+        for idx, asset_id in enumerate(image_asset_ids):
+            image = self.create_image_reference(asset_id, title)
+            image["isPrimary"] = idx == 0
+            images.append(image)
+
+        # Build product document
+        product_doc = {
+            "_type": "products",
+            "productType": product_type,
+            "sku": sku,
+            "title": title,
+            "slug": {
+                "_type": "slug",
+                "current": slug,
+            },
+            "description": description,
+            "longDescription": long_description or [],
+            "status": status,
+            "images": images,
+            "tags": tags or [],
+            "currency": currency,
+            "vatRate": vat_rate,
+            "isFeatured": is_featured,
+            "order": display_order,
+        }
+
+        # Add pattern-specific fields
+        if pattern_id:
+            product_doc["patternId"] = pattern_id
+        if category:
+            product_doc["category"] = category
+        if difficulty:
+            product_doc["difficulty"] = difficulty
+        if colors_count is not None:
+            product_doc["colors"] = colors_count
+        if grid_size:
+            product_doc["gridSize"] = grid_size
+
+        # Add variants if provided
+        if variants:
+            product_doc["variants"] = variants
+
+        # Add SEO if provided
+        if seo:
+            product_doc["seo"] = seo
+
         mutations = {
             "mutations": [
                 {
-                    "create": {
-                        "_type": "products",
-                        "title": title,
-                        "slug": {
-                            "_type": "slug",
-                            "current": slug,
-                        },
-                        "description": description,
-                        "image": self.create_image_reference(image_asset_id, title),
-                        "difficulty": difficulty,
-                        "colors": colors_count,
-                        "gridSize": grid_size,
-                        "tags": tags or [],
-                        "category": category,
-                        "isFeatured": False,
-                        "order": 0,
-                    }
+                    "create": product_doc
                 }
             ]
         }
