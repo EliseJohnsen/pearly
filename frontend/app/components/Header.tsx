@@ -25,7 +25,7 @@ export default function Header() {
   return (
     <header className="bg-primary">
       <nav aria-label="Global" className="mx-auto grid grid-cols-7 gap-4 max-w-7xl items-center justify-between p-6 lg:px-8">
-        <div className="col-span-2">
+        <div className="lg:col-span-2">
           <div className="justify-evenly hidden lg:flex">
             {/* Main navigation items */}
             {mainNavLoading ? (
@@ -46,9 +46,9 @@ export default function Header() {
           </div>
         </div>
 
-        <div className="items-center col-span-3 justify-items-center">
+        <div className="items-center col-span-5 lg:col-span-3 justify-items-center">
 
-          <h1 className='text-7xl font-bold tracking-tight text-primary-light leading-tight'>
+          <h1 className='text-5xl lg:text-7xl font-bold tracking-tight text-primary-light leading-tight'>
             <Link href="/">
               { feelingPearlyText }
             </Link>
@@ -68,7 +68,7 @@ export default function Header() {
             </Link>
           ))}
         </div>
-        <div className="col-span-2 sm:justify-end">
+        <div className="lg:col-span-2 col-span-1">
           <div className="flex justify-evenly hidden lg:flex">
             {mainNavLoading ? (
               <div className="text-sm/6 font-semibold text-gray-900">{ loadingText }</div>
@@ -86,15 +86,15 @@ export default function Header() {
                 ))
             ) : null}
           </div>
-          <div className="lg:hidden float-end">
-            <button
-              type="button"
-              onClick={() => setMobileMenuOpen(true)}
-              className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700"
-            >
-              <span className="sr-only">{ openMainMenuText }</span>
-              <Bars3Icon aria-hidden="true" className="size-6" />
-            </button>
+          <div className="lg:hidden justify-self-end">
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen(true)}
+                className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700"
+              >
+                <span className="sr-only">{ openMainMenuText }</span>
+                <Bars3Icon aria-hidden="true" className="size-6" />
+              </button>
           </div>
         </div>
       </nav>
