@@ -22,7 +22,7 @@
   {
     "name": "Red",
     "code": "05",
-    "hex": "#b9131c"
+    "hex": "#E60C18"
   },
   {
     "name": "Pink",
@@ -82,7 +82,7 @@
   {
     "name": "Dark red",
     "code": "22",
-    "hex": "#980c1a"
+    "hex": "#C31324"
   },
   {
     "name": "Flesh",
@@ -137,17 +137,17 @@
   {
     "name": "Pastel blue",
     "code": "46",
-    "hex": "#28a5d4"
+    "hex": "#2CBBF0"
   },
   {
     "name": "Pastel green",
     "code": "47",
-    "hex": "#5ecd71"
+    "hex": "#5FE676"
   },
   {
     "name": "Pastel pink",
     "code": "48",
-    "hex": "#d858b1"
+    "hex": "#EA85CB"
   },
   {
     "name": "Azure",
@@ -212,7 +212,7 @@
   {
     "name": "Pastel rose",
     "code": "95",
-    "hex": "#e79db1"
+    "hex": "#FDCAF0"
   },
   {
     "name": "Pastel lilac",
@@ -222,12 +222,12 @@
   {
     "name": "Pastel ice blue",
     "code": "97",
-    "hex": "#8ec2e5"
+    "hex": "#ADDAF9"
   },
   {
     "name": "Pastel mint",
     "code": "98",
-    "hex": "#81d7aa"
+    "hex": "#88F7BD"
   },
   {
     "name": "Eucalyptus",
@@ -257,7 +257,7 @@
   {
     "name": "Light lavender",
     "code": "106",
-    "hex": "#afa2bb"
+    "hex": "#DEDAFF"
   },
   {
     "name": "Lavender",
