@@ -67,7 +67,7 @@ export default async function RootLayout({
   const draft = await draftMode()
 
   return (
-    <html lang="en">
+    <html lang="no">
       <body className={`${quicksand.variable} antialiased`}>
         <LocaleProvider>
           {children}
