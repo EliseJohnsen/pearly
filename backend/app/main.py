@@ -10,20 +10,55 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def run_migrations():
+    """Run Alembic migrations automatically on startup"""
+    try:
+        from alembic.config import Config
+        from alembic import command
+        import os
+
+        # Get the directory containing this file
+        backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        alembic_cfg = Config(os.path.join(backend_dir, "alembic.ini"))
+
+        # Set the script location to the absolute path
+        alembic_cfg.set_main_option("script_location", os.path.join(backend_dir, "alembic"))
+
+        # Run migrations
+        command.upgrade(alembic_cfg, "head")
+        logger.info("✅ Database migrations completed successfully")
+    except ModuleNotFoundError as e:
+        if "alembic" in str(e):
+            logger.error(f"❌ Alembic not installed: {e}")
+            logger.warning("⚠️  Install dependencies: pip install -r requirements.txt")
+        else:
+            logger.error(f"❌ Module error: {e}")
+        logger.warning("⚠️  Continuing without migrations...")
+    except Exception as e:
+        error_msg = str(e)
+        if "duplicate column" in error_msg or "already exists" in error_msg:
+            logger.info("ℹ️  Database schema already up to date (columns exist)")
+            logger.info("💡 Run 'alembic stamp head' to mark database as migrated")
+        else:
+            logger.error(f"❌ Error running migrations: {e}")
+            logger.warning("⚠️  Continuing without migrations...")
+        # Don't crash the app on migration errors in development
+        # In production, you might want to raise the exception
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     """Lifespan context manager for startup and shutdown events"""
     # Startup
-    try:
-        Base.metadata.create_all(bind=engine)
-        logger.info("Database tables created successfully")
-    except Exception as e:
-        logger.error(f"Error creating database tables: {e}")
-        # Don't crash the app if tables already exist
+    logger.info("🚀 Starting application...")
+
+    # Run migrations automatically
+    run_migrations()
 
     yield
 
     # Shutdown (cleanup code goes here if needed)
+    logger.info("👋 Shutting down application...")
 
 
 app = FastAPI(
