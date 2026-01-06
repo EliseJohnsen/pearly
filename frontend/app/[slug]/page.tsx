@@ -136,7 +136,7 @@ export default function DynamicPage({
               return <Content key={index} data={section} />;
             case "productsSection":
               return (
-                <section key={index} className="py-12 bg-white">
+                <section key={index} className="py-12">
                   <div className="max-w-7xl mx-auto px-4">
                     {section.sectionTitle && (
                       <h2 className="text-3xl font-bold text-center mb-4">
@@ -150,15 +150,16 @@ export default function DynamicPage({
                     )}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       {section.products?.map((product: any) => (
-                        <div
+                        <a
                           key={product._id}
-                          className="border rounded-lg p-4 hover:shadow-lg transition"
+                          href={`/produkter/${product.slug.current}`}
+                          className="border rounded-lg p-4 hover:shadow-lg transition block"
                         >
                           {product.image?.asset?.url && (
                             <img
                               src={product.image.asset.url}
                               alt={product.image.alt || product.title}
-                              className="w-full h-48 object-cover rounded mb-4"
+                              className="w-full max-h-72 object-cover rounded mb-4"
                             />
                           )}
                           <h3 className="font-semibold text-lg mb-2">
@@ -169,7 +170,7 @@ export default function DynamicPage({
                               {product.description}
                             </p>
                           )}
-                        </div>
+                        </a>
                       ))}
                     </div>
                   </div>

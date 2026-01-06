@@ -113,3 +113,43 @@ export const footerPagesQuery = groq`*[_type == "page" && showInFooter == true]|
 
 // Coming Soon query
 export const comingSoonQuery = groq`*[_type == "comingSoon" && isActive == true][0]{_id,logo{asset->{_id,url,metadata{lqip,dimensions{width,height}}},alt,width},heading,headingFontSize,subheading,subheadingFontSize,backgroundColor,textColor,isActive}`
+
+// Query for fetching product details
+export const productQuery = groq`*[_type == "products" && slug.current == $slug][0]{
+  _id,
+  title,
+  slug,
+  description,
+  longDescription,
+  productType,
+  status,
+  difficulty,
+  category,
+  colors,
+  gridSize,
+  tags,
+  currency,
+  vatRate,
+  isFeatured,
+  "images": images[]{
+    asset->{_id, url, metadata{lqip, dimensions{width, height}}},
+    alt,
+    isPrimary
+  },
+  image{asset->{_id,url,metadata{lqip,dimensions{width,height}}},alt},
+  variants[]{
+    sku,
+    name,
+    price,
+    compareAtPrice,
+    dimensions,
+    weight,
+    stockQuantity,
+    isActive
+  },
+  seo{
+    metaTitle,
+    metaDescription,
+    keywords
+  }
+}`;
