@@ -13,7 +13,6 @@ interface PatternData {
     count: number;
     code?: string;
   }>;
-  is_paid: boolean;
   created_at: string;
   boards_width?: number;
   boards_height?: number;

@@ -109,7 +109,6 @@ Kopier Railway backend URL (f.eks. `https://perle-backend.railway.app`)
 - `pattern_data` - JSON med full grid-data
 - `grid_size` - Størrelse på grid
 - `colors_used` - JSON med fargepalett og antall
-- `is_paid` - Boolean (for Vipps-integrasjon)
 - `created_at` - Timestamp
 - `expires_at` - Timestamp (30 dager)
 
@@ -119,7 +118,6 @@ Kopier Railway backend URL (f.eks. `https://perle-backend.railway.app`)
 1. Opprett Vipps-utviklerkonto
 2. Installer Vipps SDK i frontend
 3. Legg til payment endpoint i backend
-4. Oppdater `is_paid` status etter betaling
 
 ### Perlepakke-bestilling
 1. Opprett `orders` tabell

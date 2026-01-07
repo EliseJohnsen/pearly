@@ -106,7 +106,6 @@ async def upload_image(
         pattern_data=pattern_data,
         grid_size=grid_size,
         colors_used=colors_used,
-        is_paid=False,
         expires_at=datetime.utcnow() + timedelta(days=30)
     )
 
@@ -119,12 +118,31 @@ async def upload_image(
         pattern_image_url=f"/api/patterns/{pattern.uuid}/image",
         grid_size=pattern.grid_size,
         colors_used=pattern.colors_used,
-        is_paid=pattern.is_paid,
         created_at=pattern.created_at,
         boards_width=boards_width,
         boards_height=boards_height,
         pattern_data=pattern.pattern_data
     )
+
+@router.get("/patterns")
+def get_all_patterns(db: Session = Depends(get_db)):
+    """Get all patterns from the database"""
+    patterns = db.query(Pattern).order_by(Pattern.created_at.desc()).all()
+
+    return [
+        PatternResponse(
+            id=pattern.id,
+            uuid=pattern.uuid,
+            pattern_image_url=f"/api/patterns/{pattern.uuid}/image",
+            grid_size=pattern.grid_size,
+            colors_used=pattern.colors_used,
+            created_at=pattern.created_at,
+            boards_width=pattern.pattern_data.get("boards_width") if pattern.pattern_data else None,
+            boards_height=pattern.pattern_data.get("boards_height") if pattern.pattern_data else None,
+            pattern_data=pattern.pattern_data
+        )
+        for pattern in patterns
+    ]
 
 @router.get("/patterns/{pattern_uuid}", response_model=PatternResponse)
 def get_pattern(pattern_uuid: str, db: Session = Depends(get_db)):
@@ -134,11 +152,11 @@ def get_pattern(pattern_uuid: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Pattern not found")
 
     return PatternResponse(
+        id=pattern.id,
         uuid=pattern.uuid,
         pattern_image_url=f"/api/patterns/{pattern.uuid}/image",
         grid_size=pattern.grid_size,
         colors_used=pattern.colors_used,
-        is_paid=pattern.is_paid,
         created_at=pattern.created_at,
         boards_width=pattern.pattern_data.get("boards_width") if pattern.pattern_data else None,
         boards_height=pattern.pattern_data.get("boards_height") if pattern.pattern_data else None,
@@ -279,7 +297,6 @@ async def upload_image_with_style(
             },
             grid_size=grid_size,
             colors_used=colors_used,
-            is_paid=False,
             expires_at=datetime.utcnow() + timedelta(days=30)
         )
 
@@ -292,7 +309,6 @@ async def upload_image_with_style(
             pattern_image_url=f"/api/patterns/{pattern.uuid}/image",
             grid_size=pattern.grid_size,
             colors_used=pattern.colors_used,
-            is_paid=pattern.is_paid,
             created_at=pattern.created_at,
             boards_width=boards_width,
             boards_height=boards_height,

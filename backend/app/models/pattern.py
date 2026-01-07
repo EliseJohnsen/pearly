@@ -13,6 +13,5 @@ class Pattern(Base):
     pattern_data = Column(JSON)
     grid_size = Column(Integer)
     colors_used = Column(JSON)
-    is_paid = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     expires_at = Column(DateTime(timezone=True))

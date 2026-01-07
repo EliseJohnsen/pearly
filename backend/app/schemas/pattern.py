@@ -14,11 +14,11 @@ class BeadColor(BaseModel):
     count: int
 
 class PatternResponse(BaseModel):
+    id: int
     uuid: str
     pattern_image_url: str
     grid_size: int
     colors_used: List[Dict[str, Any]]
-    is_paid: bool
     created_at: datetime
     boards_width: Optional[int] = None
     boards_height: Optional[int] = None

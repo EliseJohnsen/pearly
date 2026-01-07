@@ -11,7 +11,6 @@ interface PatternDisplayProps {
       name: string;
       count: number;
     }>;
-    is_paid: boolean;
     created_at: string;
     boards_width?: number;
     boards_height?: number;
