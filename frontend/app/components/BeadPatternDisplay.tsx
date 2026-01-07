@@ -105,7 +105,6 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
       setEmailSent(true);
       setEmail("");
     } catch (error) {
-      console.error("Error sending email:", error);
       setEmailError(
         error instanceof Error ? error.message : "En feil oppstod ved sending av e-post"
       );
@@ -126,12 +125,8 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
     {} as Record<string, { name: string; hex: string; code?: string }>,
   );
 
-  const calculateBrett = (numberOfBeads: number) => {
-    return ((numberOfBeads / 29)).toPrecision(1)
-  }
-
   const calculateTotal = (boardsWidth: number, boardsHeight: number) => {
-    return ((boardsWidth / 29) + (boardsHeight / 29)).toPrecision(1)
+    return boardsWidth * boardsHeight;
   }
 
   const handleProductCreated = (createdProductId: number) => {
@@ -280,15 +275,15 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
       <div className="mb-6 space-y-2">
         {pattern.boards_width && pattern.boards_height ? (
           <>
-            <p className="text-sm text-gray-600">
-              <strong>Brett:</strong> {calculateBrett(pattern.boards_width)} × {calculateBrett(pattern.boards_height)} brett ({calculateTotal(pattern.boards_width, pattern.boards_height)} totalt)
-            </p>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm">
               <strong>Størrelse:</strong> {pattern.boards_width * 29} × {pattern.boards_height * 29} perler
+            </p>
+            <p className="text-sm">
+              <strong>Brett:</strong> {pattern.boards_width} × {pattern.boards_height} brett ({calculateTotal(pattern.boards_width, pattern.boards_height)} totalt)
             </p>
           </>
         ) : (
-          <p className="text-sm text-gray-600">
+          <p className="text-sm">
             Størrelse: {pattern.grid_size}x{pattern.grid_size} { pearlsText }
           </p>
         )}
