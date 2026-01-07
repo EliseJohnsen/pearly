@@ -552,17 +552,17 @@ def convert_image_to_pattern(
 
         print(f"After filtering: {len(color_counts)} unique colors remaining")
 
-    pattern_img = Image.new('RGB', (new_width * 20, new_height * 20), 'white')
+    # pattern_img = Image.new('RGB', (new_width * 20, new_height * 20), 'white')
 
-    for y, row in enumerate(pattern_data):
-        for x, hex_color in enumerate(row):
-            rgb = tuple(int(hex_color.lstrip('#')[i:i+2], 16) for i in (0, 2, 4))
-            for py in range(20):
-                for px in range(20):
-                    pattern_img.putpixel((x * 20 + px, y * 20 + py), rgb)
+    # for y, row in enumerate(pattern_data):
+    #     for x, hex_color in enumerate(row):
+    #         rgb = tuple(int(hex_color.lstrip('#')[i:i+2], 16) for i in (0, 2, 4))
+    #         for py in range(20):
+    #             for px in range(20):
+    #                 pattern_img.putpixel((x * 20 + px, y * 20 + py), rgb)
 
-    pattern_img.save(output_path)
-    print(f"Pattern image saved to: {output_path}")
+    # pattern_img.save(output_path)
+    # print(f"Pattern image saved to: {output_path}")
 
     colors_used = []
     bead_color_lookup = {bc["hex"]: bc for bc in bead_colors}
