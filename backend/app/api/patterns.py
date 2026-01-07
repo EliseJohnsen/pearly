@@ -114,6 +114,7 @@ async def upload_image(
     db.refresh(pattern)
 
     return PatternResponse(
+        id=pattern.id,
         uuid=pattern.uuid,
         pattern_image_url=f"/api/patterns/{pattern.uuid}/image",
         grid_size=pattern.grid_size,
@@ -305,6 +306,7 @@ async def upload_image_with_style(
         db.refresh(pattern)
 
         return PatternResponse(
+            id=pattern.id,
             uuid=pattern.uuid,
             pattern_image_url=f"/api/patterns/{pattern.uuid}/image",
             grid_size=pattern.grid_size,
