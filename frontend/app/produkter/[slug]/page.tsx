@@ -7,6 +7,7 @@ import { use, useEffect, useState } from "react";
 import { productQuery } from "@/lib/queries";
 import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
+import { PortableText } from "@portabletext/react";
 
 
 
@@ -111,7 +112,6 @@ export default function ProductDetailPage({
     notFound();
   }
 
-  // Support both 'images' array and single 'image' field for backwards compatibility
   const productImages = product.images?.length
     ? product.images
     : (product.image ? [product.image] : []);
@@ -154,7 +154,6 @@ export default function ProductDetailPage({
               </div>
             )}
 
-            {/* Thumbnail Gallery */}
             {productImages && productImages.length > 1 && (
               <div className="grid grid-cols-4 gap-2">
                 {productImages.map((image, index) => (
@@ -178,7 +177,6 @@ export default function ProductDetailPage({
             )}
           </div>
 
-          {/* Product Info */}
           <div className="space-y-6">
             <div>
               <h1 className="text-3xl font-bold mb-2">{product.title}</h1>
@@ -195,7 +193,7 @@ export default function ProductDetailPage({
 
             {/* Difficulty and Details */}
             {(product.difficulty || product.colors || product.gridSize) && (
-              <div className="flex flex-wrap gap-4 py-4 border-y border-gray-200">
+              <div className="flex flex-wrap gap-4 py-4 border-y border-purple content-between">
                 {product.difficulty && (
                   <div>
                     <span className="text-sm text-gray-500">Vanskelighetsgrad:</span>
@@ -217,7 +215,6 @@ export default function ProductDetailPage({
               </div>
             )}
 
-            {/* Variant Selector
             {product.variants && product.variants.length > 0 && (
               <div className="space-y-3">
                 <label className="block text-sm font-medium text-gray-700">
@@ -232,7 +229,7 @@ export default function ProductDetailPage({
                       className={`p-4 border-2 rounded-lg text-left transition ${
                         selectedVariant?.sku === variant.sku
                           ? "border-primary bg-primary/5"
-                          : "border-gray-200 hover:border-gray-300"
+                          : "border-purple hover:border-purple-700"
                       } ${
                         !variant.isActive || variant.stockQuantity <= 0
                           ? "opacity-50 cursor-not-allowed"
@@ -259,10 +256,9 @@ export default function ProductDetailPage({
                   ))}
                 </div>
               </div>
-            )} */}
+            )}
 
-            {/* Add to Cart */}
-            {/* <button
+            <button
               onClick={handleAddToCart}
               disabled={!selectedVariant || selectedVariant.stockQuantity <= 0}
               className="w-full bg-primary text-white py-4 px-6 rounded-lg font-semibold hover:bg-primary/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
@@ -272,22 +268,20 @@ export default function ProductDetailPage({
                 : selectedVariant.stockQuantity <= 0
                 ? "Utsolgt"
                 : "Legg i handlekurv"}
-            </button> */}
+            </button>
 
-            {/* Product Status */}
             {product.status === "coming_soon" && (
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                 <p className="text-yellow-800 font-medium">Kommer snart!</p>
               </div>
             )}
 
-            {/* Tags */}
             {product.tags && product.tags.length > 0 && (
               <div className="flex flex-wrap gap-2 pt-4">
                 {product.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full"
+                    className="px-3 py-1 bg-purple text-white text-sm rounded-full"
                   >
                     {tag}
                   </span>
@@ -295,17 +289,11 @@ export default function ProductDetailPage({
               </div>
             )}
 
-            {/* Long Description */}
             {product.longDescription && (
-              <div className="pt-6 border-t border-gray-200">
+              <div className="pt-6 border-t border-purple">
                 <h2 className="text-xl font-semibold mb-4">Om produktet</h2>
-                <div className="prose prose-sm max-w-none">
-                  {/* TODO: Render portable text properly */}
-                  <p className="text-gray-700">
-                    {typeof product.longDescription === 'string'
-                      ? product.longDescription
-                      : JSON.stringify(product.longDescription)}
-                  </p>
+                <div className="prose prose-sm max-w-none text-gray-700">
+                  <PortableText value={product.longDescription} />
                 </div>
               </div>
             )}
