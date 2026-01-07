@@ -190,7 +190,7 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
   if (uploading) {
     return (
       <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-        <LoadingSpinner />
+        <LoadingSpinner loadingMessage="Genererer mønster..." description="Dette kan ta noen sekunder"/>
         <p className="text-center mt-4 text-gray-600">
           {processingMode === "ai-style"
             ? `Transformerer bildet ditt til ${styleInfo[selectedStyle].name} stil...`

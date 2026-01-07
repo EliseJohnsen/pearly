@@ -1,4 +1,12 @@
-export default function LoadingSpinner() {
+interface LoadingSpinnerProps {
+    loadingMessage?: string;
+    description?: string;
+}
+
+const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
+  loadingMessage = "Laster...",
+  description = ""
+}) => {
   return (
     <div className="flex flex-col items-center justify-center p-12">
       <div className="relative w-24 h-24">
@@ -8,14 +16,18 @@ export default function LoadingSpinner() {
 
         <div className="absolute inset-8 bg-primary-pink rounded-full animate-ping"></div>
       </div>
-
-      <p className="mt-6 text-lg font-medium text-primary animate-pulse">
-        Genererer mønster...
-      </p>
-
-      <p className="mt-2 text-sm text-gray-500">
-        Dette kan ta noen sekunder
-      </p>
+      {loadingMessage &&
+        <p className="mt-6 text-lg font-medium text-primary animate-pulse">
+          {loadingMessage}
+        </p>
+      }
+      {description &&
+        <p className="mt-2 text-sm text-gray-500">
+          {description}
+        </p>
+      }
     </div>
   );
 }
+
+export default LoadingSpinner;

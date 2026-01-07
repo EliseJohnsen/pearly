@@ -229,7 +229,7 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
           {patternGrid && patternGrid.length > 0 ? (
             <div className="overflow-auto">
               <div
-                className="grid border border-slate-300 shadow-inner bg-white rounded-md p-1 mx-auto"
+                className="grid border border-slate-300 shadow-inner bg-white rounded-md mx-auto"
                 style={{
                   gridTemplateColumns: `repeat(${patternGrid[0]?.length || 0}, ${beadSize}px)`,
                   gridTemplateRows: `repeat(${patternGrid.length}, ${beadSize}px)`,
