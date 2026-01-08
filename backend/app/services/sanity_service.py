@@ -258,6 +258,7 @@ class SanityService:
             "longDescription": long_description or [],
             "status": status,
             "images": images,
+            "image": images[0] if images else None,  # Set primary image for backwards compatibility
             "tags": tags or [],
             "currency": currency,
             "vatRate": vat_rate,

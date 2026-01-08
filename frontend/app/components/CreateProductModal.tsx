@@ -156,8 +156,8 @@ export default function CreateProductModal({
         throw new Error(errorData.detail || "Kunne ikke opprette produkt");
       }
 
-      const product = await response.json();
-      onSuccess(product.id);
+      const patternResponse = await response.json();
+      onSuccess(patternResponse.id);
     } catch (err) {
       console.error("Error creating product:", err);
       setError(err instanceof Error ? err.message : "En feil oppstod");
