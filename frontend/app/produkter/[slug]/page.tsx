@@ -8,6 +8,7 @@ import { productQuery } from "@/lib/queries";
 import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
 import { PortableText } from "@portabletext/react";
+import LoadingSpinner from "@/app/components/LoadingSpinner";
 
 
 
@@ -100,10 +101,7 @@ export default function ProductDetailPage({
   if (loading) {
     return (
       <div className="min-h-screen bg-[var(--background)] flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p>Laster produkt...</p>
-        </div>
+        <LoadingSpinner loadingMessage="Laster produkt..."></LoadingSpinner>
       </div>
     );
   }
