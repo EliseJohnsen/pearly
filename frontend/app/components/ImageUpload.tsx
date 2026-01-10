@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import LoadingSpinner from "./LoadingSpinner";
 import { useUIString } from '@/app/hooks/useSanityData';
 
 interface ImageUploadProps {
   onPatternGenerated: (data: any) => void;
+  onUploadStatusChange?: (isUploading: boolean) => void;
 }
 
 interface SizeOption {
@@ -31,7 +32,7 @@ const styleInfo: Record<Style, { name: string; description: string; icon: string
   }
 };
 
-export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
+export default function ImageUpload({ onPatternGenerated, onUploadStatusChange }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
@@ -57,6 +58,10 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
 
   const chooseAPhotoText = useUIString('choose_a_photo');
   const previewText = useUIString('preview');
+
+  useEffect(() => {
+    onUploadStatusChange?.(uploading);
+  }, [uploading, onUploadStatusChange]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -191,12 +196,6 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
     return (
       <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
         <LoadingSpinner loadingMessage="Genererer mønster..." description="Dette kan ta noen sekunder"/>
-        <p className="text-center mt-4 text-gray-600">
-          {processingMode === "ai-style"
-            ? `Transformerer bildet ditt til ${styleInfo[selectedStyle].name} stil...`
-            : "Genererer perlemønster..."
-          }
-        </p>
       </div>
     );
   }

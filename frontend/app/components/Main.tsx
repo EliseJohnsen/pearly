@@ -11,9 +11,14 @@ import Footer from "./Footer";
 
 export default function Main() {
   const [patternData, setPatternData] = useState<any>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const handlePatternGenerated = (data: any) => {
     setPatternData(data);
+  };
+
+  const handleUploadStatusChange = (uploading: boolean) => {
+    setIsUploading(uploading);
   };
 
   return (
@@ -24,8 +29,13 @@ export default function Main() {
       <HowItWorks />
       <div className="overflow-hidden bg-primary-light py-12">
         <div className="max-w-4xl mx-auto px-4">
-          <ImageUpload onPatternGenerated={handlePatternGenerated} />
-          {patternData && <BeadPatternDisplay pattern={patternData} />}
+          <ImageUpload
+            onPatternGenerated={handlePatternGenerated}
+            onUploadStatusChange={handleUploadStatusChange}
+          />
+          {patternData && !isUploading && 
+          <BeadPatternDisplay pattern={patternData} />
+          }
         </div>
       </div>
       <Footer />
