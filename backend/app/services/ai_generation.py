@@ -10,6 +10,7 @@ import requests
 from io import BytesIO
 from pathlib import Path
 import logging
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +70,48 @@ class AIGenerationService:
             self.client = replicate.Client(api_token=api_token)
         else:
             self.client = replicate
+
+        self.perle_colors = self._load_perle_colors()
+        self.color_palette_prompt = self._build_color_palette_prompt()
+
         logger.info("AI Generation Service initialized")
+
+    def _load_perle_colors(self) -> list:
+        """
+        Load perle colors from JSON file.
+
+        Returns:
+            List of color dictionaries with name, code, and hex values
+        """
+        colors_file = Path(__file__).parent.parent / "data" / "perle-colors.json"
+        try:
+            with open(colors_file, "r") as f:
+                colors = json.load(f)
+            logger.info(f"Loaded {len(colors)} perle colors")
+            return colors
+        except Exception as e:
+            logger.error(f"Failed to load perle colors: {str(e)}")
+            return []
+
+    def _build_color_palette_prompt(self) -> str:
+        """
+        Build a prompt segment that specifies the exact color palette from perle beads.
+
+        Returns:
+            String with color palette constraints for the AI prompt
+        """
+        if not self.perle_colors:
+            return ""
+
+        hex_colors = [color["hex"] for color in self.perle_colors]
+        color_list = ", ".join(hex_colors)
+
+        palette_prompt = (
+            f"Use ONLY these exact colors: {color_list}. "
+            f"Do not use any other colors or shades. Each pixel must match one of these {len(hex_colors)} colors exactly."
+        )
+
+        return palette_prompt
 
     def _build_prompt(
         self,
@@ -141,7 +183,7 @@ class AIGenerationService:
 
         style_config = self.STYLE_PRESETS.get(style, self.STYLE_PRESETS["wpap"])
 
-        positive_prompt = style_config["style_prompt"]
+        positive_prompt = f"{style_config['style_prompt']}. {self.color_palette_prompt}"
 
         logger.info(f"Transforming image with model: {model}, style: {style}")
         logger.debug(f"Prompt: {positive_prompt}")
