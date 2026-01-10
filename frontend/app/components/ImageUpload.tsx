@@ -53,7 +53,7 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
   const [brightnessBoost, setBrightnessBoost] = useState(1.0);
   const [simplifyDetails, setSimplifyDetails] = useState(true);
   const [simplificationMethod, setSimplificationMethod] = useState<"bilateral" | "mean_shift" | "gaussian">("bilateral");
-  const [simplificationStrength, setSimplificationStrength] = useState<"light" | "medium" | "strong">("medium");
+  const [simplificationStrength, setSimplificationStrength] = useState<"light" | "medium" | "strong">("strong");
 
   const chooseAPhotoText = useUIString('choose_a_photo');
   const previewText = useUIString('preview');

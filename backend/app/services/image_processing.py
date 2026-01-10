@@ -230,7 +230,7 @@ def enhanced_preprocess_image(
     brightness_boost: float = 1.0,
     simplify_details: bool = True,
     simplification_method: str = "bilateral",  # "bilateral", "mean_shift", or "gaussian"
-    simplification_strength: str = "medium"  # "light", "medium", "strong"
+    simplification_strength: str = "strong"  # "light", "medium", "strong"
 ) -> Image.Image:
     """
     Advanced image preprocessing pipeline with multiple enhancement options.

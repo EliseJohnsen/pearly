@@ -62,7 +62,7 @@ async def upload_image(
     brightness_boost: float = 1.0,
     simplify_details: bool = True,
     simplification_method: str = "bilateral",
-    simplification_strength: str = "medium",
+    simplification_strength: str = "strong",
     db: Session = Depends(get_db)
 ):
     if not file.content_type.startswith("image/"):
