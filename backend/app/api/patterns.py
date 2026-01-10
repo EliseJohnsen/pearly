@@ -1,4 +1,5 @@
 from fastapi import APIRouter, UploadFile, File, Depends, HTTPException
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from app.core.database import get_db
@@ -9,6 +10,7 @@ from app.services.image_processing import (
     suggest_board_dimensions_from_file,
 )
 from app.services.ai_generation import AIGenerationService
+from app.services.pdf_generator import generate_pattern_pdf
 from app.core.config import settings
 from pathlib import Path
 import uuid
@@ -319,3 +321,35 @@ async def upload_image_with_style(
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing image with style: {str(e)}")
+
+@router.get("/patterns/{pattern_uuid}/pdf")
+def download_pattern_pdf(pattern_uuid: str, db: Session = Depends(get_db)):
+    """
+    Generates and downloads a PDF with the bead pattern.
+    Each page represents one 29x29 board with beads shown as colored circles
+    containing the color code from perle-colors.json.
+    """
+    pattern = db.query(Pattern).filter(Pattern.uuid == pattern_uuid).first()
+
+    if not pattern:
+        raise HTTPException(status_code=404, detail="Pattern not found")
+
+    if not pattern.pattern_data:
+        raise HTTPException(status_code=400, detail="Pattern data not available for PDF generation")
+
+    try:
+        pdf_bytes = generate_pattern_pdf(
+            pattern_data=pattern.pattern_data,
+            colors_used=pattern.colors_used
+        )
+
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"attachment; filename=perlemønster_{pattern_uuid}.pdf"
+            }
+        )
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generating PDF: {str(e)}")

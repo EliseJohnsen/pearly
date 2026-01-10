@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import {useUIString} from '@/app/hooks/useSanityData'
-import { ShoppingBagIcon } from "@heroicons/react/24/outline";
+import { ShoppingBagIcon, ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import CreateProductModal from "./CreateProductModal";
 
 interface BeadPatternDisplayProps {
@@ -56,6 +56,7 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
   const [showProductModal, setShowProductModal] = useState(false);
   const [productCreated, setProductCreated] = useState(false);
   const [productId, setProductId] = useState<number | null>(null);
+  const [downloadingPDF, setDownloadingPDF] = useState(false);
 
   const colorsYouNeedText = useUIString('colors_you_need')
   const pearlsText = useUIString('pearls')
@@ -134,6 +135,32 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
     setShowProductModal(false);
   };
 
+  const handleDownloadPDF = async () => {
+    setDownloadingPDF(true);
+    try {
+      const response = await fetch(`${apiUrl}/api/patterns/${pattern.uuid}/pdf`);
+
+      if (!response.ok) {
+        throw new Error("Kunne ikke generere PDF");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `perlemønster_${pattern.uuid}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error("Feil ved nedlasting av PDF:", error);
+      alert("Kunne ikke laste ned PDF. Prøv igjen.");
+    } finally {
+      setDownloadingPDF(false);
+    }
+  };
+
   return (
     <>
       {showProductModal && (
@@ -158,6 +185,15 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
                 </span>
               </div>
             )}
+
+            <button
+              onClick={handleDownloadPDF}
+              disabled={downloadingPDF}
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ArrowDownTrayIcon className="w-5 h-5" />
+              <span>{downloadingPDF ? "Genererer PDF..." : "Last ned PDF"}</span>
+            </button>
 
             <button
               onClick={() => setShowProductModal(true)}
