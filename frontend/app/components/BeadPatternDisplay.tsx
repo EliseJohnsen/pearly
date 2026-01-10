@@ -170,11 +170,11 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
         </div>
 
         {productCreated && productId && (
-          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-            <p className="text-sm text-green-800">
-              ✅ Produkt opprettet! Du kan nå redigere produktet i Sanity Studio.
-            </p>
-          </div>
+        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+          <p className="text-sm text-green-800">
+            ✅ Produkt opprettet! Du kan nå redigere produktet i Sanity Studio.
+          </p>
+        </div>
         )}
 
       {pattern.pattern_data?.ai_generated && pattern.pattern_data?.ai_prompt && (
@@ -190,103 +190,106 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-6 mb-6">
-        {pattern.pattern_data?.styled && (
-          <div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">
-              Stilisert bilde ({pattern.pattern_data.style})
-            </h3>
-            <div className="overflow-auto">
-              <img
-                src={`${apiUrl}/api/patterns/${pattern.uuid}/styled-image`}
-                alt="Stilisert versjon"
-                className="w-full h-auto rounded-lg border-2 border-gray-300 shadow-md"
-              />
-            </div>
-          </div>
-        )}
-
-        {pop_art_url && (
-          <div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">
-              Pop-art forhåndsvisning
-            </h3>
-            <div className="overflow-auto">
-              <img
-                src={pop_art_url}
-                alt="Pop-art version"
-                className="w-full h-auto rounded-lg border-2 border-gray-300 shadow-md"
-              />
-            </div>
-          </div>
-        )}
-
-        <div>
-          <h3 className="text-lg font-semibold text-gray-800 mb-3">
-            Perlemønster
-          </h3>
-          {patternGrid && patternGrid.length > 0 ? (
-            <div className="overflow-auto">
-              <div
-                className="grid border border-slate-300 shadow-inner bg-white rounded-md mx-auto"
-                style={{
-                  gridTemplateColumns: `repeat(${patternGrid[0]?.length || 0}, ${beadSize}px)`,
-                  gridTemplateRows: `repeat(${patternGrid.length}, ${beadSize}px)`,
-                  width: `${(patternGrid[0]?.length || 0) * beadSize + 2}px`,
-                  height: `${patternGrid.length * beadSize + 2}px`,
-                  imageRendering: "pixelated",
-                }}
-              >
-                {patternGrid.map((row, rowIndex) =>
-                  row.map((colorCode, colIndex) => {
-                    const beadInfo = colorInfoMap[colorCode] || { name: "Unknown Color", hex: "#FFFFFF" };
-                    const tooltipText = `${beadInfo.name}${beadInfo.code ? ` (${beadInfo.code})` : ''} | Row: ${rowIndex + 1}, Col: ${colIndex + 1}`;
-
-                    return (
-                      <div
-                        key={`${rowIndex}-${colIndex}`}
-                        title={tooltipText}
-                        style={{
-                          width: `${beadSize}px`,
-                          height: `${beadSize}px`,
-                          backgroundColor: beadInfo.hex,
-                          borderRadius: "50%",
-                          cursor: "pointer",
-                        }}
-                      />
-                    );
-                  }),
-                )}
+        <div className="grid grid-cols-1 gap-6 mb-6">
+          {pattern.pattern_data?.styled && (
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                Stilisert bilde ({pattern.pattern_data.style})
+              </h3>
+              <div className="overflow-auto">
+                <img
+                  src={`${apiUrl}/api/patterns/${pattern.uuid}/styled-image`}
+                  alt="Stilisert versjon"
+                  className="w-full h-auto rounded-lg border-2 border-gray-300 shadow-md"
+                />
               </div>
             </div>
-          ) : (
+          )}
+
+          {pop_art_url && (
             <div>
-              <img
-                src={imageUrl}
-                alt="Pattern"
-                className="max-w-full h-auto rounded-lg border-2 border-gray-300"
-              />
+              <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                Pop-art forhåndsvisning
+              </h3>
+              <div className="overflow-auto">
+                <img
+                  src={pop_art_url}
+                  alt="Pop-art version"
+                  className="w-full h-auto rounded-lg border-2 border-gray-300 shadow-md"
+                />
+              </div>
+            </div>
+          )}
+
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">
+              Perlemønster
+            </h3>
+            {patternGrid && patternGrid.length > 0 ? (
+              <div className="overflow-auto">
+                <div
+                  className="grid border border-slate-300 shadow-inner bg-white rounded-md mx-auto"
+                  style={{
+                    gridTemplateColumns: `repeat(${patternGrid[0]?.length || 0}, ${beadSize}px)`,
+                    gridTemplateRows: `repeat(${patternGrid.length}, ${beadSize}px)`,
+                    width: `${(patternGrid[0]?.length || 0) * beadSize + 2}px`,
+                    height: `${patternGrid.length * beadSize + 2}px`,
+                    imageRendering: "pixelated",
+                  }}
+                >
+                  {patternGrid.map((row, rowIndex) =>
+                    row.map((colorCode, colIndex) => {
+                      const beadInfo = colorInfoMap[colorCode] || { name: "Unknown Color", hex: "#FFFFFF" };
+                      const tooltipText = `${beadInfo.name}${beadInfo.code ? ` (${beadInfo.code})` : ''} | Row: ${rowIndex + 1}, Col: ${colIndex + 1}`;
+
+                      return (
+                        <div
+                          key={`${rowIndex}-${colIndex}`}
+                          title={tooltipText}
+                          style={{
+                            width: `${beadSize}px`,
+                            height: `${beadSize}px`,
+                            backgroundColor: beadInfo.hex,
+                            borderRadius: "50%",
+                            cursor: "pointer",
+                          }}
+                        />
+                      );
+                    }),
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div>
+                <img
+                  src={imageUrl}
+                  alt="Pattern"
+                  className="max-w-full h-auto rounded-lg border-2 border-gray-300"
+                />
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="mb-6 space-y-2">
+          {pattern.boards_width && pattern.boards_height && (
+            <>
+              <p className="text-sm">
+                <strong>Brett:</strong> {pattern.boards_width} × {pattern.boards_height} brett ({calculateTotal(pattern.boards_width, pattern.boards_height)} totalt)
+              </p>
+            </>
+          )}
+          { pattern.pattern_data?.width && pattern.pattern_data?.height && (
+            <div>
+              <p className="text-sm">
+                <strong>Størrelse: </strong> {pattern.pattern_data?.height} x {pattern.pattern_data.width} { pearlsText }
+              </p>
+              <p className="text-sm">
+                <strong>Antall perler: </strong> {pattern.pattern_data?.height * pattern.pattern_data.width} { pearlsText }
+              </p>
             </div>
           )}
         </div>
-      </div>
-
-      <div className="mb-6 space-y-2">
-        {pattern.boards_width && pattern.boards_height ? (
-          <>
-            <p className="text-sm">
-              <strong>Størrelse:</strong> {pattern.boards_width * 29} × {pattern.boards_height * 29} perler
-            </p>
-            <p className="text-sm">
-              <strong>Brett:</strong> {pattern.boards_width} × {pattern.boards_height} brett ({calculateTotal(pattern.boards_width, pattern.boards_height)} totalt)
-            </p>
-          </>
-        ) : (
-          <p className="text-sm">
-            Størrelse: {pattern.grid_size}x{pattern.grid_size} { pearlsText }
-          </p>
-        )}
-      </div>
       </div>
     </>
   );

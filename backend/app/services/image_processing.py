@@ -37,6 +37,36 @@ def hex_to_rgb(hex_color: str) -> Tuple[int, int, int]:
         raise ValueError(f"Invalid HEX color string: {hex_color}")
     return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
 
+def calculate_dimensions_maintaining_aspect_ratio(
+    original_width: int,
+    original_height: int,
+    max_width: int,
+    max_height: int
+) -> Tuple[int, int]:
+    """
+    Calculate new dimensions that maintain aspect ratio.
+    The longest side of the original image will be scaled to match its corresponding maximum.
+
+    Args:
+        original_width: Original image width
+        original_height: Original image height
+        max_width: Maximum allowed width
+        max_height: Maximum allowed height
+
+    Returns:
+        Tuple of (new_width, new_height) maintaining aspect ratio
+    """
+    aspect_ratio = original_width / original_height
+
+    if original_width >= original_height:
+        new_width = max_width
+        new_height = int(max_width / aspect_ratio)
+    else:
+        new_height = max_height
+        new_width = int(max_height * aspect_ratio)
+
+    return new_width, new_height
+
 def get_hama_colors() -> List[Dict]:
     """Loads Hama colors from db.storage (with caching) and adds RGB tuples."""
     global HAMA_COLORS_CACHE
@@ -349,35 +379,25 @@ def suggest_board_dimensions(image: Image.Image) -> Dict:
     Each size maintains the aspect ratio of the original image.
     """
     BOARD_SIZE = 29
-
-    # Calculate aspect ratio
     aspect_ratio = image.width / image.height
 
-    # Define max dimensions for each size (in boards)
     sizes = {
         "small": {"max_boards": 2},
         "medium": {"max_boards": 4},
         "large": {"max_boards": 6}
     }
 
-    # Calculate dimensions for each size while maintaining aspect ratio
     size_options = {}
     for size_name, size_config in sizes.items():
         max_boards = size_config["max_boards"]
-        max_beads = max_boards * BOARD_SIZE
 
-        if aspect_ratio > 1:  # Wider than tall
-            beads_width = max_beads
-            beads_height = max(1, round(max_beads / aspect_ratio))
-        else:  # Taller than wide or square
-            beads_height = max_beads
-            beads_width = max(1, round(max_beads * aspect_ratio))
+        if image.width >= image.height:
+            boards_width = max_boards
+            boards_height = max(1, round(max_boards / aspect_ratio))
+        else:
+            boards_height = max_boards
+            boards_width = max(1, round(max_boards * aspect_ratio))
 
-        # Convert beads to boards (round up to nearest board)
-        boards_width = max(1, math.ceil(beads_width / BOARD_SIZE))
-        boards_height = max(1, math.ceil(beads_height / BOARD_SIZE))
-
-        # Calculate actual beads based on board count
         actual_beads_width = boards_width * BOARD_SIZE
         actual_beads_height = boards_height * BOARD_SIZE
 
@@ -389,7 +409,6 @@ def suggest_board_dimensions(image: Image.Image) -> Dict:
             "beads_height": actual_beads_height
         }
 
-    # Suggest best size based on image complexity (megapixels)
     total_pixels = image.width * image.height
     megapixels = total_pixels / 1_000_000
 
@@ -416,7 +435,6 @@ def convert_image_to_pattern(
     use_quantization: bool = True,
     use_dithering: bool = False,
     enhance_contrast: float = 1.2,
-    # New advanced preprocessing parameters
     use_advanced_preprocessing: bool = False,
     remove_bg: bool = False,
     enhance_colors: bool = True,
@@ -454,7 +472,6 @@ def convert_image_to_pattern(
     Returns:
         Tuple of (output_path, colors_used, pattern_data)
     """
-    # Get color palette
     if use_perle_colors:
         bead_colors = get_perle_colors()
     else:
@@ -463,7 +480,6 @@ def convert_image_to_pattern(
     if not bead_colors:
         raise HTTPException(status_code=500, detail="Bead color data is not available for processing.")
 
-    # Pre-process image for better results
     print("Pre-processing image...")
     if use_advanced_preprocessing:
         image = enhanced_preprocess_image(
@@ -478,21 +494,23 @@ def convert_image_to_pattern(
             simplification_strength=simplification_strength
         )
     else:
-        # Use legacy preprocessing
         image = preprocess_image(image, enhance_contrast=enhance_contrast)
 
-    # Calculate total grid size based on boards
     BOARD_SIZE = 29
-    new_width = boards_width * BOARD_SIZE
-    new_height = boards_height * BOARD_SIZE
+    max_width = boards_width * BOARD_SIZE
+    max_height = boards_height * BOARD_SIZE
 
-    # Resize image to grid dimensions
-    # Use NEAREST for styled images to avoid color blending at edges
+    new_width, new_height = calculate_dimensions_maintaining_aspect_ratio(
+        image.width,
+        image.height,
+        max_width,
+        max_height
+    )
+
     resampling_method = Image.Resampling.NEAREST if use_nearest_neighbor else Image.Resampling.LANCZOS
     img_resized = image.resize((new_width, new_height), resampling_method)
-    print(f"Image resized to: {img_resized.size} using {resampling_method}")
+    print(f"Image resized to: {img_resized.size} using {resampling_method} (aspect ratio maintained)")
 
-    # Apply color quantization if enabled
     if use_quantization:
         print("Applying color quantization...")
         img_resized = quantize_to_perle_colors(
@@ -501,7 +519,6 @@ def convert_image_to_pattern(
             use_dithering=use_dithering
         )
 
-    # Process each pixel to find closest bead color
     pattern_data = []
     color_counts = {}
 
@@ -614,7 +631,6 @@ def convert_image_to_pattern_from_file(
     use_quantization: bool = True,
     use_dithering: bool = True,
     enhance_contrast: float = 1.2,
-    # New advanced preprocessing parameters
     use_advanced_preprocessing: bool = False,
     remove_bg: bool = False,
     enhance_colors: bool = True,

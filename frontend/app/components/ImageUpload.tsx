@@ -203,7 +203,6 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-      {/* Step 1: Upload Image */}
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-3">
           1. Last opp bilde
@@ -254,7 +253,6 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
 
       {preview && !analyzing && sizeOptions && (
         <div className="mb-6 space-y-6">
-          {/* Step 2: Choose Size */}
           <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-3">
               2. Velg størrelse
@@ -290,7 +288,7 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
                         {option.boards_width} × {option.boards_height} brett
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
-                        {option.total_beads} perler
+                        Max {option.total_beads} perler
                       </p>
                     </div>
                   </button>
@@ -299,13 +297,11 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
             </div>
           </div>
 
-          {/* Step 3: Choose Processing Mode */}
           <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-3">
               3. Velg stil
             </h3>
             <div className="space-y-3">
-              {/* AI Style Option */}
               <label
                 className={`flex items-start p-4 rounded-lg border-2 cursor-pointer transition-all ${
                   processingMode === "ai-style"
@@ -334,7 +330,6 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
                 </div>
               </label>
 
-              {/* Realistic Option */}
               <label
                 className={`flex items-start p-4 rounded-lg border-2 cursor-pointer transition-all ${
                   processingMode === "realistic"
@@ -365,7 +360,6 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
             </div>
           </div>
 
-          {/* Advanced Options for Realistic Mode */}
           {processingMode === "realistic" && (
             <div className="border-t border-gray-200 pt-4">
               <button
@@ -379,7 +373,6 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
 
               {showAdvancedOptions && (
                 <div className="mt-4 space-y-4 p-4 bg-gray-50 rounded-lg">
-                  {/* Enable Advanced Preprocessing */}
                   <div className="flex items-center justify-between">
                     <label className="text-sm font-medium text-gray-700">
                       Bruk avansert forbehandling
@@ -394,7 +387,6 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
 
                   {useAdvancedPreprocessing && (
                     <>
-                      {/* Remove Background */}
                       <div className="flex items-center justify-between">
                         <label className="text-sm font-medium text-gray-700">
                           Fjern bakgrunn
@@ -407,7 +399,6 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
                         />
                       </div>
 
-                      {/* Enhance Colors */}
                       <div className="flex items-center justify-between">
                         <label className="text-sm font-medium text-gray-700">
                           Forsterke farger
@@ -422,7 +413,6 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
 
                       {enhanceColors && (
                         <>
-                          {/* Color Boost */}
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                               Fargemetning: {colorBoost.toFixed(1)}x
@@ -442,7 +432,6 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
                             </div>
                           </div>
 
-                          {/* Contrast Boost */}
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                               Kontrast: {contrastBoost.toFixed(1)}x
@@ -462,7 +451,6 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
                             </div>
                           </div>
 
-                          {/* Brightness Boost */}
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                               Lysstyrke: {brightnessBoost.toFixed(1)}x
@@ -484,7 +472,6 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
                         </>
                       )}
 
-                      {/* Simplify Details */}
                       <div className="flex items-center justify-between">
                         <label className="text-sm font-medium text-gray-700">
                           Forenkle detaljer
@@ -499,7 +486,6 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
 
                       {simplifyDetails && (
                         <>
-                          {/* Simplification Method */}
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                               Forenklings-metode
@@ -515,7 +501,6 @@ export default function ImageUpload({ onPatternGenerated }: ImageUploadProps) {
                             </select>
                           </div>
 
-                          {/* Simplification Strength */}
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                               Forenklings-styrke
