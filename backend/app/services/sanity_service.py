@@ -241,6 +241,7 @@ class SanityService:
         images = []
         for idx, asset_id in enumerate(image_asset_ids):
             image = self.create_image_reference(asset_id, title)
+            image["_key"] = f"{asset_id}-{idx}"  # Add unique key for Sanity array
             image["isPrimary"] = idx == 0
             images.append(image)
 
