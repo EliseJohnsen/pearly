@@ -17,17 +17,8 @@ except ImportError:
     MEDIAPIPE_AVAILABLE = False
     mp = None
 
-try:
-    import databutton as db
-    DATABUTTON_AVAILABLE = True
-except ImportError:
-    DATABUTTON_AVAILABLE = False
-    db = None
-
-ACTIVE_HAMA_COLORS_FILENAME = "hama-colors-v1.json"
 _CURRENT_DIR = Path(__file__).parent.parent
 PERLE_COLORS_FILEPATH = _CURRENT_DIR / "data" / "perle-colors.json"
-HAMA_COLORS_CACHE: Optional[List[Dict]] = None
 PERLE_COLORS_CACHE: Optional[List[Dict]] = None
 
 def hex_to_rgb(hex_color: str) -> Tuple[int, int, int]:
@@ -66,41 +57,6 @@ def calculate_dimensions_maintaining_aspect_ratio(
         new_width = int(max_height * aspect_ratio)
 
     return new_width, new_height
-
-def get_hama_colors() -> List[Dict]:
-    """Loads Hama colors from db.storage (with caching) and adds RGB tuples."""
-    global HAMA_COLORS_CACHE
-    if HAMA_COLORS_CACHE is not None:
-        return HAMA_COLORS_CACHE
-
-    if not DATABUTTON_AVAILABLE:
-        raise HTTPException(status_code=500, detail="Databutton module not available. Cannot load Hama colors from db.storage.")
-
-    try:
-        raw_colors = db.storage.json.get(ACTIVE_HAMA_COLORS_FILENAME)
-        processed_colors = []
-        for color in raw_colors:
-            if color.get("hex"):
-                try:
-                    color["rgb"] = hex_to_rgb(color["hex"])
-                    processed_colors.append(color)
-                except ValueError as e:
-                    print(f"Warning: Could not convert hex {color.get('hex')} for color {color.get('name')} to RGB: {e}")
-            else:
-                print(f"Warning: Color {color.get('name')} is missing a HEX value and will be skipped.")
-
-        HAMA_COLORS_CACHE = processed_colors
-        if not HAMA_COLORS_CACHE:
-            print(f"Error: Hama colors cache is empty after processing {ACTIVE_HAMA_COLORS_FILENAME}.")
-            raise HTTPException(status_code=500, detail="Hama color data is unavailable or empty after processing.")
-        print(f"Successfully loaded and processed {len(HAMA_COLORS_CACHE)} Hama colors with RGB values.")
-        return HAMA_COLORS_CACHE
-    except FileNotFoundError:
-        print(f"ERROR: Hama colors file '{ACTIVE_HAMA_COLORS_FILENAME}' not found in db.storage.")
-        raise HTTPException(status_code=500, detail=f"Hama colors file '{ACTIVE_HAMA_COLORS_FILENAME}' not found.")
-    except Exception as e:
-        print(f"ERROR: Could not load or process Hama colors: {e}")
-        raise HTTPException(status_code=500, detail=f"Could not load or process Hama colors: {e}")
 
 def get_perle_colors() -> List[Dict]:
     """Loads Perle colors from local JSON file (with caching) and adds RGB tuples."""
@@ -472,13 +428,11 @@ def convert_image_to_pattern(
     Returns:
         Tuple of (output_path, colors_used, pattern_data)
     """
-    if use_perle_colors:
-        bead_colors = get_perle_colors()
-    else:
-        bead_colors = get_hama_colors()
+    # Always use Perle colors (Hama colors are no longer supported)
+    bead_colors = get_perle_colors()
 
     if not bead_colors:
-        raise HTTPException(status_code=500, detail="Bead color data is not available for processing.")
+        raise HTTPException(status_code=500, detail="Perle color data is not available for processing.")
 
     print("Pre-processing image...")
     if use_advanced_preprocessing:
