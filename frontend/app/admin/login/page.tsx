@@ -32,6 +32,9 @@ export default function AdminLoginPage() {
 
       const data = await response.json()
 
+      // Store token in cookie for middleware to use
+      document.cookie = `session_token=${data.access_token}; path=/; max-age=${30 * 24 * 60 * 60}; samesite=lax${window.location.protocol === 'https:' ? '; secure' : ''}`
+
       // Redirect to patterns page
       router.push('/patterns')
     } catch (err) {
