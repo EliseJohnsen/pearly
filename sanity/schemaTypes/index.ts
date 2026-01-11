@@ -13,7 +13,7 @@ import comingSoon from './comingSoon'
 import category from './category'
 import productVariantOption from './productVariantOption'
 import productVariant from './productVariant'
-// import shopProduct from './shopProduct'
+import roomTemplate from './roomTemplate'
 
 export const schemaTypes = [
   page,
@@ -31,5 +31,5 @@ export const schemaTypes = [
   category,
   productVariantOption,
   productVariant,
-  // shopProduct,
+  roomTemplate,
 ]

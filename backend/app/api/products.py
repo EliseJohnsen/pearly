@@ -5,6 +5,8 @@ from app.models.pattern import Pattern
 from app.schemas.product import ProductCreateFromPatternData
 from app.schemas.pattern import PatternResponse
 from app.services.sanity_service import SanityService
+from app.services.room_template_service import RoomTemplateService
+from app.services.mockup_generator import MockupGenerator
 import base64
 import logging
 from datetime import datetime, timedelta
@@ -70,7 +72,50 @@ async def create_product_from_pattern_data(
         logger.error(f"Failed to upload images to Sanity: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to upload images: {str(e)}")
 
-    # Create Pattern in database
+    mockup_asset_id = None
+    try:
+        boards_w = product_data.pattern_data.get("boards_width", 1)
+        boards_h = product_data.pattern_data.get("boards_height", 1)
+
+        logger.info(f"Looking for room template for dimensions: {boards_w}x{boards_h}")
+
+        room_template_service = RoomTemplateService()
+        room_template = await room_template_service.get_room_template_for_dimensions(
+            boards_w, boards_h
+        )
+
+        if room_template:
+            logger.info(f"Found room template: {room_template.get('name')}")
+
+            room_image_bytes = await room_template_service.download_room_image(
+                room_template["imageUrl"]
+            )
+
+            # Generate mockup with frame settings
+            frame_settings = room_template.get("frameSettings", {})
+            mockup_bytes = await MockupGenerator.generate_mockup(
+                pattern_image_bytes=pattern_image_bytes,
+                room_image_bytes=room_image_bytes,
+                frame_zone=room_template["frameZone"],
+                frame_settings=frame_settings,
+            )
+
+            mockup_filename = f"{product_data.slug}-interior-mockup.png"
+            mockup_upload_result = await sanity_service.upload_image_from_bytes(
+                mockup_bytes,
+                mockup_filename
+            )
+            mockup_asset_id = mockup_upload_result['asset_id']
+            logger.info(f"Uploaded mockup to Sanity: {mockup_asset_id}")
+        else:
+            logger.warning(
+                f"No room template found for dimensions {boards_w}x{boards_h}. "
+                "Mockup will not be generated."
+            )
+    except Exception as e:
+        # Don't fail the entire product creation if mockup generation fails
+        logger.warning(f"Failed to generate mockup (non-critical): {str(e)}", exc_info=True)
+
     pattern_uuid = str(uuid_lib.uuid4())
 
     updated_pattern_data = {
@@ -106,6 +151,8 @@ async def create_product_from_pattern_data(
 
         # Collect all image asset IDs
         image_asset_ids = [pattern_upload_result['asset_id']]
+        if mockup_asset_id:
+            image_asset_ids.append(mockup_asset_id)
         if styled_image_asset_id:
             image_asset_ids.append(styled_image_asset_id)
 

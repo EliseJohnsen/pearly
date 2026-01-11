@@ -178,7 +178,15 @@ def get_pattern_image(pattern_uuid: str, db: Session = Depends(get_db)):
     if not Path(pattern.pattern_image_path).exists():
         raise HTTPException(status_code=404, detail="Pattern image not found")
 
-    return FileResponse(pattern.pattern_image_path)
+    return FileResponse(
+        pattern.pattern_image_path,
+        media_type="image/png",
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, OPTIONS",
+            "Access-Control-Allow-Headers": "*",
+        }
+    )
 
 @router.get("/patterns/{pattern_uuid}/styled-image")
 def get_styled_image(pattern_uuid: str, db: Session = Depends(get_db)):
@@ -197,7 +205,15 @@ def get_styled_image(pattern_uuid: str, db: Session = Depends(get_db)):
     if not Path(styled_image_path).exists():
         raise HTTPException(status_code=404, detail="Styled image file not found")
 
-    return FileResponse(styled_image_path)
+    return FileResponse(
+        styled_image_path,
+        media_type="image/png",
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, OPTIONS",
+            "Access-Control-Allow-Headers": "*",
+        }
+    )
 
 class AIGenerationRequest(BaseModel):
     subject: str
