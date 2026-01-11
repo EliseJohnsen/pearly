@@ -43,6 +43,29 @@ Admin authentication and authorization.
 - Uses API key + JWT token authentication
 - See [app/core/auth.py](app/core/auth.py) for implementation
 
+**Creating Admin Users:**
+
+Local development:
+```bash
+cd backend
+python scripts/create_admin.py --name "Your Name" --email "you@example.com"
+```
+
+Railway (Production):
+```bash
+# Method 1: Using Railway SSH (Recommended)
+# Get SSH command from Railway Dashboard → Service → "Connect" → "Copy SSH Command"
+railway ssh --project=<PROJECT_ID> --environment=<ENV_ID> --service=<SERVICE_ID> -- \
+  python scripts/create_admin.py --name '"Your Name"' --email you@example.com
+
+# Method 2: Via Railway Dashboard
+# 1. Go to railway.app → Your Project → Service
+# 2. Click "Connect" → "Shell"
+# 3. Run: python scripts/create_admin.py --name "Your Name" --email you@example.com
+```
+
+**⚠️ Important:** Save the generated API key immediately - it cannot be retrieved later!
+
 ## Product Data (Sanity CMS)
 
 All product information is stored in Sanity:

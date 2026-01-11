@@ -173,7 +173,7 @@ DATABASE_URL=<supabase-eller-postgres-url>
 Sett disse i Vercel:
 
 ```env
-NEXT_PUBLIC_BACKEND_URL=https://din-railway-url.railway.app
+NEXT_PUBLIC_API_URL=https://din-railway-url.railway.app
 ```
 
 ### Opprett produksjons-admin

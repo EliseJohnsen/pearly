@@ -28,7 +28,7 @@ export async function middleware(request: NextRequest) {
 
   // Verify token with backend
   try {
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
     const response = await fetch(`${backendUrl}/api/auth/me`, {
       headers: {
         Cookie: `session_token=${sessionToken}`,
