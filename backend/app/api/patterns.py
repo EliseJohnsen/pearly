@@ -375,3 +375,50 @@ def download_pattern_pdf(pattern_uuid: str, db: Session = Depends(get_db)):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating PDF: {str(e)}")
+
+@router.delete("/patterns/{pattern_uuid}")
+def delete_pattern(
+    pattern_uuid: str,
+    db: Session = Depends(get_db),
+    admin: AdminUser = Depends(get_current_admin)
+):
+    """
+    Delete a pattern by UUID.
+    Returns information about whether the pattern has an associated product.
+    """
+    pattern = db.query(Pattern).filter(Pattern.uuid == pattern_uuid).first()
+
+    if not pattern:
+        raise HTTPException(status_code=404, detail="Pattern not found")
+
+    # Check if pattern has an associated product
+    has_product = False
+    sanity_product_id = None
+    if pattern.pattern_data and "sanity_product_id" in pattern.pattern_data:
+        has_product = True
+        sanity_product_id = pattern.pattern_data["sanity_product_id"]
+
+    # Delete associated image files if they exist
+    try:
+        if pattern.pattern_image_path and Path(pattern.pattern_image_path).exists():
+            Path(pattern.pattern_image_path).unlink()
+        if pattern.original_image_path and Path(pattern.original_image_path).exists():
+            Path(pattern.original_image_path).unlink()
+        if pattern.pattern_data and "styled_image_path" in pattern.pattern_data:
+            styled_path = pattern.pattern_data["styled_image_path"]
+            if Path(styled_path).exists():
+                Path(styled_path).unlink()
+    except Exception as e:
+        # Log error but continue with deletion
+        print(f"Error deleting pattern files: {str(e)}")
+
+    # Delete pattern from database
+    db.delete(pattern)
+    db.commit()
+
+    return {
+        "success": True,
+        "message": "Pattern deleted successfully",
+        "has_product": has_product,
+        "sanity_product_id": sanity_product_id
+    }
