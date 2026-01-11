@@ -116,7 +116,7 @@ export default function CreateProductModal({
         name: productName,
         description,
         long_description: description,
-        status: "in_stock",
+        status: "coming_soon",
         slug: generateSlug(productName),
         difficulty_level: difficulty,
         currency: "NOK",

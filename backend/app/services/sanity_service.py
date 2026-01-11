@@ -187,7 +187,7 @@ class SanityService:
         slug: str,
         description: Optional[str],
         image_asset_ids: list[str],
-        status: str = "in_stock",
+        status: str = "coming_soon",
         long_description: Optional[list] = None,
         difficulty: Optional[str] = None,
         colors_count: Optional[int] = None,
