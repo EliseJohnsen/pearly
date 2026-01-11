@@ -18,20 +18,23 @@ export default function ProductSection({ data }: ProductSectionProps = {}) {
             {data.sectionSubtitle}
             </p>
         )}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                 {data.products?.map((product: any) => (
                 <a
                     key={product._id}
                     href={`/produkter/${product.slug.current}`}
-                    className="border rounded-lg p-4 hover:shadow-lg transition block"
+                    className="rounded-lg p-4 hover:shadow-lg transition block"
                 >
-                    {product.image?.asset?.url && (
-                    <img
-                        src={product.image.asset.url}
-                        alt={product.image.alt || product.title}
-                        className="w-full max-h-72 object-cover rounded mb-4"
-                    />
-                    )}
+                    {product.images && product.images.length > 0 && (() => {
+                      const primaryImage = product.images.find((img: any) => img.isPrimary) || product.images[0]
+                      return (
+                        <img
+                          src={primaryImage.asset.url}
+                          alt={primaryImage.alt || product.title}
+                          className="aspect-3/4 object-cover rounded mb-4"
+                        />
+                      )
+                    })()}
                     <h3 className="font-semibold text-lg mb-2">
                     {product.title}
                     </h3>
