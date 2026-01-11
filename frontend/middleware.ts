@@ -31,8 +31,9 @@ export async function middleware(request: NextRequest) {
     const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
     const response = await fetch(`${backendUrl}/api/auth/me`, {
       headers: {
-        Cookie: `session_token=${sessionToken}`,
+        'Authorization': `Bearer ${sessionToken}`,
       },
+      cache: 'no-store',
     })
 
     if (!response.ok) {
@@ -45,7 +46,6 @@ export async function middleware(request: NextRequest) {
     // Token is valid, allow access
     return NextResponse.next()
   } catch (error) {
-    // Error verifying token, redirect to login
     const loginUrl = new URL('/admin/login', request.url)
     loginUrl.searchParams.set('redirect', pathname)
     return NextResponse.redirect(loginUrl)

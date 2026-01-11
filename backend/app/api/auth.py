@@ -6,6 +6,8 @@ from app.core.database import get_db
 from app.core.auth import create_access_token
 from app.core.dependencies import verify_admin_api_key, get_current_admin
 from app.models.admin_user import AdminUser
+from app.core.config import settings
+import os
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -37,14 +39,17 @@ async def login(
     # Create JWT token
     access_token = create_access_token(data={"sub": admin.email})
 
-    # Set httpOnly cookie (secure in production)
+    # Set httpOnly cookie (secure in production with HTTPS)
+    is_production = os.getenv("RAILWAY_ENVIRONMENT") is not None or \
+                    settings.DATABASE_URL.startswith("postgresql")
+
     response.set_cookie(
         key="session_token",
         value=access_token,
         httponly=True,
         max_age=30 * 24 * 60 * 60,  # 30 days
         samesite="lax",
-        secure=False,  # Set to True in production with HTTPS
+        secure=is_production,  # True in production (HTTPS), False locally (HTTP)
     )
 
     return LoginResponse(
