@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, Response, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -46,7 +46,7 @@ async def login(
     response.set_cookie(
         key="session_token",
         value=access_token,
-        httponly=True,
+        httponly=False,  # Allow JavaScript to read for Authorization header
         max_age=30 * 24 * 60 * 60,  # 30 days
         samesite="lax",
         secure=is_production,  # True in production (HTTPS), False locally (HTTP)
