@@ -41,7 +41,9 @@ export default function PatternsListPage() {
     const fetchPatterns = async () => {
       try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-        const response = await fetch(`${apiUrl}/api/patterns`);
+        const response = await fetch(`${apiUrl}/api/patterns`, {
+          credentials: 'include', // Send cookies with request
+        });
 
         if (!response.ok) {
           throw new Error("Kunne ikke hente mønstre");

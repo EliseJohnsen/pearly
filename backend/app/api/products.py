@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.core.database import get_db
+from app.core.dependencies import get_current_admin
+from app.models.admin_user import AdminUser
 from app.models.pattern import Pattern
 from app.schemas.product import ProductCreateFromPatternData
 from app.schemas.pattern import PatternResponse
@@ -20,7 +22,8 @@ router = APIRouter()
 @router.post("/products/create-from-pattern-data", response_model=PatternResponse)
 async def create_product_from_pattern_data(
     product_data: ProductCreateFromPatternData,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    admin: AdminUser = Depends(get_current_admin)
 ):
     """
     Create a pattern in database and a product in Sanity from pattern generation data.

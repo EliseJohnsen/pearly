@@ -3,6 +3,8 @@ from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from app.core.database import get_db
+from app.core.dependencies import get_current_admin
+from app.models.admin_user import AdminUser
 from app.models.pattern import Pattern
 from app.schemas.pattern import PatternResponse
 from app.services.image_processing import (
@@ -128,7 +130,10 @@ async def upload_image(
     )
 
 @router.get("/patterns")
-def get_all_patterns(db: Session = Depends(get_db)):
+def get_all_patterns(
+    db: Session = Depends(get_db),
+    admin: AdminUser = Depends(get_current_admin)
+):
     """Get all patterns from the database"""
     patterns = db.query(Pattern).order_by(Pattern.created_at.desc()).all()
 
@@ -234,7 +239,8 @@ async def upload_image_with_style(
     boards_height: int = 1,
     model: str = "google/nano-banana",
     prompt_strength: float = 0.5,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    admin: AdminUser = Depends(get_current_admin)
 ):
     """
     Upload an image and transform it to a specific artistic style using Replicate AI,
