@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import LoadingSpinner from "../components/LoadingSpinner";
+import { authenticatedFetch } from "@/lib/auth";
 
 interface Pattern {
   id: number;
@@ -41,9 +42,7 @@ export default function PatternsListPage() {
     const fetchPatterns = async () => {
       try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-        const response = await fetch(`${apiUrl}/api/patterns`, {
-          credentials: 'include', // Send cookies with request
-        });
+        const response = await authenticatedFetch(`${apiUrl}/api/patterns`);
 
         if (!response.ok) {
           throw new Error("Kunne ikke hente mønstre");

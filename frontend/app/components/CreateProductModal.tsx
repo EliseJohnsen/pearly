@@ -1,4 +1,5 @@
 "use client";
+import { getAuthHeaders } from "@/lib/auth";
 
 import { useState, useEffect } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
@@ -145,6 +146,7 @@ export default function CreateProductModal({
         {
           method: "POST",
           headers: {
+            ...getAuthHeaders(),
             "Content-Type": "application/json",
           },
           body: JSON.stringify(productData),

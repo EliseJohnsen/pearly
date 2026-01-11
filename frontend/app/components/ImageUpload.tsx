@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import LoadingSpinner from "./LoadingSpinner";
 import { useUIString } from '@/app/hooks/useSanityData';
+import { getAuthHeaders } from "@/lib/auth";
 
 interface ImageUploadProps {
   onPatternGenerated: (data: any) => void;
@@ -119,6 +120,7 @@ export default function ImageUpload({ onPatternGenerated, onUploadStatusChange }
         `${apiUrl}/api/patterns/upload-with-style?${params.toString()}`,
         {
           method: "POST",
+          headers: getAuthHeaders(),
           body: formData,
         }
       );
