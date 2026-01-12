@@ -49,7 +49,6 @@ export interface Hero {
 export interface Banner {
   _id: string
   text: string
-  type: 'info' | 'warning' | 'success' | 'promo'
   backgroundColor?: string
   isActive: boolean
   link?: {

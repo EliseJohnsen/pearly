@@ -9,7 +9,7 @@ export const navigationByTypeQuery = (type: string) => groq`*[_type == "navigati
 export const heroQuery = groq`*[_type == "hero" && isActive == true][0]{_id,heading,subheading,image{asset->{_id,url,metadata{lqip,dimensions{width,height}}},alt,hotspot},ctaButton{text,href},isActive}`
 
 // Banner query
-export const bannerQuery = groq`*[_type == "banner" && isActive == true][0]{_id,text,type,backgroundColor,isActive,link{text,href}}`
+export const bannerQuery = groq`*[_type == "banner" && isActive == true][0]{_id,text,backgroundColor,isActive,link{text,href}}`
 
 // How It Works query
 export const howItWorksQuery = groq`*[_type == "howItWorks"][0]{_id,sectionTitle,sectionSubtitle,steps[]{title,description,icon,image{asset->{_id,url,metadata{lqip,dimensions{width,height}}},alt},order}|order(order asc)}`
