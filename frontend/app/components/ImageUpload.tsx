@@ -258,7 +258,7 @@ export default function ImageUpload({ onPatternGenerated, onUploadStatusChange }
             <h3 className="text-lg font-semibold text-gray-900 mb-3">
               2. Velg størrelse
             </h3>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {(["small", "medium", "large"] as const).map((size) => {
                 const option = sizeOptions[size];
                 const isSelected = selectedSize === size;
