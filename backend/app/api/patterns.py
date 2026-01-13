@@ -16,6 +16,7 @@ from app.services.pdf_generator import generate_pattern_pdf
 from app.core.config import settings
 from pathlib import Path
 import uuid
+import base64
 from datetime import datetime, timedelta
 
 router = APIRouter()
@@ -103,30 +104,32 @@ async def upload_image(
     # Calculate total grid size for backwards compatibility
     grid_size = pattern_data["width"]
 
-    pattern = Pattern(
-        uuid=file_uuid,
-        original_image_path=str(original_path),
-        pattern_image_path=str(pattern_path),
-        pattern_data=pattern_data,
-        grid_size=grid_size,
-        colors_used=colors_used,
-        expires_at=datetime.utcnow() + timedelta(days=30)
-    )
+    # Create timestamp since we're not saving to DB yet
+    created_at = datetime.utcnow()
 
-    db.add(pattern)
-    db.commit()
-    db.refresh(pattern)
+    # Read pattern image and encode as base64
+    with open(pattern_path, "rb") as f:
+        pattern_image_base64 = base64.b64encode(f.read()).decode('utf-8')
+
+    # Read styled image if it exists
+    styled_image_base64 = None
+    if pattern_data.get("styled") and "styled_image_path" in pattern_data:
+        styled_path = Path(pattern_data["styled_image_path"])
+        if styled_path.exists():
+            with open(styled_path, "rb") as f:
+                styled_image_base64 = base64.b64encode(f.read()).decode('utf-8')
 
     return PatternResponse(
-        id=pattern.id,
-        uuid=pattern.uuid,
-        pattern_image_url=f"/api/patterns/{pattern.uuid}/image",
-        grid_size=pattern.grid_size,
-        colors_used=pattern.colors_used,
-        created_at=pattern.created_at,
+        uuid=file_uuid,
+        pattern_image_url=f"/api/patterns/{file_uuid}/image",
+        grid_size=grid_size,
+        colors_used=colors_used,
+        created_at=created_at,
         boards_width=boards_width,
         boards_height=boards_height,
-        pattern_data=pattern.pattern_data
+        pattern_data=pattern_data,
+        pattern_image_base64=pattern_image_base64,
+        styled_image_base64=styled_image_base64
     )
 
 @router.get("/patterns")
@@ -141,7 +144,7 @@ def get_all_patterns(
         PatternResponse(
             id=pattern.id,
             uuid=pattern.uuid,
-            pattern_image_url=f"/api/patterns/{pattern.uuid}/image",
+            pattern_image_url=pattern.pattern_data.get("sanity_pattern_image_url", "") if pattern.pattern_data else "",
             grid_size=pattern.grid_size,
             colors_used=pattern.colors_used,
             created_at=pattern.created_at,
@@ -162,7 +165,7 @@ def get_pattern(pattern_uuid: str, db: Session = Depends(get_db)):
     return PatternResponse(
         id=pattern.id,
         uuid=pattern.uuid,
-        pattern_image_url=f"/api/patterns/{pattern.uuid}/image",
+        pattern_image_url=pattern.pattern_data.get("sanity_pattern_image_url", "") if pattern.pattern_data else "",
         grid_size=pattern.grid_size,
         colors_used=pattern.colors_used,
         created_at=pattern.created_at,
@@ -171,54 +174,6 @@ def get_pattern(pattern_uuid: str, db: Session = Depends(get_db)):
         pattern_data=pattern.pattern_data
     )
 
-@router.get("/patterns/{pattern_uuid}/image")
-def get_pattern_image(pattern_uuid: str, db: Session = Depends(get_db)):
-    from fastapi.responses import FileResponse
-
-    pattern = db.query(Pattern).filter(Pattern.uuid == pattern_uuid).first()
-
-    if not pattern:
-        raise HTTPException(status_code=404, detail="Pattern not found")
-
-    if not Path(pattern.pattern_image_path).exists():
-        raise HTTPException(status_code=404, detail="Pattern image not found")
-
-    return FileResponse(
-        pattern.pattern_image_path,
-        media_type="image/png",
-        headers={
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, OPTIONS",
-            "Access-Control-Allow-Headers": "*",
-        }
-    )
-
-@router.get("/patterns/{pattern_uuid}/styled-image")
-def get_styled_image(pattern_uuid: str, db: Session = Depends(get_db)):
-    from fastapi.responses import FileResponse
-
-    pattern = db.query(Pattern).filter(Pattern.uuid == pattern_uuid).first()
-
-    if not pattern:
-        raise HTTPException(status_code=404, detail="Pattern not found")
-
-    if not pattern.pattern_data or "styled_image_path" not in pattern.pattern_data:
-        raise HTTPException(status_code=404, detail="No styled image available for this pattern")
-
-    styled_image_path = pattern.pattern_data["styled_image_path"]
-
-    if not Path(styled_image_path).exists():
-        raise HTTPException(status_code=404, detail="Styled image file not found")
-
-    return FileResponse(
-        styled_image_path,
-        media_type="image/png",
-        headers={
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, OPTIONS",
-            "Access-Control-Allow-Headers": "*",
-        }
-    )
 
 class AIGenerationRequest(BaseModel):
     subject: str
@@ -239,7 +194,6 @@ async def upload_image_with_style(
     boards_height: int = 1,
     model: str = "google/nano-banana",
     prompt_strength: float = 0.5,
-    db: Session = Depends(get_db),
     admin: AdminUser = Depends(get_current_admin)
 ):
     """
@@ -305,40 +259,43 @@ async def upload_image_with_style(
 
         grid_size = pattern_data["width"]
 
-        pattern = Pattern(
-            uuid=file_uuid,
-            original_image_path=str(original_path),
-            pattern_image_path=str(pattern_path),
-            pattern_data={
-                **pattern_data,
-                "styled": True,
-                "style": style,
-                "styled_image_path": str(styled_path),
-                "ai_transformation": {
-                    "model": transformation_metadata["model"],
-                    "prompt": transformation_metadata["prompt"],
-                    "prompt_strength": transformation_metadata["prompt_strength"]
-                }
-            },
-            grid_size=grid_size,
-            colors_used=colors_used,
-            expires_at=datetime.utcnow() + timedelta(days=30)
-        )
+        # Create timestamp since we're not saving to DB yet
+        created_at = datetime.utcnow()
 
-        db.add(pattern)
-        db.commit()
-        db.refresh(pattern)
+        # Prepare pattern data with styling info
+        full_pattern_data = {
+            **pattern_data,
+            "styled": True,
+            "style": style,
+            "styled_image_path": str(styled_path),
+            "ai_transformation": {
+                "model": transformation_metadata["model"],
+                "prompt": transformation_metadata["prompt"],
+                "prompt_strength": transformation_metadata["prompt_strength"]
+            }
+        }
+
+        # Read pattern image and encode as base64
+        with open(pattern_path, "rb") as f:
+            pattern_image_base64 = base64.b64encode(f.read()).decode('utf-8')
+
+        # Read styled image and encode as base64
+        styled_image_base64 = None
+        if styled_path.exists():
+            with open(styled_path, "rb") as f:
+                styled_image_base64 = base64.b64encode(f.read()).decode('utf-8')
 
         return PatternResponse(
-            id=pattern.id,
-            uuid=pattern.uuid,
-            pattern_image_url=f"/api/patterns/{pattern.uuid}/image",
-            grid_size=pattern.grid_size,
-            colors_used=pattern.colors_used,
-            created_at=pattern.created_at,
+            uuid=file_uuid,
+            pattern_image_url=f"/api/patterns/{file_uuid}/image",
+            grid_size=grid_size,
+            colors_used=colors_used,
+            created_at=created_at,
             boards_width=boards_width,
             boards_height=boards_height,
-            pattern_data=pattern.pattern_data
+            pattern_data=full_pattern_data,
+            pattern_image_base64=pattern_image_base64,
+            styled_image_base64=styled_image_base64
         )
 
     except Exception as e:
@@ -397,20 +354,6 @@ def delete_pattern(
     if pattern.pattern_data and "sanity_product_id" in pattern.pattern_data:
         has_product = True
         sanity_product_id = pattern.pattern_data["sanity_product_id"]
-
-    # Delete associated image files if they exist
-    try:
-        if pattern.pattern_image_path and Path(pattern.pattern_image_path).exists():
-            Path(pattern.pattern_image_path).unlink()
-        if pattern.original_image_path and Path(pattern.original_image_path).exists():
-            Path(pattern.original_image_path).unlink()
-        if pattern.pattern_data and "styled_image_path" in pattern.pattern_data:
-            styled_path = pattern.pattern_data["styled_image_path"]
-            if Path(styled_path).exists():
-                Path(styled_path).unlink()
-    except Exception as e:
-        # Log error but continue with deletion
-        print(f"Error deleting pattern files: {str(e)}")
 
     # Delete pattern from database
     db.delete(pattern)

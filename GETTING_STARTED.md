@@ -104,8 +104,6 @@ Kopier Railway backend URL (f.eks. `https://perle-backend.railway.app`)
 **patterns** tabell:
 - `id` - Primary key
 - `uuid` - Unik identifikator (for URL)
-- `original_image_path` - Sti til originalbilde
-- `pattern_image_path` - Sti til mønster-bilde
 - `pattern_data` - JSON med full grid-data
 - `grid_size` - Størrelse på grid
 - `colors_used` - JSON med fargepalett og antall

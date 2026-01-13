@@ -18,6 +18,8 @@ interface PatternData {
   boards_width?: number;
   boards_height?: number;
   pattern_data?: any;
+  pattern_image_base64?: string;
+  styled_image_base64?: string;
 }
 
 interface CreateProductModalProps {
@@ -94,13 +96,17 @@ export default function CreateProductModal({
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-      // Convert pattern image to base64
-      const patternImageUrl = `${apiUrl}${pattern.pattern_image_url}`;
-      const patternImageBase64 = await convertImageToBase64(patternImageUrl);
+      // Use base64 images from pattern response if available
+      // Otherwise fall back to fetching from the API (for backwards compatibility)
+      let patternImageBase64 = pattern.pattern_image_base64;
+      if (!patternImageBase64) {
+        const patternImageUrl = `${apiUrl}${pattern.pattern_image_url}`;
+        patternImageBase64 = await convertImageToBase64(patternImageUrl);
+      }
 
-      // Convert styled image if present
-      let styledImageBase64: string | undefined = undefined;
-      if (pattern.pattern_data?.styled) {
+      // Use styled image base64 if available
+      let styledImageBase64: string | undefined = pattern.styled_image_base64;
+      if (!styledImageBase64 && pattern.pattern_data?.styled) {
         const styledImageUrl = `${apiUrl}/api/patterns/${pattern.uuid}/styled-image`;
         styledImageBase64 = await convertImageToBase64(styledImageUrl);
       }

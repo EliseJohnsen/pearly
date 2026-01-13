@@ -14,8 +14,6 @@ Stores generated bead patterns with metadata.
 |--------|------|-------------|
 | `id` | Integer | Primary key |
 | `uuid` | String (UUID) | Public identifier for the pattern |
-| `original_image_path` | String | Legacy field (unused, images in Sanity) |
-| `pattern_image_path` | String | Legacy field (unused, images in Sanity) |
 | `pattern_data` | JSON | Pattern metadata including:<br>- `sanity_product_id`: Link to Sanity product<br>- `sanity_pattern_image_id`: Sanity image asset ID<br>- `sanity_styled_image_id`: Styled image asset ID<br>- `boards_width`: Number of pegboards horizontally<br>- `boards_height`: Number of pegboards vertically<br>- `width`, `height`: Grid dimensions<br>- Color palette and mapping data |
 | `grid_size` | Integer | Total grid size (width × height) |
 | `colors_used` | Integer | Number of unique colors in pattern |

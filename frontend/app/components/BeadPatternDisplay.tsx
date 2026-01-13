@@ -34,6 +34,8 @@ interface BeadPatternDisplayProps {
       style?: string;
       styled_image_path?: string;
     };
+    pattern_image_base64?: string;
+    styled_image_base64?: string;
   };
   beadSize?: number;
   pop_art_url?: string;

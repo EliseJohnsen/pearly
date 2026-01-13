@@ -136,8 +136,6 @@ async def create_product_from_pattern_data(
 
     db_pattern = Pattern(
         uuid=pattern_uuid,
-        original_image_path="",  # Images stored in Sanity only
-        pattern_image_path="",   # Images stored in Sanity only
         pattern_data=updated_pattern_data,
         grid_size=grid_size,
         colors_used=product_data.colors_used,

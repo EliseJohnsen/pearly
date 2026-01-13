@@ -8,8 +8,6 @@ class Pattern(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     uuid = Column(String, unique=True, index=True, default=lambda: str(uuid.uuid4()))
-    original_image_path = Column(String)
-    pattern_image_path = Column(String)
     pattern_data = Column(JSON)
     grid_size = Column(Integer)
     colors_used = Column(JSON)

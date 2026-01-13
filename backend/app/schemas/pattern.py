@@ -14,7 +14,7 @@ class BeadColor(BaseModel):
     count: int
 
 class PatternResponse(BaseModel):
-    id: int
+    id: Optional[int] = None
     uuid: str
     pattern_image_url: str
     grid_size: int
@@ -23,6 +23,8 @@ class PatternResponse(BaseModel):
     boards_width: Optional[int] = None
     boards_height: Optional[int] = None
     pattern_data: Optional[Dict[str, Any]] = None
+    pattern_image_base64: Optional[str] = None  # Base64 encoded pattern image
+    styled_image_base64: Optional[str] = None   # Base64 encoded styled image
 
     class Config:
         from_attributes = True
