@@ -204,7 +204,7 @@ def generate_pattern_pdf(
             # Calculate font size for numbers inside circles
             # We want the text to be readable but fit inside the circle
             # Circle diameter is bead_size_points
-            font_size = max(4, min(bead_size_points * 0.4, 10))
+            font_size = max(4, min(bead_size_points * 0.5, 12))
             c.setFont(_get_font('bold'), font_size)
 
             # Draw the beads
