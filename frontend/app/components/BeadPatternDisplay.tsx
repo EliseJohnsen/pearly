@@ -39,12 +39,14 @@ interface BeadPatternDisplayProps {
   };
   beadSize?: number;
   pop_art_url?: string;
+  showPDFButton: boolean;
 }
 
 const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
   pattern,
   beadSize = 10,
-  pop_art_url
+  pop_art_url,
+  showPDFButton = false
 }) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
   const imageUrl = `${apiUrl}${pattern.pattern_image_url}`;
@@ -188,6 +190,7 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
               </div>
             )}
 
+          {showPDFButton && (
             <button
               onClick={handleDownloadPDF}
               disabled={downloadingPDF}
@@ -196,6 +199,7 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
               <ArrowDownTrayIcon className="w-5 h-5" />
               <span>{downloadingPDF ? "Genererer PDF..." : "Last ned PDF"}</span>
             </button>
+          )}
 
             <button
               onClick={() => setShowProductModal(true)}

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import BeadPatternDisplay from "@/app/components/BeadPatternDisplay";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
-import { ArrowLeftIcon } from "@heroicons/react/24/outline";
+import { ArrowDownTrayIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
 
 interface Pattern {
   uuid: string;
@@ -44,6 +44,7 @@ export default function PatternDetailPage() {
   const [pattern, setPattern] = useState<Pattern | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [downloadingPDF, setDownloadingPDF] = useState(false);
 
   useEffect(() => {
     const fetchPattern = async () => {
@@ -68,6 +69,38 @@ export default function PatternDetailPage() {
 
     fetchPattern();
   }, [uuid]);
+
+  const handleDownloadPDF = async () => {
+
+    if(pattern && pattern.uuid) {
+      try {
+        setDownloadingPDF(true);
+
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+        const response = await fetch(`${apiUrl}/api/patterns/${pattern.uuid}/pdf`);
+
+        if (!response.ok) {
+          throw new Error("Kunne ikke generere PDF");
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `perlemønster_${pattern.uuid}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } catch (error) {
+        console.error("Feil ved nedlasting av PDF:", error);
+        alert("Kunne ikke laste ned PDF. Prøv igjen.");
+      } finally {
+        setDownloadingPDF(false);
+      }
+    }
+    alert("Fant ikke pattern.uuid");
+  };
 
   if (loading) {
     return (
@@ -108,8 +141,17 @@ export default function PatternDetailPage() {
         </div>
 
         <div className="grid grid-cols-1">
+          
+            <button
+              onClick={handleDownloadPDF}
+              disabled={downloadingPDF}
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ArrowDownTrayIcon className="w-5 h-5" />
+              <span>{downloadingPDF ? "Genererer PDF..." : "Last ned PDF"}</span>
+            </button>
           <div>
-            <BeadPatternDisplay pattern={pattern} beadSize={10} />
+            <BeadPatternDisplay pattern={pattern} showPDFButton={true} beadSize={10} />
           </div>
           <div className="bg-white rounded-lg shadow-lg p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
