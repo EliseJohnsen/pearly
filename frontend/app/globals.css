@@ -94,47 +94,6 @@
   --color-border-subtle: var(--border-subtle);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* Bakgrunnsfarger */
-    --background: #1f2937;
-    --background-secondary: #374151;
-    --foreground: #ffffff;
-
-    /* Primærfarger (samme i dark mode) */
-    --primary: var(--primary);
-    --primary-hover: #1d4ed8;
-    --primary-light: #1e3a8a;
-    --primary-dark: rgb(30 58 138 / 0.2);
-
-    /* Tekstfarger */
-    --text-primary: #ffffff;
-    --text-secondary: #d1d5db;
-    --text-muted: #9ca3af;
-
-    /* Kantfarger */
-    --border: #4b5563;
-    --border-subtle: #374151;
-
-    /* Kortkomponenter */
-    --card-bg: #1f2937;
-    --card-border: #4b5563;
-
-    /* Info-bokser */
-    --info-bg: rgb(30 58 138 / 0.2);
-    --info-text: #bfdbfe;
-    --info-accent: #60a5fa;
-
-    /* Input-komponenter */
-    --input-bg: #374151;
-    --input-border: #4b5563;
-
-    /* Gradient bakgrunn */
-    --gradient-from: #111827;
-    --gradient-to: #1f2937;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
