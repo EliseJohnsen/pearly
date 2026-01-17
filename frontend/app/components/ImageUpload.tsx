@@ -127,6 +127,7 @@ export default function ImageUpload({ onPatternGenerated, onUploadStatusChange }
         {
           method: "POST",
           headers,
+          credentials: 'include',
           body: formData,
         }
       );
