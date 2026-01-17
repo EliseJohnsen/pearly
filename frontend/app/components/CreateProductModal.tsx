@@ -46,9 +46,8 @@ export default function CreateProductModal({
   const [description, setDescription] = useState("");
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium");
 
-  const [variantName, setVariantName] = useState("Standard perlekit");
   const [price, setPrice] = useState<number>(299);
-  const [compareAtPrice, setCompareAtPrice] = useState<number | null>(null);
+  const [originalPrice, setOriginalPrice] = useState<number | null>(null);
 
   const generateSKU = (name: string) => {
     return name
@@ -128,22 +127,9 @@ export default function CreateProductModal({
         difficulty_level: difficulty,
         currency: "NOK",
         vat_rate: 25.0,
-        tags: ["perlemønster", "håndlaget"],
-
-        // Variants
-        variants: [
-          {
-            sku: generateSKU(`${productName}-${variantName}`),
-            name: variantName,
-            price,
-            compare_at_price: compareAtPrice,
-            weight: 500,
-            shipping_class: "package",
-            stock_quantity: 10,
-            is_active: true,
-            options: [],
-          },
-        ],
+        tags: ["perlemønster"],
+        price: price,
+        original_price: originalPrice,
         category_ids: [],
       };
 
@@ -247,26 +233,12 @@ export default function CreateProductModal({
 
           {/* Variant Information */}
           <div className="space-y-4 border-t border-gray-200 pt-6">
-            <h3 className="text-lg font-semibold text-gray-900">Produktvariant</h3>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Variantnavn *
-              </label>
-              <input
-                type="text"
-                value={variantName}
-                onChange={(e) => setVariantName(e.target.value)}
-                required
-                placeholder="F.eks. 'Standard perlekit'"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-              />
-            </div>
+            <h3 className="text-lg font-semibold text-gray-900">Pris</h3>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Pris (NOK) *
+                  Pris
                 </label>
                 <input
                   type="number"
@@ -281,12 +253,12 @@ export default function CreateProductModal({
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Før-pris (valgfritt)
+                  Originalpris
                 </label>
                 <input
                   type="number"
-                  value={compareAtPrice || ""}
-                  onChange={(e) => setCompareAtPrice(e.target.value ? Number(e.target.value) : null)}
+                  value={originalPrice || ""}
+                  onChange={(e) => setOriginalPrice(e.target.value ? Number(e.target.value) : null)}
                   min="0"
                   step="1"
                   placeholder="F.eks. 399"

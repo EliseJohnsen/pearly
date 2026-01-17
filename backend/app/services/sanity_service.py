@@ -192,15 +192,19 @@ class SanityService:
         difficulty: Optional[str] = None,
         colors_count: Optional[int] = None,
         grid_size: Optional[str] = None,
+        weight: Optional[float] = None,
+        width: Optional[float] = None,
+        height: Optional[float] = None,
         tags: Optional[list] = None,
         category: Optional[str] = None,
         variants: Optional[list] = None,
         currency: str = "NOK",
         vat_rate: float = 25.0,
-        is_featured: bool = False,
         display_order: int = 0,
         seo: Optional[dict] = None,
         pattern_id: Optional[str] = None,
+        price: Optional[int] = None,
+        original_price: Optional[int] = None,
     ) -> Dict[str, Any]:
         """
         Create a unified product document in Sanity CMS.
@@ -217,6 +221,9 @@ class SanityService:
             difficulty: Difficulty level (easy, medium, hard) - for patterns/kits
             colors_count: Number of colors used - for patterns/kits
             grid_size: Grid size description - for patterns/kits
+            weight: Weight in grams - for patterns/kits
+            width: Width in cm - for patterns/kits
+            height: Height in cm - for patterns/kits
             tags: List of tags
             category: Product category - for patterns
             variants: List of product variants with pricing
@@ -248,7 +255,7 @@ class SanityService:
         # Build product document
         product_doc = {
             "_type": "products",
-            "productType": product_type,
+            "productType": product_type or 'kit',
             "sku": sku,
             "title": title,
             "slug": {
@@ -263,8 +270,9 @@ class SanityService:
             "tags": tags or [],
             "currency": currency,
             "vatRate": vat_rate,
-            "isFeatured": is_featured,
             "order": display_order,
+            "price": price,
+            "originalPrice": original_price,
         }
 
         # Add pattern-specific fields
@@ -278,6 +286,12 @@ class SanityService:
             product_doc["colors"] = colors_count
         if grid_size:
             product_doc["gridSize"] = grid_size
+        if weight is not None:
+            product_doc["weight"] = weight
+        if width is not None:
+            product_doc["width"] = width
+        if height is not None:
+            product_doc["height"] = height
 
         # Add variants if provided
         if variants:

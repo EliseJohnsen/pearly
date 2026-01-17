@@ -45,3 +45,5 @@ class ProductCreateFromPatternData(BaseModel):
     styled_image_base64: Optional[str] = None
     pattern_data: dict
     colors_used: List[dict]
+    price: int
+    original_price: Optional[int]

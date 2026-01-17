@@ -12,9 +12,6 @@ import {
   uiStringsByCategoryQuery,
   uiStringByKeyQuery,
   pageSettingsQuery,
-  inspirationQuery,
-  featuredInspirationQuery,
-  inspirationBySlugQuery,
   footerPagesQuery,
   footerQuery,
   comingSoonQuery,
@@ -26,7 +23,6 @@ import type {
   HowItWorks,
   UIString,
   PageSettings,
-  Inspiration,
   Footer,
   ComingSoon,
 } from '@/types/sanity'
@@ -103,19 +99,6 @@ export function useUIString(key: string): string {
 // Page Settings hook
 export function usePageSettings(page: string = 'home') {
   return useSanityQuery<PageSettings>(pageSettingsQuery(page))
-}
-
-// Inspiration hooks
-export function useInspiration() {
-  return useSanityQuery<Inspiration[]>(inspirationQuery)
-}
-
-export function useFeaturedInspiration() {
-  return useSanityQuery<Inspiration[]>(featuredInspirationQuery)
-}
-
-export function useInspirationBySlug(slug: string) {
-  return useSanityQuery<Inspiration>(inspirationBySlugQuery(slug))
 }
 
 export function useFooterPages() {

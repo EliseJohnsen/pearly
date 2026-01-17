@@ -150,6 +150,15 @@ async def create_product_from_pattern_data(
         boards_h = product_data.pattern_data.get("boards_height", 1)
         grid_size_desc = f"{boards_w}x{boards_h} boards"
 
+        beads_width = product_data.pattern_data.get("width", 29)
+        beads_height = product_data.pattern_data.get("height", 29)
+
+        width_cm = round((beads_width / 29) * 15, 2)
+        height_cm = round((beads_height / 29) * 15, 2)
+
+        total_beads = beads_width * beads_height
+        weight_grams = round((total_beads / 1000) * 60, 2)
+
         # Collect all image asset IDs
         image_asset_ids = [pattern_upload_result['asset_id']]
         if mockup_asset_id:
@@ -159,7 +168,7 @@ async def create_product_from_pattern_data(
 
         sanity_product_result = await sanity_service.create_product_document(
             sku=product_data.sku,
-            product_type="pattern",
+            product_type="kit",
             title=product_data.name,
             slug=product_data.slug,
             description=product_data.description,
@@ -168,9 +177,14 @@ async def create_product_from_pattern_data(
             difficulty=product_data.difficulty_level.value if product_data.difficulty_level else None,
             colors_count=len(product_data.colors_used),
             grid_size=grid_size_desc,
+            weight=weight_grams,
+            width=width_cm,
+            height=height_cm,
             tags=product_data.tags,
             category=None,
             pattern_id=str(db_pattern.id),
+            price=product_data.price,
+            original_price=product_data.original_price
         )
 
         # Store Sanity document ID in pattern data
