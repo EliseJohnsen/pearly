@@ -39,7 +39,7 @@ interface BeadPatternDisplayProps {
   };
   beadSize?: number;
   pop_art_url?: string;
-  showPDFButton: boolean;
+  showPDFButton?: boolean;
 }
 
 const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
