@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import LoadingSpinner from "./LoadingSpinner";
 import { useUIString } from '@/app/hooks/useSanityData';
-import { getAuthHeaders } from "@/lib/auth";
+import { getSessionToken } from "@/lib/auth";
 
 interface ImageUploadProps {
   onPatternGenerated: (data: any) => void;
@@ -116,11 +116,17 @@ export default function ImageUpload({ onPatternGenerated, onUploadStatusChange }
         boards_height: selectedDimensions.boards_height.toString(),
       });
 
+      const token = getSessionToken();
+      const headers: HeadersInit = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch(
         `${apiUrl}/api/patterns/upload-with-style?${params.toString()}`,
         {
           method: "POST",
-          headers: getAuthHeaders(),
+          headers,
           body: formData,
         }
       );

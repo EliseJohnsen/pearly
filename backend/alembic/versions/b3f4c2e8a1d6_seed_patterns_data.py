@@ -1,7 +1,7 @@
 """Seed patterns data from Supabase
 
 Revision ID: b3f4c2e8a1d6
-Revises: 9a5bb11300d5
+Revises: 374bedd993d5
 Create Date: 2026-01-17 12:00:00.000000
 
 """
@@ -13,7 +13,7 @@ import os
 
 # revision identifiers, used by Alembic.
 revision: str = 'b3f4c2e8a1d6'
-down_revision: Union[str, None] = '9a5bb11300d5'
+down_revision: Union[str, None] = '374bedd993d5'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
