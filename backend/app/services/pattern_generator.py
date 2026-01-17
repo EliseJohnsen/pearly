@@ -69,7 +69,7 @@ def filter_rare_colors(
     pattern_data: List[List[str]],
     color_counts: Dict[str, int],
     bead_colors: List[Dict],
-    min_percentage: float = 0.01
+    min_percentage: float,
 ) -> Tuple[List[List[str]], Dict[str, int]]:
     """
     Filters out colors that appear less than a minimum percentage of total beads.
@@ -264,7 +264,7 @@ def convert_image_to_pattern(
         pattern_data,
         color_counts,
         bead_colors,
-        min_percentage=0.01
+        min_percentage=0.005
     )
 
     # Create and save pattern image
