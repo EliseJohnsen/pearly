@@ -141,15 +141,6 @@ export default function PatternDetailPage() {
         </div>
 
         <div className="grid grid-cols-1">
-          
-            <button
-              onClick={handleDownloadPDF}
-              disabled={downloadingPDF}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <ArrowDownTrayIcon className="w-5 h-5" />
-              <span>{downloadingPDF ? "Genererer PDF..." : "Last ned PDF"}</span>
-            </button>
           <div>
             <BeadPatternDisplay pattern={pattern} showPDFButton={true} beadSize={10} />
           </div>
