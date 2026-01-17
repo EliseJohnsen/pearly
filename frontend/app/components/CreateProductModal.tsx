@@ -155,6 +155,7 @@ export default function CreateProductModal({
             ...getAuthHeaders(),
             "Content-Type": "application/json",
           },
+          credentials: 'include',
           body: JSON.stringify(productData),
         }
       );
