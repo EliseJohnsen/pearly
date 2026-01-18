@@ -16,7 +16,7 @@ interface ProductVariant {
   sku: string;
   name: string;
   price: number;
-  compareAtPrice?: number;
+  originalPrice?: number;
   dimensions?: {
     width?: number;
     height?: number;
@@ -40,6 +40,14 @@ interface ProductImage {
   isPrimary?: boolean;
 }
 
+interface Category {
+  _id: string;
+  name: string;
+  slug: { current: string };
+  parent?: Category;
+  description?: string;
+}
+
 interface Product {
   _id: string;
   title: string;
@@ -49,13 +57,14 @@ interface Product {
   productType: string;
   status: string;
   difficulty?: string;
-  category?: string;
+  category?: Category;
   colors?: number;
   gridSize?: string;
   tags?: string[];
   currency: string;
   vatRate: number;
-  isFeatured: boolean;
+  price: number;
+  originalPrice?: number;
   images?: ProductImage[];
   image?: ProductImage; // For backwards compatibility with older products
   variants?: ProductVariant[];
@@ -74,7 +83,6 @@ export default function ProductDetailPage({
   const { slug } = use(params);
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   useEffect(() => {
@@ -84,10 +92,6 @@ export default function ProductDetailPage({
         console.log("Fetched product data:", data);
         console.log("Product images:", data?.images);
         setProduct(data);
-        // Select first available variant by default
-        if (data?.variants?.length > 0) {
-          setSelectedVariant(data.variants.find((v: ProductVariant) => v.isActive) || data.variants[0]);
-        }
       } catch (error) {
         console.error("Error fetching product:", error);
       } finally {
@@ -123,15 +127,14 @@ export default function ProductDetailPage({
   };
 
   const handleAddToCart = () => {
-    if (!selectedVariant) return;
+    if (!product) return;
 
     // TODO: Implement cart functionality
     console.log("Add to cart:", {
       product: product.title,
-      variant: selectedVariant.name,
-      sku: selectedVariant.sku,
+      price: product.price,
     });
-    alert(`${product.title} - ${selectedVariant.name} lagt til i handlekurv!`);
+    alert(`${product.title} lagt til i handlekurv!`);
   };
 
   return (
@@ -180,7 +183,7 @@ export default function ProductDetailPage({
               <h1 className="text-3xl font-bold mb-2">{product.title}</h1>
               {product.category && (
                 <p className="text-sm text-gray-500 uppercase tracking-wide">
-                  {product.category}
+                  {product.category.name}
                 </p>
               )}
             </div>
@@ -213,57 +216,26 @@ export default function ProductDetailPage({
               </div>
             )}
 
-            {product.variants && product.variants.length > 0 && (
-              <div className="space-y-3">
-                <label className="block text-sm font-medium text-gray-700">
-                  Velg variant:
-                </label>
-                <div className="grid grid-cols-1 gap-2">
-                  {product.variants.map((variant) => (
-                    <button
-                      key={variant.sku}
-                      onClick={() => setSelectedVariant(variant)}
-                      disabled={!variant.isActive || variant.stockQuantity <= 0}
-                      className={`p-4 border-2 rounded-lg text-left transition ${
-                        selectedVariant?.sku === variant.sku
-                          ? "border-primary bg-primary/5"
-                          : "border-purple hover:border-purple-700"
-                      } ${
-                        !variant.isActive || variant.stockQuantity <= 0
-                          ? "opacity-50 cursor-not-allowed"
-                          : ""
-                      }`}
-                    >
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <p className="font-medium">{variant.name}</p>
-                          {variant.stockQuantity <= 0 && (
-                            <p className="text-sm text-red-600">Utsolgt</p>
-                          )}
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold">{formatPrice(variant.price, product.currency)}</p>
-                          {variant.compareAtPrice && variant.compareAtPrice > variant.price && (
-                            <p className="text-sm text-gray-500 line-through">
-                              {formatPrice(variant.compareAtPrice, product.currency)}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
+            {/* Price */}
+            <div className="py-4 border-y border-purple">
+              <div className="flex items-baseline gap-3">
+                <p className="text-3xl font-bold text-primary">
+                  {formatPrice(product.price, product.currency)}
+                </p>
+                {product.originalPrice && product.originalPrice > product.price && (
+                  <p className="text-xl text-gray-500 line-through">
+                    {formatPrice(product.originalPrice, product.currency)}
+                  </p>
+                )}
               </div>
-            )}
+            </div>
 
             <button
               onClick={handleAddToCart}
-              disabled={!selectedVariant || selectedVariant.stockQuantity <= 0}
+              disabled={product.status === "out_of_stock" || product.status === "coming_soon"}
               className="w-full bg-primary text-white py-4 px-6 rounded-lg font-semibold hover:bg-primary/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {!selectedVariant
-                ? "Velg en variant"
-                : selectedVariant.stockQuantity <= 0
+              {product.status === "out_of_stock"
                 ? "Utsolgt"
                 : "Legg i handlekurv"}
             </button>

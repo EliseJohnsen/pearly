@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.core.database import get_db
+from app.core.dependencies import get_current_admin
+from app.models.admin_user import AdminUser
 from app.models.pattern import Pattern
 from app.schemas.product import ProductCreateFromPatternData
 from app.schemas.pattern import PatternResponse
@@ -20,7 +22,8 @@ router = APIRouter()
 @router.post("/products/create-from-pattern-data", response_model=PatternResponse)
 async def create_product_from_pattern_data(
     product_data: ProductCreateFromPatternData,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    admin: AdminUser = Depends(get_current_admin)
 ):
     """
     Create a pattern in database and a product in Sanity from pattern generation data.
@@ -133,12 +136,9 @@ async def create_product_from_pattern_data(
 
     db_pattern = Pattern(
         uuid=pattern_uuid,
-        original_image_path="",  # Images stored in Sanity only
-        pattern_image_path="",   # Images stored in Sanity only
         pattern_data=updated_pattern_data,
         grid_size=grid_size,
         colors_used=product_data.colors_used,
-        expires_at=datetime.utcnow() + timedelta(days=365)
     )
     db.add(db_pattern)
     db.flush()  # Get the pattern ID
@@ -149,6 +149,15 @@ async def create_product_from_pattern_data(
         boards_h = product_data.pattern_data.get("boards_height", 1)
         grid_size_desc = f"{boards_w}x{boards_h} boards"
 
+        beads_width = product_data.pattern_data.get("width", 29)
+        beads_height = product_data.pattern_data.get("height", 29)
+
+        width_cm = round((beads_width / 29) * 15, 2)
+        height_cm = round((beads_height / 29) * 15, 2)
+
+        total_beads = beads_width * beads_height
+        weight_grams = round((total_beads / 1000) * 60, 2)
+
         # Collect all image asset IDs
         image_asset_ids = [pattern_upload_result['asset_id']]
         if mockup_asset_id:
@@ -158,7 +167,7 @@ async def create_product_from_pattern_data(
 
         sanity_product_result = await sanity_service.create_product_document(
             sku=product_data.sku,
-            product_type="pattern",
+            product_type="kit",
             title=product_data.name,
             slug=product_data.slug,
             description=product_data.description,
@@ -167,9 +176,14 @@ async def create_product_from_pattern_data(
             difficulty=product_data.difficulty_level.value if product_data.difficulty_level else None,
             colors_count=len(product_data.colors_used),
             grid_size=grid_size_desc,
+            weight=weight_grams,
+            width=width_cm,
+            height=height_cm,
             tags=product_data.tags,
             category=None,
             pattern_id=str(db_pattern.id),
+            price=product_data.price,
+            original_price=product_data.original_price
         )
 
         # Store Sanity document ID in pattern data

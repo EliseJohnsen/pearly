@@ -48,7 +48,7 @@ export default function Header() {
 
         <div className="items-center col-span-5 lg:col-span-3 justify-items-center">
 
-          <h1 className='text-5xl lg:text-7xl font-bold tracking-tight text-primary-light leading-tight'>
+          <h1 className='text-3xl md:text-5xl lg:text-7xl font-bold tracking-tight text-primary-light leading-tight'>
             <Link href="/">
               { feelingPearlyText }
             </Link>

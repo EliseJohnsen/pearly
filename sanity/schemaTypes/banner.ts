@@ -13,22 +13,6 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
-      name: 'type',
-      title: 'Banner Type',
-      type: 'string',
-      description: 'Visual style/theme of the banner',
-      options: {
-        list: [
-          {title: 'Info', value: 'info'},
-          {title: 'Warning', value: 'warning'},
-          {title: 'Success', value: 'success'},
-          {title: 'Promo', value: 'promo'},
-        ],
-        layout: 'radio',
-      },
-      initialValue: 'info',
-    }),
-    defineField({
       name: 'backgroundColor',
       title: 'Custom Background Color',
       type: 'string',

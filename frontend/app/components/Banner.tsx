@@ -9,10 +9,8 @@ interface BannerProps {
 export default function Banner({ data }: BannerProps = {}) {
   const {data: fetchedBanner, loading} = useBanner()
 
-  // Use provided data if available, otherwise use fetched data
   const banner = data || fetchedBanner
 
-  // Don't render if no banner, loading, or not active
   if (!data && (loading || !banner)) {
     return null
   }
@@ -21,22 +19,9 @@ export default function Banner({ data }: BannerProps = {}) {
     return null
   }
 
-  // Determine background color based on type or custom color
   const getBgColor = () => {
     if (banner.backgroundColor) {
       return banner.backgroundColor
-    }
-
-    switch (banner.type) {
-      case 'warning':
-        return '#FFA500'
-      case 'success':
-        return '#10B981'
-      case 'promo':
-        return '#F5B0DF'
-      case 'info':
-      default:
-        return '#F5B0DF' // primary-dark-pink
     }
   }
 
