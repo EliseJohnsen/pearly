@@ -333,6 +333,36 @@ def download_pattern_pdf(pattern_uuid: str, db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating PDF: {str(e)}")
 
+@router.get("/patterns/{pattern_uuid}/image")
+def get_pattern_image(pattern_uuid: str, db: Session = Depends(get_db)):
+    """
+    Serve the pattern image file from the uploads directory.
+    """
+    pattern_path = UPLOAD_DIR / f"{pattern_uuid}_pattern.png"
+
+    if not pattern_path.exists():
+        raise HTTPException(status_code=404, detail="Pattern image file not found")
+
+    with open(pattern_path, "rb") as f:
+        image_data = f.read()
+
+    return Response(content=image_data, media_type="image/png")
+
+@router.get("/patterns/{pattern_uuid}/styled-image")
+def get_styled_image(pattern_uuid: str, db: Session = Depends(get_db)):
+    """
+    Serve the styled image file from the uploads directory.
+    """
+    styled_path = UPLOAD_DIR / f"{pattern_uuid}_styled.png"
+
+    if not styled_path.exists():
+        raise HTTPException(status_code=404, detail="Styled image file not found")
+
+    with open(styled_path, "rb") as f:
+        image_data = f.read()
+
+    return Response(content=image_data, media_type="image/png")
+
 @router.delete("/patterns/{pattern_uuid}")
 def delete_pattern(
     pattern_uuid: str,
