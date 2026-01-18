@@ -24,13 +24,10 @@ def upgrade() -> None:
         'patterns',
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('uuid', sa.String(), nullable=False),
-        sa.Column('original_image_path', sa.String(), nullable=True),
-        sa.Column('pattern_image_path', sa.String(), nullable=True),
         sa.Column('pattern_data', sa.JSON(), nullable=True),
         sa.Column('grid_size', sa.Integer(), nullable=True),
         sa.Column('colors_used', sa.JSON(), nullable=True),
         sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-        sa.Column('expires_at', sa.DateTime(timezone=True), nullable=True),
         sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_patterns_id'), 'patterns', ['id'], unique=False)

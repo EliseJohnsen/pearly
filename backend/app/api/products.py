@@ -139,7 +139,6 @@ async def create_product_from_pattern_data(
         pattern_data=updated_pattern_data,
         grid_size=grid_size,
         colors_used=product_data.colors_used,
-        expires_at=datetime.utcnow() + timedelta(days=365)
     )
     db.add(db_pattern)
     db.flush()  # Get the pattern ID

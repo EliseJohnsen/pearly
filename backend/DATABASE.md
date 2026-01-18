@@ -18,7 +18,6 @@ Stores generated bead patterns with metadata.
 | `grid_size` | Integer | Total grid size (width × height) |
 | `colors_used` | Integer | Number of unique colors in pattern |
 | `created_at` | Timestamp | When pattern was created |
-| `expires_at` | Timestamp | When pattern expires (365 days) |
 
 **Relationships:**
 - Linked to Sanity product via `pattern_data.sanity_product_id`
