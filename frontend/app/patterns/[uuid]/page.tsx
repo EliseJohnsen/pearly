@@ -44,7 +44,7 @@ export default function PatternDetailPage() {
   const [pattern, setPattern] = useState<Pattern | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [downloadingPDF, setDownloadingPDF] = useState(false);
+  const [checkedColors, setCheckedColors] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const fetchPattern = async () => {
@@ -70,37 +70,24 @@ export default function PatternDetailPage() {
     fetchPattern();
   }, [uuid]);
 
-  const handleDownloadPDF = async () => {
+  const getBeadWeight = (beadCount: number) => {
+    const adjustedCount = beadCount < 100
+      ? beadCount + 5
+      : beadCount * 1.05;
+    return Math.ceil(adjustedCount / 1000 * 60);
+  }
 
-    if(pattern && pattern.uuid) {
-      try {
-        setDownloadingPDF(true);
-
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-        const response = await fetch(`${apiUrl}/api/patterns/${pattern.uuid}/pdf`);
-
-        if (!response.ok) {
-          throw new Error("Kunne ikke generere PDF");
-        }
-
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `perlemønster_${pattern.uuid}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-      } catch (error) {
-        console.error("Feil ved nedlasting av PDF:", error);
-        alert("Kunne ikke laste ned PDF. Prøv igjen.");
-      } finally {
-        setDownloadingPDF(false);
+  const toggleColorCheck = (colorHex: string) => {
+    setCheckedColors(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(colorHex)) {
+        newSet.delete(colorHex);
+      } else {
+        newSet.add(colorHex);
       }
-    }
-    alert("Fant ikke pattern.uuid");
-  };
+      return newSet;
+    });
+  }
 
   if (loading) {
     return (
@@ -148,32 +135,58 @@ export default function PatternDetailPage() {
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Farger du trenger
             </h3>
-            <div className="grid grid-cols-3 lg:grid-cols-5 gap-x-4 gap-y-2">
-              {pattern.colors_used.map((color) => (
+            <div>
+              {pattern.colors_used
+                .slice()
+                .sort((a, b) => {
+                  const codeA = a.code || '';
+                  const codeB = b.code || '';
+                  const numA = parseInt(codeA) || 0;
+                  const numB = parseInt(codeB) || 0;
+                  return numA - numB;
+                })
+                .map((color) => (
                 <div
                   key={color.hex}
-                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                  className={`flex items-center gap-4 p-3 max-w-2xl rounded-lg hover:bg-primary-light transition-colors ${
+                    checkedColors.has(color.hex) ? 'bg-gray-300' : 'bg-background'
+                  }`}
                 >
                   <div
-                    className="w-12 h-12 rounded-full border-2 border-gray-300 flex-shrink-0"
+                    onClick={() => toggleColorCheck(color.hex)}
+                    className="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center cursor-pointer relative"
                     style={{ backgroundColor: color.hex }}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-900 truncate">
+                  >
+                    {checkedColors.has(color.hex) && (
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-[60px_2fr_200px_120px] gap-4 flex-1 items-center">
+                    <p className="text-gray-900 truncate">
+                      {color.code}
+                    </p>
+                    <p className="text-bold text-gray-900">
+                      {getBeadWeight(color.count)} gram
+                    </p>
+                    <p className="text-medium text-gray-500">
                       {color.name}
                     </p>
-                    {color.code && (
-                      <p className="text-xs text-gray-500 font-mono">
-                        {color.code}
-                      </p>
-                    )}
-                    <p className="text-sm text-gray-600">
+                    <p className="text-medium text-gray-600">
                       {color.count} perler
                     </p>
                   </div>
                 </div>
               ))}
             </div>
+
+            <button
+              onClick={() => setCheckedColors(new Set())}
+              className="mt-4 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+            >
+              Nullstill
+            </button>
 
             <div className="mt-6 pt-6 border-t border-gray-200">
               <h4 className="text-sm font-semibold text-gray-900 mb-3">
