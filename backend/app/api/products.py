@@ -1,3 +1,4 @@
+from math import ceil
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.core.database import get_db
@@ -11,7 +12,6 @@ from app.services.room_template_service import RoomTemplateService
 from app.services.mockup_generator import MockupGenerator
 import base64
 import logging
-from datetime import datetime, timedelta
 import uuid as uuid_lib
 
 logger = logging.getLogger(__name__)
@@ -152,11 +152,11 @@ async def create_product_from_pattern_data(
         beads_width = product_data.pattern_data.get("width", 29)
         beads_height = product_data.pattern_data.get("height", 29)
 
-        width_cm = round((beads_width / 29) * 15, 2)
-        height_cm = round((beads_height / 29) * 15, 2)
+        width_cm = ceil((beads_width / 29) * 15)
+        height_cm = ceil((beads_height / 29) * 15)
 
         total_beads = beads_width * beads_height
-        weight_grams = round((total_beads / 1000) * 60, 2)
+        weight_grams = ceil((total_beads / 1000) * 60)
 
         # Collect all image asset IDs
         image_asset_ids = [pattern_upload_result['asset_id']]
