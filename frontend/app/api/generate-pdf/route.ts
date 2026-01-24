@@ -5,9 +5,9 @@ import { PatternPDF } from '@/lib/pdf-generator';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { patternUuid, customerEmail } = body;
+    const { patternId, customerEmail } = body;
 
-    if (!patternUuid) {
+    if (!patternId) {
       return NextResponse.json(
         { error: 'Missing required field: patternUuid' },
         { status: 400 }
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-    const patternResponse = await fetch(`${apiUrl}/api/patterns/${patternUuid}`);
+    const patternResponse = await fetch(`${apiUrl}/api/patterns/${patternId}`);
 
     if (!patternResponse.ok) {
       return NextResponse.json(
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="perlemønster-${patternUuid}.pdf"`,
+        'Content-Disposition': `attachment; filename="perlemønster-${patternId}.pdf"`,
       },
     });
   } catch (error) {

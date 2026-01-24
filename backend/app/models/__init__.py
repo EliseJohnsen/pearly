@@ -4,6 +4,7 @@ from .customer import Customer
 from .order import Order
 from .order_line import OrderLine
 from .address import Address
+from .order_log import OrderLog
 
 __all__ = [
     "Pattern",
@@ -12,4 +13,5 @@ __all__ = [
     "Order",
     "OrderLine",
     "Address",
+    "OrderLog",
 ]

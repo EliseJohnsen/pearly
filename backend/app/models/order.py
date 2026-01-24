@@ -27,3 +27,4 @@ class Order(Base):
     customer = relationship("Customer", back_populates="orders")
     order_lines = relationship("OrderLine", back_populates="order", cascade="all, delete-orphan")
     addresses = relationship("Address", back_populates="order", cascade="all, delete-orphan")
+    logs = relationship("OrderLog", back_populates="order", cascade="all, delete-orphan")

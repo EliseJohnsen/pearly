@@ -7,6 +7,7 @@ import CreateProductModal from "./CreateProductModal";
 
 interface BeadPatternDisplayProps {
   pattern: {
+    id: string;
     uuid: string;
     pattern_image_url: string;
     grid_size: number;
@@ -53,16 +54,12 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
   const [patternGrid, setPatternGrid] = useState<string[][] | null>(
     pattern.pattern_data?.grid || null
   );
-  const [email, setEmail] = useState("");
-  const [sendingEmail, setSendingEmail] = useState(false);
-  const [emailSent, setEmailSent] = useState(false);
-  const [emailError, setEmailError] = useState<string | null>(null);
+
   const [showProductModal, setShowProductModal] = useState(false);
   const [productCreated, setProductCreated] = useState(false);
   const [productId, setProductId] = useState<number | null>(null);
   const [downloadingPDF, setDownloadingPDF] = useState(false);
 
-  const colorsYouNeedText = useUIString('colors_you_need')
   const pearlsText = useUIString('pearls')
 
   // Update pattern grid when pattern data changes
@@ -72,50 +69,7 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
     }
   }, [pattern.pattern_data]);
 
-  const handleSendEmail = async () => {
-    if (!email) {
-      setEmailError("Vennligst oppgi en e-postadresse");
-      return;
-    }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setEmailError("Vennligst oppgi en gyldig e-postadresse");
-      return;
-    }
-
-    setSendingEmail(true);
-    setEmailError(null);
-
-    try {
-      const response = await fetch("/api/send-email", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          to: email,
-          type: "pattern",
-          patternUuid: pattern.uuid,
-          templateId: "pattern-generated",
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Kunne ikke sende e-post");
-      }
-
-      setEmailSent(true);
-      setEmail("");
-    } catch (error) {
-      setEmailError(
-        error instanceof Error ? error.message : "En feil oppstod ved sending av e-post"
-      );
-    } finally {
-      setSendingEmail(false);
-    }
-  };
 
   const colorInfoMap = pattern.colors_used.reduce(
     (acc, color) => {
@@ -142,7 +96,7 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
   const handleDownloadPDF = async () => {
     setDownloadingPDF(true);
     try {
-      const response = await fetch(`${apiUrl}/api/patterns/${pattern.uuid}/pdf`);
+      const response = await fetch(`${apiUrl}/api/patterns/${pattern.id}/pdf`);
 
       if (!response.ok) {
         throw new Error("Kunne ikke generere PDF");
@@ -152,7 +106,7 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `perlemønster_${pattern.uuid}.pdf`;
+      a.download = `perlemønster_${pattern.id}.pdf`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -194,7 +148,7 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
             <button
               onClick={handleDownloadPDF}
               disabled={downloadingPDF}
-              className="flex items-center gap-2 px-4 py-2 bg-purple text-white hover:bg-green-700 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-2 bg-purple text-white hover:bg-primary-dark-pink rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ArrowDownTrayIcon className="w-5 h-5" />
               <span>{downloadingPDF ? "Genererer PDF..." : "Last ned PDF"}</span>

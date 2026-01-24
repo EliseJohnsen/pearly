@@ -3,24 +3,8 @@ import { getAuthHeaders } from "@/lib/auth";
 
 import { useState, useEffect } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
+import { Pattern, PatternData } from "../models/patternModels";
 
-interface PatternData {
-  uuid: string;
-  pattern_image_url: string;
-  grid_size: number;
-  colors_used: Array<{
-    hex: string;
-    name: string;
-    count: number;
-    code?: string;
-  }>;
-  created_at: string;
-  boards_width?: number;
-  boards_height?: number;
-  pattern_data?: any;
-  pattern_image_base64?: string;
-  styled_image_base64?: string;
-}
 
 interface CreateProductModalProps {
   pattern: PatternData;

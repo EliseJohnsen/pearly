@@ -21,18 +21,10 @@ class AIGenerationService:
     Specialized for creating bead pattern designs in various artistic styles.
     """
 
-    MODELS = {
-        "google/nano-banana": "google/nano-banana",
-        "sdxl": "stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b",
-        "stable-diffusion": "stability-ai/stable-diffusion:db21e45d3f7023abc2a46ee38a23973f6dce16bb082a930b0c49861f96d1e5bf",
-        "flux-schnell": "black-forest-labs/flux-schnell",  # Fast, newer model
-        "flux-dev": "black-forest-labs/flux-dev",  # High quality
-    }
-
     IMAGE_TO_IMAGE_MODELS = {
         "google/nano-banana": "google/nano-banana",
         "sdxl-img2img": "stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b",
-        "flux-dev-img2img": "black-forest-labs/flux-dev",
+        "flux-dev": "black-forest-labs/flux-kontext-pro",
     }
 
     STYLE_PRESETS = {
@@ -113,45 +105,77 @@ class AIGenerationService:
 
         return palette_prompt
 
-    def _build_prompt(
-        self,
-        subject: str,
-        style: str = "wpap",
-        additional_details: str = "",
-        optimize_for_beads: bool = True
-    ) -> tuple[str, str]:
+    def _get_closest_aspect_ratio(self, width: int, height: int) -> str:
         """
-        Builds optimized prompts for bead pattern generation.
+        Calculate the closest valid aspect ratio for the given image dimensions.
 
         Args:
-            subject: Main subject of the image (e.g., "cat", "flower", "portrait")
-            style: Style preset to use
-            additional_details: Extra details to add to prompt
-            optimize_for_beads: Add bead-pattern specific optimizations
+            width: Image width in pixels
+            height: Image height in pixels
 
         Returns:
-            Tuple of (positive_prompt, negative_prompt)
+            Closest valid aspect ratio string from the allowed list
         """
-        style_config = self.STYLE_PRESETS.get(style, self.STYLE_PRESETS["pop-art"])
+        valid_ratios = {
+            "1:1": 1.0,
+            "16:9": 16/9,
+            "21:9": 21/9,
+            "3:2": 3/2,
+            "2:3": 2/3,
+            "4:5": 4/5,
+            "5:4": 5/4,
+            "3:4": 3/4,
+            "4:3": 4/3,
+            "9:16": 9/16,
+            "9:21": 9/21,
+        }
 
-        prompt_parts = [subject]
-        prompt_parts.append(style_config["style_prompt"])
+        input_ratio = width / height
 
-        if optimize_for_beads:
-            prompt_parts.append("bold outlines, clear shapes, vivid colors, strong composition")
+        # Find the closest ratio
+        closest_ratio = min(valid_ratios.items(), key=lambda x: abs(x[1] - input_ratio))
 
-        if additional_details:
-            prompt_parts.append(additional_details)
+        return closest_ratio[0]
 
-        positive_prompt = ", ".join(prompt_parts)
+    # def _build_prompt(
+    #     self,
+    #     subject: str,
+    #     style: str = "cartoon",
+    #     additional_details: str = "",
+    #     optimize_for_beads: bool = True
+    # ) -> tuple[str, str]:
+    #     """
+    #     Builds optimized prompts for bead pattern generation.
 
-        logger.info(f"Built prompt - Style: {style}, Subject: {subject}")
-        return positive_prompt
+    #     Args:
+    #         subject: Main subject of the image (e.g., "cat", "flower", "portrait")
+    #         style: Style preset to use
+    #         additional_details: Extra details to add to prompt
+    #         optimize_for_beads: Add bead-pattern specific optimizations
+
+    #     Returns:
+    #         Tuple of (positive_prompt, negative_prompt)
+    #     """
+    #     style_config = self.STYLE_PRESETS.get("pixel-art")
+
+    #     prompt_parts = [subject]
+    #     prompt_parts.append(style_config["style_prompt"])
+
+    #     if optimize_for_beads:
+    #         prompt_parts.append("bold outlines, clear shapes, vivid colors, strong composition")
+
+    #     if additional_details:
+    #         prompt_parts.append(additional_details)
+
+    #     positive_prompt = ", ".join(prompt_parts)
+
+    #     logger.info(f"Built prompt - Style: {style}, Subject: {subject}")
+    #     return positive_prompt
 
     async def transform_image(
         self,
         image_path: str,
-        style: str = "pop-art",
+        style: str = "wpap",
         model: str = "google/nano-banana",
         prompt_strength: float = 0.5,
         additional_details: str = "",
@@ -181,7 +205,7 @@ class AIGenerationService:
         if style not in self.STYLE_PRESETS:
             raise ValueError(f"Style '{style}' not supported. Choose from: {list(self.STYLE_PRESETS.keys())}")
 
-        style_config = self.STYLE_PRESETS.get(style, self.STYLE_PRESETS["wpap"])
+        style_config = self.STYLE_PRESETS.get(style)
 
         positive_prompt = f"{style_config['style_prompt']}. {self.color_palette_prompt}"
 
@@ -193,6 +217,12 @@ class AIGenerationService:
         if not image_file.exists():
             raise FileNotFoundError(f"Image file not found: {image_path}")
 
+        # Calculate aspect ratio from input image
+        img = Image.open(image_path)
+        width, height = img.size
+        aspect_ratio = self._get_closest_aspect_ratio(width, height)
+        logger.info(f"Input image size: {width}x{height}, using aspect ratio: {aspect_ratio}")
+
         try:
             with open(image_path, "rb") as f:
                 if model == "google/nano-banana":
@@ -203,11 +233,11 @@ class AIGenerationService:
                     }
                 else:
                     input_params = {
-                        "image": f,
+                        "input_image": f,
                         "prompt": positive_prompt,
-                        "aspect_ratio": "match_input_image",
+                        "aspect_ratio": aspect_ratio,
                         "output_format": "jpg",
-                        "prompt_strength": prompt_strength,
+                        # "prompt_strength": prompt_strength,
                         "num_inference_steps": 30,
                     }
 

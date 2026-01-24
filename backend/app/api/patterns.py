@@ -155,9 +155,9 @@ def get_all_patterns(
         for pattern in patterns
     ]
 
-@router.get("/patterns/{pattern_uuid}", response_model=PatternResponse)
-def get_pattern(pattern_uuid: str, db: Session = Depends(get_db)):
-    pattern = db.query(Pattern).filter(Pattern.uuid == pattern_uuid).first()
+@router.get("/patterns/{pattern_id}", response_model=PatternResponse)
+def get_pattern(pattern_id: str, db: Session = Depends(get_db)):
+    pattern = db.query(Pattern).filter(Pattern.id == pattern_id).first()
 
     if not pattern:
         raise HTTPException(status_code=404, detail="Pattern not found")
@@ -301,14 +301,14 @@ async def upload_image_with_style(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing image with style: {str(e)}")
 
-@router.get("/patterns/{pattern_uuid}/pdf")
-def download_pattern_pdf(pattern_uuid: str, db: Session = Depends(get_db)):
+@router.get("/patterns/{pattern_id}/pdf")
+def download_pattern_pdf(pattern_id: str, db: Session = Depends(get_db)):
     """
     Generates and downloads a PDF with the bead pattern.
     Each page represents one 29x29 board with beads shown as colored circles
     containing the color code from perle-colors.json.
     """
-    pattern = db.query(Pattern).filter(Pattern.uuid == pattern_uuid).first()
+    pattern = db.query(Pattern).filter(Pattern.id == pattern_id).first()
 
     if not pattern:
         raise HTTPException(status_code=404, detail="Pattern not found")
@@ -326,19 +326,19 @@ def download_pattern_pdf(pattern_uuid: str, db: Session = Depends(get_db)):
             content=pdf_bytes,
             media_type="application/pdf",
             headers={
-                "Content-Disposition": f"attachment; filename=perlemønster_{pattern_uuid}.pdf"
+                "Content-Disposition": f"attachment; filename=perlemønster_{pattern_id}.pdf"
             }
         )
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating PDF: {str(e)}")
 
-@router.get("/patterns/{pattern_uuid}/image")
-def get_pattern_image(pattern_uuid: str, db: Session = Depends(get_db)):
+@router.get("/patterns/{pattern_id}/image")
+def get_pattern_image(pattern_id: str, db: Session = Depends(get_db)):
     """
     Serve the pattern image file from the uploads directory.
     """
-    pattern_path = UPLOAD_DIR / f"{pattern_uuid}_pattern.png"
+    pattern_path = UPLOAD_DIR / f"{pattern_id}_pattern.png"
 
     if not pattern_path.exists():
         raise HTTPException(status_code=404, detail="Pattern image file not found")
@@ -348,7 +348,7 @@ def get_pattern_image(pattern_uuid: str, db: Session = Depends(get_db)):
 
     return Response(content=image_data, media_type="image/png")
 
-@router.get("/patterns/{pattern_uuid}/styled-image")
+@router.get("/patterns/{pattern_id}/styled-image")
 def get_styled_image(pattern_uuid: str, db: Session = Depends(get_db)):
     """
     Serve the styled image file from the uploads directory.
@@ -363,9 +363,9 @@ def get_styled_image(pattern_uuid: str, db: Session = Depends(get_db)):
 
     return Response(content=image_data, media_type="image/png")
 
-@router.delete("/patterns/{pattern_uuid}")
+@router.delete("/patterns/{pattern_id}")
 def delete_pattern(
-    pattern_uuid: str,
+    pattern_id: str,
     db: Session = Depends(get_db),
     admin: AdminUser = Depends(get_current_admin)
 ):
@@ -373,7 +373,7 @@ def delete_pattern(
     Delete a pattern by UUID.
     Returns information about whether the pattern has an associated product.
     """
-    pattern = db.query(Pattern).filter(Pattern.uuid == pattern_uuid).first()
+    pattern = db.query(Pattern).filter(Pattern.id == pattern_id).first()
 
     if not pattern:
         raise HTTPException(status_code=404, detail="Pattern not found")

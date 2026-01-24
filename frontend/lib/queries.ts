@@ -26,6 +26,8 @@ export const pageSettingsQuery = (page: string) => groq`*[_type == "pageSettings
 
 // Email Template query
 export const emailTemplateQuery = (templateId: string) => groq`*[_type == "emailTemplate" && templateId == "${templateId}"][0]{_id,templateId,subject,heading,body,ctaText,ctaUrl,footerText}`
+export const allEmailTemplatesQuery = groq`*[_type == "emailTemplate"]{_id,templateId,subject,heading,body,ctaText,ctaUrl,footerText}`
+
 // Page queries
 export const pageBySlugQuery = (slug: string) => groq`*[_type == "page" && slug.current == "${slug}"][0]{
   _id,
@@ -139,4 +141,22 @@ export const productQuery = groq`*[_type == "products" && slug.current == $slug]
     metaDescription,
     keywords
   }
+}`;
+
+export const productsByIdsQuery = groq`*[_type == "products" && _id in $ids]{
+  _id,
+  title,
+  patternId,
+}`;
+
+export const productsByPatternIdQuery = groq`*[_type == "products" && patternId == $patternId]{
+  _id,
+  slug,
+  title,
+
+  "images": images[]{
+    asset->{_id, url, metadata{lqip, dimensions{width, height}}},
+    alt,
+    isPrimary
+  },
 }`;
