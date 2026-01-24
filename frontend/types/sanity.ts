@@ -131,7 +131,8 @@ export interface Footer {
   comapnyInfo: {
     companyName: string,
     email: string,
-  }
+  },
+  additionalText: string,
 }
 
 // Coming Soon types
