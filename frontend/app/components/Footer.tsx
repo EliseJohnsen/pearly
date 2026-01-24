@@ -22,16 +22,21 @@ export default function Footer({ data, footerPages }: FooterProps = {}) {
     return (
         <footer className="bg-purple shadow-lg p-8">
             {footer && footer.companyInfo && (
-                <h2 className="text-xl font-bold text-white text-center">
-                    <a
-                        href={`mailto:${footer.companyInfo.email}`}
-                        onClick={handleEmailClick}
-                        className="hover:text-blue-600 transition-colors"
-                        title="Åpner epost og kopierer epost-adressen til utklippstavle"
-                    >
-                        {footer.companyInfo.email}
-                    </a>
-                </h2>
+                <div>
+                    <h2 className="text-xl font-bold text-white text-center">
+                        <a
+                            href={`mailto:${footer.companyInfo.email}`}
+                            onClick={handleEmailClick}
+                            className="hover:text-black transition-colors"
+                            title="Åpner epost og kopierer epost-adressen til utklippstavle"
+                        >
+                            {footer.companyInfo.email}
+                        </a>
+                    </h2>
+                    <div className="text-white text-center">
+                        {footer.companyInfo.companyName} | {footer.additionalText}
+                    </div>
+                </div>
             )}
         </footer>
     )
