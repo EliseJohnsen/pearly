@@ -2,6 +2,7 @@ from fastapi import APIRouter, UploadFile, File, Depends, HTTPException
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
+from typing import List
 from app.core.database import get_db
 from app.core.dependencies import get_current_admin
 from app.models.admin_user import AdminUser
@@ -17,6 +18,7 @@ from app.core.config import settings
 from pathlib import Path
 import uuid
 import base64
+import json
 from datetime import datetime, timedelta
 
 router = APIRouter()
@@ -395,3 +397,55 @@ def delete_pattern(
         "has_product": has_product,
         "sanity_product_id": sanity_product_id
     }
+
+class UpdateGridRequest(BaseModel):
+    grid: List[List[str]]
+
+@router.patch("/patterns/{pattern_id}/grid")
+def update_pattern_grid(
+    pattern_id: str,
+    update_request: UpdateGridRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Update the grid data for a specific pattern.
+    """
+    pattern = db.query(Pattern).filter(Pattern.id == pattern_id).first()
+
+    if not pattern:
+        raise HTTPException(status_code=404, detail="Pattern not found")
+
+    if not pattern.pattern_data:
+        raise HTTPException(status_code=400, detail="Pattern has no pattern data")
+
+    # Update the grid in pattern_data
+    pattern.pattern_data["grid"] = update_request.grid
+
+    # Mark the pattern_data as modified (required for JSONB fields in SQLAlchemy)
+    from sqlalchemy.orm.attributes import flag_modified
+    flag_modified(pattern, "pattern_data")
+
+    db.commit()
+    db.refresh(pattern)
+
+    return {
+        "success": True,
+        "message": "Pattern grid updated successfully"
+    }
+
+@router.get("/perle-colors")
+def get_perle_colors():
+    """
+    Returns the list of available perle colors from perle-colors.json
+    """
+    colors_file = Path(__file__).parent.parent / "data" / "perle-colors.json"
+
+    if not colors_file.exists():
+        raise HTTPException(status_code=404, detail="Perle colors file not found")
+
+    try:
+        with open(colors_file, "r", encoding="utf-8") as f:
+            colors = json.load(f)
+        return colors
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error reading perle colors: {str(e)}")

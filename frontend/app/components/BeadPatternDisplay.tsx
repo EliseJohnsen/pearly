@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import {useUIString} from '@/app/hooks/useSanityData'
 import { ShoppingBagIcon, ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import CreateProductModal from "./CreateProductModal";
+import ColorPickerModal from "./ColorPickerModal";
 
 interface BeadPatternDisplayProps {
   pattern: {
@@ -47,7 +48,7 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
   pattern,
   beadSize = 10,
   pop_art_url,
-  showPDFButton = false
+  showPDFButton = false,
 }) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
   const imageUrl = `${apiUrl}${pattern.pattern_image_url}`;
@@ -59,6 +60,9 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
   const [productCreated, setProductCreated] = useState(false);
   const [productId, setProductId] = useState<number | null>(null);
   const [downloadingPDF, setDownloadingPDF] = useState(false);
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const [selectedBead, setSelectedBead] = useState<{ row: number; col: number } | null>(null);
+  const [perleColors, setPerleColors] = useState<Array<{ name: string; code: string; hex: string }>>([]);
 
   const pearlsText = useUIString('pearls')
 
@@ -69,9 +73,23 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
     }
   }, [pattern.pattern_data]);
 
+  useEffect(() => {
+    const loadColors = async () => {
+      try {
+        const response = await fetch(`${apiUrl}/api/perle-colors`);
+        if (response.ok) {
+          const colors = await response.json();
+          setPerleColors(colors);
+        }
+      } catch (error) {
+        console.error("Failed to load perle colors:", error);
+      }
+    };
+    loadColors();
+  }, [apiUrl]);
 
 
-  const colorInfoMap = pattern.colors_used.reduce(
+  const colorInfoMap = perleColors.reduce(
     (acc, color) => {
       const info = { name: color.name, hex: color.hex, code: color.code };
       acc[color.hex] = info;
@@ -119,6 +137,78 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
     }
   };
 
+  const getSurroundingColors = (row: number, col: number): (string | null)[][] => {
+    if (!patternGrid) return [];
+
+    // Create a 3x3 grid with the center being the selected color
+    const grid: (string | null)[][] = [
+      [null, null, null],
+      [null, patternGrid[row][col], null],
+      [null, null, null]
+    ];
+
+    const directions = [
+      [-1, -1, 0, 0], [-1, 0, 0, 1], [-1, 1, 0, 2],  // top row
+      [0, -1, 1, 0],                 [0, 1, 1, 2],    // middle row (left & right)
+      [1, -1, 2, 0],  [1, 0, 2, 1],  [1, 1, 2, 2]     // bottom row
+    ];
+
+    for (const [dRow, dCol, gridRow, gridCol] of directions) {
+      const newRow = row + dRow;
+      const newCol = col + dCol;
+
+      if (newRow >= 0 && newRow < patternGrid.length &&
+          newCol >= 0 && newCol < patternGrid[0].length) {
+        grid[gridRow][gridCol] = patternGrid[newRow][newCol];
+      }
+    }
+
+    return grid;
+  };
+
+  const handleBeadClick = (row: number, col: number) => {
+    setSelectedBead({ row, col });
+    setShowColorPicker(true);
+  };
+
+  const handleColorSelect = async (newHex: string) => {
+    if (!selectedBead || !patternGrid || !pattern.id) return;
+
+    // Update the grid locally
+    const newGrid = patternGrid.map((row, rowIndex) =>
+      row.map((color, colIndex) => {
+        if (rowIndex === selectedBead.row && colIndex === selectedBead.col) {
+          return newHex;
+        }
+        return color;
+      })
+    );
+
+    setPatternGrid(newGrid);
+    setShowColorPicker(false);
+    setSelectedBead(null);
+
+    // Save to database
+    try {
+      const response = await fetch(`${apiUrl}/api/patterns/${pattern.id}/grid`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ grid: newGrid }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save grid changes");
+      }
+    } catch (error) {
+      console.error("Failed to save grid changes:", error);
+      alert("Kunne ikke lagre endringene. Prøv igjen.");
+      // Revert the local change
+      setPatternGrid(pattern.pattern_data?.grid || null);
+    }
+  };
+
   return (
     <>
       {showProductModal && (
@@ -126,6 +216,20 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
           pattern={pattern}
           onClose={() => setShowProductModal(false)}
           onSuccess={handleProductCreated}
+        />
+      )}
+
+      {showColorPicker && selectedBead && patternGrid && (
+        <ColorPickerModal
+          colors={perleColors}
+          currentColor={patternGrid[selectedBead.row][selectedBead.col]}
+          surroundingColors={getSurroundingColors(selectedBead.row, selectedBead.col)}
+          onSelectColor={handleColorSelect}
+          onClose={() => {
+            setShowColorPicker(false);
+            setSelectedBead(null);
+          }}
+          position={selectedBead}
         />
       )}
 
@@ -242,6 +346,7 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
                         <div
                           key={`${rowIndex}-${colIndex}`}
                           title={tooltipText}
+                          onClick={() => handleBeadClick(rowIndex, colIndex)}
                           style={{
                             width: `${beadSize}px`,
                             height: `${beadSize}px`,
