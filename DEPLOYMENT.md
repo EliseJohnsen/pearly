@@ -1,90 +1,100 @@
 # Deployment Guide
 
-This guide will help you deploy your Perle application to production using Supabase (database), Railway (backend), and Vercel (frontend).
+This guide will help you deploy your Perle application to production using Railway (database + backend) and Vercel (frontend).
 
 ## Prerequisites
 
 - GitHub account with your code pushed
-- Supabase account (free tier works)
 - Railway account (sign up at [railway.app](https://railway.app))
 - Vercel account (you already have this)
 
 ---
 
-## Step 1: Deploy Database to Supabase
+## Step 1: Deploy Database to Railway
 
-### 1.1 Create Supabase Project
+### 1.1 Create Railway Project
 
-1. Go to [supabase.com](https://supabase.com) and sign in
-2. Click **"New project"**
-3. Fill in:
-   - **Name**: `perle` (or your preferred name)
-   - **Database Password**: Create a strong password (SAVE THIS!)
-   - **Region**: Choose closest to your users
-4. Click **"Create new project"**
-5. Wait ~2 minutes for setup to complete
+1. Go to [railway.app](https://railway.app) and sign in
+2. Click **"New Project"**
+3. Select **"Deploy from GitHub repo"**
+4. Choose your repository
+5. Railway will detect your Dockerfile
 
-### 1.2 Get Connection String
+### 1.2 Add PostgreSQL Database
 
-1. In your Supabase project, go to **Settings** (gear icon) → **Database**
-2. Scroll to **Connection string** section
-3. Select **URI** tab
-4. Copy the connection string (looks like):
+1. In your Railway project, click **"+ New"**
+2. Select **"Database"** → **"Add PostgreSQL"**
+3. Railway automatically creates a PostgreSQL database
+4. Wait ~1 minute for database to be ready
+
+### 1.3 Get Database Connection String
+
+1. Click on the **Postgres** service in your Railway project
+2. Go to **Variables** tab
+3. You'll see these auto-generated variables:
+   - `PGHOST` - Database host
+   - `PGPORT` - Port (usually 5432)
+   - `PGUSER` - Username (postgres)
+   - `PGPASSWORD` - Password
+   - `PGDATABASE` - Database name (railway)
+   - `DATABASE_URL` - Full connection string
+
+4. Copy the `DATABASE_URL` value - it looks like:
    ```
-   postgresql://postgres.xxx:[YOUR-PASSWORD]@aws-0-eu-central-1.pooler.supabase.com:6543/postgres
+   postgresql://postgres:password@host.railway.app:5432/railway
    ```
-5. Replace `[YOUR-PASSWORD]` with the actual password you created in step 1.1
 
-### 1.3 Important Note on Connection String Format
-
-Railway needs the connection string with `+psycopg` driver:
-```
-postgresql+psycopg://postgres.xxx:[YOUR-PASSWORD]@aws-0-eu-central-1.pooler.supabase.com:6543/postgres
-```
-
-Keep both versions handy!
+**Note**: Railway's PostgreSQL is fully managed with automatic backups!
 
 ---
 
 ## Step 2: Deploy Backend to Railway
 
-### 2.1 Create Railway Account
+Your backend service should already be created from Step 1.1. Now we'll configure it.
 
-1. Go to [railway.app](https://railway.app)
-2. Click **"Login"** → **"Login with GitHub"**
-3. Authorize Railway to access your GitHub
-
-### 2.2 Create New Project
-
-1. Click **"New Project"**
-2. Select **"Deploy from GitHub repo"**
-3. Choose your repository: `EliseJohnsen/pearly`
-4. Railway will detect your Dockerfile automatically
-
-### 2.3 Configure Root Directory
+### 2.1 Configure Root Directory
 
 Since your backend is in a subdirectory:
 
-1. Click on your service
+1. Click on your **backend service** (not the Postgres service)
 2. Go to **Settings** tab
 3. Scroll to **Service Settings** → **Root Directory**
 4. Set it to: `backend`
 5. Click **"Update"**
 
-### 2.4 Add Environment Variables
+### 2.2 Link Database to Backend
 
-1. Go to **Variables** tab
-2. Click **"+ New Variable"** and add these:
+1. In your backend service, go to **Variables** tab
+2. Click **"+ New Variable"** → **"Add Reference"**
+3. Select your **Postgres** service
+4. Choose `DATABASE_URL` variable
+5. Railway automatically injects `${{Postgres.DATABASE_URL}}`
+
+**Alternative**: Manually add:
+```
+DATABASE_URL=${{Postgres.DATABASE_URL}}
+```
+
+### 2.3 Add Other Environment Variables
+
+Add these additional variables:
 
 ```
-DATABASE_URL=postgresql+psycopg://postgres.xxx:[YOUR-PASSWORD]@aws-0-eu-central-1.pooler.supabase.com:6543/postgres
 BACKEND_CORS_ORIGINS=["https://your-app.vercel.app"]
 UPLOAD_DIR=/app/uploads
+SANITY_PROJECT_ID=your_sanity_project_id
+SANITY_DATASET=production
+SANITY_API_TOKEN=your_sanity_api_token
+SANITY_API_VERSION=2024-12-16
+SANITY_WEBHOOK_SECRET=your_webhook_secret
+REPLICATE_API_TOKEN=your_replicate_token
+SECRET_KEY=your_secret_key_for_jwt
 ```
 
 **Important**:
-- Replace the `DATABASE_URL` with your actual Supabase connection string
 - You'll update `BACKEND_CORS_ORIGINS` after deploying to Vercel
+- Get Sanity credentials from your Sanity project dashboard
+- Generate a strong `SECRET_KEY` for JWT authentication
 
 ### 2.5 Deploy
 
@@ -169,8 +179,9 @@ Now that you have your Vercel URL, update Railway backend CORS:
 ### Backend Not Connecting to Database
 
 1. Check Railway logs: Click your service → **Deployments** → Latest deployment → **View Logs**
-2. Verify `DATABASE_URL` format is correct with `+psycopg`
-3. Ensure Supabase project is active and password is correct
+2. Verify database service is running in Railway
+3. Check that `DATABASE_URL` is correctly linked to Postgres service
+4. Ensure migrations ran successfully (check logs for "Database migrations completed")
 
 ### Frontend Can't Reach Backend
 
@@ -202,9 +213,16 @@ Now that you have your Vercel URL, update Railway backend CORS:
 
 ### Railway (Backend)
 ```
-DATABASE_URL=postgresql+psycopg://postgres.xxx:[PASSWORD]@...supabase.com:6543/postgres
+DATABASE_URL=${{Postgres.DATABASE_URL}}
 BACKEND_CORS_ORIGINS=["https://your-app.vercel.app"]
 UPLOAD_DIR=/app/uploads
+SANITY_PROJECT_ID=qpdup7gv
+SANITY_DATASET=production
+SANITY_API_TOKEN=***
+SANITY_API_VERSION=2024-12-16
+SANITY_WEBHOOK_SECRET=***
+REPLICATE_API_TOKEN=***
+SECRET_KEY=***
 ```
 
 ### Vercel (Frontend)
@@ -225,9 +243,10 @@ RESEND_API_KEY=re_your_api_key_here
 - Go to your project → Click deployment → **Functions** tab
 - Shows Next.js server logs and errors
 
-### Supabase
-- Dashboard shows database activity
-- **SQL Editor** lets you query your database directly
+### Railway Database
+- Click on Postgres service → **Data** tab to view tables
+- Use **Query** tab to run SQL queries directly
+- **Metrics** tab shows database performance
 
 ---
 
@@ -243,9 +262,11 @@ RESEND_API_KEY=re_your_api_key_here
 
 ## Costs
 
-- **Supabase Free Tier**: 500MB database, 50,000 rows
-- **Railway Free Trial**: $5 credit/month (then ~$5-10/month depending on usage)
+- **Railway**: $5 credit/month for free trial, then usage-based pricing
+  - PostgreSQL: ~$5-10/month depending on storage and usage
+  - Backend service: ~$5-10/month depending on traffic
 - **Vercel Free Tier**: Unlimited deployments, 100GB bandwidth
+- **Sanity**: Free tier includes 100k API requests/month
 
 ---
 

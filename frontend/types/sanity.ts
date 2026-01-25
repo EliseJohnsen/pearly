@@ -49,7 +49,6 @@ export interface Hero {
 export interface Banner {
   _id: string
   text: string
-  type: 'info' | 'warning' | 'success' | 'promo'
   backgroundColor?: string
   isActive: boolean
   link?: {
@@ -107,22 +106,15 @@ export interface EmailTemplate {
   footerText?: string
 }
 
-// Inspiration types
-export interface Inspiration {
+// Category types
+export interface Category {
   _id: string
-  title: string
+  name: string
   slug: {
     current: string
   }
+  parent?: Category
   description?: string
-  image: SanityImage
-  category?: 'animals' | 'nature' | 'abstract' | 'characters' | 'holiday' | 'other'
-  difficulty?: 'easy' | 'medium' | 'hard'
-  colors?: number
-  gridSize?: string
-  tags?: string[]
-  isFeatured: boolean
-  order: number
 }
 
 export interface Footer {

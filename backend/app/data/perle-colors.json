@@ -7,7 +7,7 @@
   {
     "name": "Cream",
     "code": "02",
-    "hex": "#f5e4a3"
+    "hex": "#f0e8b9"
   },
   {
     "name": "Yellow",
@@ -170,16 +170,6 @@
     "hex": "#565656"
   },
   {
-    "name": "Tan",
-    "code": "75",
-    "hex": "#a27652"
-  },
-  {
-    "name": "Nougat",
-    "code": "76",
-    "hex": "#7c4f2f"
-  },
-  {
     "name": "Cloudy white",
     "code": "77",
     "hex": "#E6DFCE"
@@ -235,16 +225,6 @@
     "hex": "#8fa68b"
   },
   {
-    "name": "Forest green",
-    "code": "102",
-    "hex": "#435a3b"
-  },
-  {
-    "name": "Light yellow",
-    "code": "103",
-    "hex": "#f1c936"
-  },
-  {
     "name": "Lime",
     "code": "104",
     "hex": "#c2e90b"
@@ -260,11 +240,6 @@
     "hex": "#DEDAFF"
   },
   {
-    "name": "Lavender",
-    "code": "107",
-    "hex": "#5d6a9b"
-  },
-  {
     "name": "Aubergine",
     "code": "108",
     "hex": "#4c3749"
@@ -275,39 +250,9 @@
     "hex": "#aaa39a"
   },
   {
-    "name": "Matcha",
-    "code": "110",
-    "hex": "#989d5f"
-  },
-  {
     "name": "Dark blush",
     "code": "111",
     "hex": "#9c6261"
-  },
-  {
-    "name": "Blush",
-    "code": "112",
-    "hex": "#e9ae89"
-  },
-  {
-    "name": "Aqua",
-    "code": "113",
-    "hex": "#65b799"
-  },
-  {
-    "name": "Cherry red",
-    "code": "114",
-    "hex": "#be1922"
-  },
-  {
-    "name": "Bright green",
-    "code": "115",
-    "hex": "#76cb6f"
-  },
-  {
-    "name": "Midnight blue",
-    "code": "116",
-    "hex": "#0c1d33"
   }
 ]
 

@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import LoadingSpinner from "./LoadingSpinner";
 import { useUIString } from '@/app/hooks/useSanityData';
+import { getSessionToken } from "@/lib/auth";
 
 interface ImageUploadProps {
   onPatternGenerated: (data: any) => void;
@@ -115,10 +116,18 @@ export default function ImageUpload({ onPatternGenerated, onUploadStatusChange }
         boards_height: selectedDimensions.boards_height.toString(),
       });
 
+      const token = getSessionToken();
+      const headers: HeadersInit = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch(
         `${apiUrl}/api/patterns/upload-with-style?${params.toString()}`,
         {
           method: "POST",
+          headers,
+          credentials: 'include',
           body: formData,
         }
       );
@@ -256,7 +265,7 @@ export default function ImageUpload({ onPatternGenerated, onUploadStatusChange }
             <h3 className="text-lg font-semibold text-gray-900 mb-3">
               2. Velg størrelse
             </h3>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {(["small", "medium", "large"] as const).map((size) => {
                 const option = sizeOptions[size];
                 const isSelected = selectedSize === size;

@@ -13,14 +13,14 @@ import os
 def _register_fonts():
     """Register Quicksand font for use in PDFs."""
     fonts_dir = os.path.join(os.path.dirname(__file__), '..', 'fonts')
-    font_path = os.path.join(fonts_dir, 'Quicksand-Regular.ttf')
+    font_path = os.path.join(fonts_dir, 'tahoma.ttf')
 
     if os.path.exists(font_path):
         # Quicksand is a variable font, so we use the same file for all weights
         # ReportLab will use it for Regular, Bold, and Italic
-        pdfmetrics.registerFont(TTFont('Quicksand', font_path))
-        pdfmetrics.registerFont(TTFont('Quicksand-Bold', font_path))
-        pdfmetrics.registerFont(TTFont('Quicksand-Oblique', font_path))
+        pdfmetrics.registerFont(TTFont('Tahoma', font_path))
+        pdfmetrics.registerFont(TTFont('Tahoma-Bold', font_path))
+        pdfmetrics.registerFont(TTFont('Tahoma-Oblique', font_path))
         return True
     return False
 
@@ -31,11 +31,11 @@ def _get_font(style: str = 'regular') -> str:
     """Get the appropriate font name based on availability."""
     if _QUICKSAND_AVAILABLE:
         font_map = {
-            'regular': 'Quicksand',
-            'bold': 'Quicksand-Bold',
-            'oblique': 'Quicksand-Oblique'
+            'regular': 'Tahoma',
+            'bold': 'Tahoma-Bold',
+            'oblique': 'Tahoma-Oblique'
         }
-        return font_map.get(style, 'Quicksand')
+        return font_map.get(style, 'Tahoma')
     else:
         # Fallback to Helvetica
         font_map = {
@@ -170,7 +170,7 @@ def generate_pattern_pdf(
     c = canvas.Canvas(buffer, pagesize=A4)
     page_width, page_height = A4
 
-    pattern_cm_size = 15
+    pattern_cm_size = 14.4
     bead_size_cm = pattern_cm_size / board_size  # Size per bead in cm
     bead_size_points = bead_size_cm * cm  # Convert to points
 

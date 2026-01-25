@@ -43,7 +43,7 @@ export default function HowItWorks({ data }: HowItWorksProps = {}) {
   return (
     <main className="container mx-auto px-4 py-10">
       <div className="text-center mb-12">
-        <p className="text-4xl my-2" style={{color: getHowItWorksFontColor()}}>
+        <p className="text-3xl md:text-4xl my-2" style={{color: getHowItWorksFontColor()}}>
           {howItWorksLoading
             ? 'Hvordan funker det?'
             : howItWorks?.sectionTitle || 'Hvordan funker det?'}

@@ -53,7 +53,7 @@ export default function CTA({ data }: CTAProps = {}) {
         <div className="lg:max-w-none">
           <div className="relative">
             <div className="absolute top-1/2 left-12 -translate-y-1/4 bg-primary-pink p-8 rounded-xl shadow-2xl max-w-md">
-              <p className="text-5xl lg:text-7xl font-semibold tracking-tight text-primary-red leading-tight">
+              <p className="text-3xl md:text-5xl lg:text-7xl font-semibold tracking-tight text-primary-red leading-tight">
                 {hero.heading}
               </p>
               {hero.subheading && (

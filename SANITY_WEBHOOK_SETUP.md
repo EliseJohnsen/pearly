@@ -80,7 +80,6 @@ Du kan begrense hvilke felt som sendes for å redusere payload-størrelse:
   currency,
   vatRate,
   tags,
-  isFeatured,
   order,
   seo
 }
@@ -151,7 +150,7 @@ Når et produkt opprettes i Sanity, sender webhooket følgende payload:
   "_id": "abc123",
   "_type": "products",
   "_rev": "v1",
-  "productType": "beads",
+  "productType": "kit",
   "sku": "BEADS-001",
   "title": "Mix perlepakke",
   "slug": {
@@ -180,7 +179,6 @@ Når et produkt opprettes i Sanity, sender webhooket følgende payload:
   "currency": "NOK",
   "vatRate": 25,
   "tags": ["perler", "mix"],
-  "isFeatured": false,
   "order": 0
 }
 ```

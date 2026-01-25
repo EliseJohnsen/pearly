@@ -34,15 +34,19 @@ interface BeadPatternDisplayProps {
       style?: string;
       styled_image_path?: string;
     };
+    pattern_image_base64?: string;
+    styled_image_base64?: string;
   };
   beadSize?: number;
   pop_art_url?: string;
+  showPDFButton?: boolean;
 }
 
 const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
   pattern,
   beadSize = 10,
-  pop_art_url
+  pop_art_url,
+  showPDFButton = false
 }) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
   const imageUrl = `${apiUrl}${pattern.pattern_image_url}`;
@@ -186,14 +190,16 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
               </div>
             )}
 
+          {showPDFButton && (
             <button
               onClick={handleDownloadPDF}
               disabled={downloadingPDF}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-2 bg-purple text-white hover:bg-green-700 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ArrowDownTrayIcon className="w-5 h-5" />
               <span>{downloadingPDF ? "Genererer PDF..." : "Last ned PDF"}</span>
             </button>
+          )}
 
             <button
               onClick={() => setShowProductModal(true)}
@@ -317,8 +323,8 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
           )}
           { pattern.pattern_data?.width && pattern.pattern_data?.height && (
             <div>
-              <p className="text-sm">
-                <strong>Størrelse: </strong> {pattern.pattern_data?.height} x {pattern.pattern_data.width} { pearlsText }
+              <p className="text-sm mb-2">
+                <strong>Størrelse: </strong> {pattern.pattern_data?.width} x {pattern.pattern_data.height} { pearlsText }
               </p>
               <p className="text-sm">
                 <strong>Antall perler: </strong> {pattern.pattern_data?.height * pattern.pattern_data.width} { pearlsText }
