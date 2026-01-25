@@ -9,6 +9,7 @@ import { Pattern } from "@/app/models/patternModels";
 import { client } from "@/lib/sanity";
 import { productsByPatternIdQuery } from "@/lib/queries";
 import CollapsableCard from "@/app/components/CollapsableCard";
+import { Product } from "@/app/models/orderModels";
 
 export default function PatternDetailPage() {
   const params = useParams();
