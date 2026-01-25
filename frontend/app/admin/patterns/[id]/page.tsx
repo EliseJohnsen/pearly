@@ -123,35 +123,32 @@ export default function PatternDetailPage() {
         </div>
 
         <CollapsableCard header="Produkter knyttet til dette mønsteret">
-
-                                          {products?.map((product: any) => (
-                                              <div className="w-75">
-                        <a
-                            key={product._id}
-                            href={`/produkter/${product.slug.current}`}
-                            className="rounded-lg p-4 hover:shadow-lg transition block"
-                        >
-                            {product.images && product.images.length > 0 && (() => {
-                              const primaryImage = product.images.find((img: any) => img.isPrimary) || product.images[0]
-                              return (
-                                <img
-                                  src={primaryImage.asset.url}
-                                  alt={primaryImage.alt || product.title}
-                                  className="aspect-3/4 object-cover rounded mb-4"
-                                />
-                              )
-                            })()}
-                            <h3 className="font-semibold text-lg mb-2">
-                            {product.title}
-                            </h3>
-                            {product.description && (
-                            <p className="text-gray-600 text-sm">
-                                {product.description}
-                            </p>
-                            )}
-                        </a>
-                        </div>
-                        ))}
+          {products?.map((product: any) => (
+            <a
+                key={product._id}
+                href={`/produkter/${product.slug.current}`}
+                className="rounded-lg p-4 hover:shadow-lg transition block w-75"
+            >
+                {product.images && product.images.length > 0 && (() => {
+                  const primaryImage = product.images.find((img: any) => img.isPrimary) || product.images[0]
+                  return (
+                    <img
+                      src={primaryImage.asset.url}
+                      alt={primaryImage.alt || product.title}
+                      className="aspect-3/4 object-cover rounded mb-4"
+                    />
+                  )
+                })()}
+                <h3 className="font-semibold text-lg mb-2">
+                {product.title}
+                </h3>
+                {product.description && (
+                <p className="text-gray-600 text-sm">
+                    {product.description}
+                </p>
+                )}
+            </a>
+          ))}
         </CollapsableCard>
 
         <CollapsableCard header="Mønster">
