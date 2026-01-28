@@ -226,7 +226,7 @@ export default function ImageUpload({ onPatternGenerated, onUploadStatusChange }
           />
           <label
             htmlFor="upload-image-unified"
-            className="cursor-pointer inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-primary-dark-pink text-white hover:bg-purple hover:text-primary-light transition-colors"
+            className="cursor-pointer inline-flex items-center px-4 py-2 rounded-full bg-primary-dark-pink hover:bg-purple hover:text-white transition-colors"
           >
             {chooseAPhotoText}
           </label>

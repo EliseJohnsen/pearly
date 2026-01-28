@@ -42,6 +42,7 @@ interface BeadPatternDisplayProps {
   beadSize?: number;
   pop_art_url?: string;
   showPDFButton?: boolean;
+  onPatternUpdate?: () => void;
 }
 
 const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
@@ -49,6 +50,7 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
   beadSize = 10,
   pop_art_url,
   showPDFButton = false,
+  onPatternUpdate,
 }) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
   const imageUrl = `${apiUrl}${pattern.pattern_image_url}`;
@@ -63,6 +65,9 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [selectedBead, setSelectedBead] = useState<{ row: number; col: number } | null>(null);
   const [perleColors, setPerleColors] = useState<Array<{ name: string; code: string; hex: string }>>([]);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [originalGrid, setOriginalGrid] = useState<string[][] | null>(pattern.pattern_data?.grid || null);
+  const [isSaving, setIsSaving] = useState(false);
 
   const pearlsText = useUIString('pearls')
 
@@ -70,6 +75,8 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
   useEffect(() => {
     if (pattern.pattern_data?.grid) {
       setPatternGrid(pattern.pattern_data.grid);
+      setOriginalGrid(pattern.pattern_data.grid);
+      setHasUnsavedChanges(false);
     }
   }, [pattern.pattern_data]);
 
@@ -87,6 +94,18 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
     };
     loadColors();
   }, [apiUrl]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        return (e.returnValue = "");
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [hasUnsavedChanges]);
 
 
   const colorInfoMap = perleColors.reduce(
@@ -171,10 +190,29 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
     setShowColorPicker(true);
   };
 
-  const handleColorSelect = async (newHex: string) => {
-    if (!selectedBead || !patternGrid || !pattern.id) return;
+  const calculateColorsUsed = (grid: string[][]) => {
+    const colorCounts = new Map<string, number>();
 
-    // Update the grid locally
+    grid.forEach(row => {
+      row.forEach(colorCode => {
+        colorCounts.set(colorCode, (colorCounts.get(colorCode) || 0) + 1);
+      });
+    });
+
+    return Array.from(colorCounts.entries()).map(([colorCode, count]) => {
+      const colorInfo = colorInfoMap[colorCode];
+      return {
+        hex: colorInfo?.hex || colorCode,
+        name: colorInfo?.name || "Unknown",
+        count,
+        code: colorInfo?.code
+      };
+    });
+  };
+
+  const handleColorSelect = (newHex: string) => {
+    if (!selectedBead || !patternGrid) return;
+
     const newGrid = patternGrid.map((row, rowIndex) =>
       row.map((color, colIndex) => {
         if (rowIndex === selectedBead.row && colIndex === selectedBead.col) {
@@ -185,27 +223,51 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
     );
 
     setPatternGrid(newGrid);
+    setHasUnsavedChanges(true);
     setShowColorPicker(false);
     setSelectedBead(null);
+  };
 
-    // Save to database
+  const handleSaveChanges = async () => {
+    if (!patternGrid || !pattern.id) return;
+
+    setIsSaving(true);
     try {
+      const colorsUsed = calculateColorsUsed(patternGrid);
+
       const response = await fetch(`${apiUrl}/api/patterns/${pattern.id}/grid`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ grid: newGrid }),
+        body: JSON.stringify({
+          grid: patternGrid,
+          colors_used: colorsUsed
+        }),
       });
 
       if (!response.ok) {
         throw new Error("Failed to save grid changes");
       }
+
+      setOriginalGrid(patternGrid);
+      setHasUnsavedChanges(false);
+
+      if (onPatternUpdate) {
+        onPatternUpdate();
+      }
     } catch (error) {
       console.error("Failed to save grid changes:", error);
       alert("Kunne ikke lagre endringene. Prøv igjen.");
-      // Revert the local change
-      setPatternGrid(pattern.pattern_data?.grid || null);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDiscardChanges = () => {
+    if (originalGrid) {
+      setPatternGrid(originalGrid);
+      setHasUnsavedChanges(false);
     }
   };
 
@@ -268,6 +330,30 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
             </button>
           </div>
         </div>
+
+        {hasUnsavedChanges && (
+          <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-amber-600 font-medium">⚠️ Du har ulagrede endringer</span>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={handleDiscardChanges}
+                disabled={isSaving}
+                className="px-4 py-2 text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Forkast
+              </button>
+              <button
+                onClick={handleSaveChanges}
+                disabled={isSaving}
+                className="px-4 py-2 bg-green-600 text-white hover:bg-green-700 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSaving ? "Lagrer..." : "Lagre endringer"}
+              </button>
+            </div>
+          </div>
+        )}
 
         {productCreated && productId && (
         <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">

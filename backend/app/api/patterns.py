@@ -2,7 +2,7 @@ from fastapi import APIRouter, UploadFile, File, Depends, HTTPException
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 from app.core.database import get_db
 from app.core.dependencies import get_current_admin
 from app.models.admin_user import AdminUser
@@ -398,8 +398,15 @@ def delete_pattern(
         "sanity_product_id": sanity_product_id
     }
 
+class ColorUsed(BaseModel):
+    hex: str
+    name: str
+    count: int
+    code: Optional[str] = None
+
 class UpdateGridRequest(BaseModel):
     grid: List[List[str]]
+    colors_used: Optional[List[ColorUsed]] = None
 
 @router.patch("/patterns/{pattern_id}/grid")
 def update_pattern_grid(
@@ -408,7 +415,7 @@ def update_pattern_grid(
     db: Session = Depends(get_db)
 ):
     """
-    Update the grid data for a specific pattern.
+    Update the grid data and optionally colors_used for a specific pattern.
     """
     pattern = db.query(Pattern).filter(Pattern.id == pattern_id).first()
 
@@ -420,6 +427,10 @@ def update_pattern_grid(
 
     # Update the grid in pattern_data
     pattern.pattern_data["grid"] = update_request.grid
+
+    # Update colors_used if provided
+    if update_request.colors_used is not None:
+        pattern.colors_used = [color.model_dump() for color in update_request.colors_used]
 
     # Mark the pattern_data as modified (required for JSONB fields in SQLAlchemy)
     from sqlalchemy.orm.attributes import flag_modified

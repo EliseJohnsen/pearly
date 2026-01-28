@@ -22,28 +22,29 @@ export default function PatternDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [checkedColors, setCheckedColors] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    const fetchPattern = async () => {
-      if (!patternId || isNaN(patternId)) return;
+  const fetchPattern = async () => {
+    if (!patternId || isNaN(patternId)) return;
 
-      try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-        const response = await fetch(`${apiUrl}/api/patterns/${patternId}`);
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const response = await fetch(`${apiUrl}/api/patterns/${patternId}`);
 
-        if (!response.ok) {
-          throw new Error("Kunne ikke hente mønster");
-        }
-
-        const data = await response.json();
-        setPattern(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "En feil oppstod");
-      } finally {
-        setLoading(false);
+      if (!response.ok) {
+        throw new Error("Kunne ikke hente mønster");
       }
-    };
 
+      const data = await response.json();
+      setPattern(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "En feil oppstod");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchPattern();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [patternId]);
 
   useEffect(() => {
@@ -152,7 +153,12 @@ export default function PatternDetailPage() {
         </CollapsableCard>
 
         <CollapsableCard header="Mønster">
-          <BeadPatternDisplay pattern={pattern} showPDFButton={true} beadSize={10} />
+          <BeadPatternDisplay
+            pattern={pattern}
+            showPDFButton={true}
+            beadSize={10}
+            onPatternUpdate={fetchPattern}
+          />
         </CollapsableCard>
 
         <CollapsableCard header="Farger du trenger">
