@@ -9,8 +9,10 @@ This module handles the core pattern generation logic including:
 """
 
 from fastapi import HTTPException
-from PIL import Image
+from PIL import Image, ImageDraw
 from typing import List, Dict, Tuple
+import io
+import base64
 
 from .color_service import get_perle_colors, find_closest_color, hex_to_rgb
 from .image_preprocessor import enhanced_preprocess_image, basic_preprocess_image
@@ -372,3 +374,64 @@ def convert_image_to_pattern_from_file(
         simplification_strength=simplification_strength,
         use_nearest_neighbor=use_nearest_neighbor
     )
+
+
+def render_grid_to_image(grid: List[List[str]], bead_size: int = 10) -> Image.Image:
+    """
+    Renders a grid of color codes to a PIL Image with circular beads.
+
+    Args:
+        grid: 2D list of hex color codes
+        bead_size: Size of each bead in pixels (default: 10)
+
+    Returns:
+        PIL Image object
+    """
+    if not grid or not grid[0]:
+        raise ValueError("Grid is empty")
+
+    height = len(grid)
+    width = len(grid[0])
+
+    # Create image with white background
+    img_width = width * bead_size
+    img_height = height * bead_size
+    image = Image.new('RGB', (img_width, img_height), 'white')
+    draw = ImageDraw.Draw(image)
+
+    # Draw each bead as a circle
+    for row_idx, row in enumerate(grid):
+        for col_idx, hex_color in enumerate(row):
+            # Calculate bead position
+            x = col_idx * bead_size
+            y = row_idx * bead_size
+
+            # Draw circular bead
+            draw.ellipse(
+                [x, y, x + bead_size, y + bead_size],
+                fill=hex_color,
+                outline=None
+            )
+
+    return image
+
+
+def render_grid_to_base64(grid: List[List[str]], bead_size: int = 10) -> str:
+    """
+    Renders a grid to a PNG image and returns it as base64 string.
+
+    Args:
+        grid: 2D list of hex color codes
+        bead_size: Size of each bead in pixels (default: 10)
+
+    Returns:
+        Base64 encoded PNG image string
+    """
+    image = render_grid_to_image(grid, bead_size)
+
+    # Convert to base64
+    buffer = io.BytesIO()
+    image.save(buffer, format='PNG')
+    buffer.seek(0)
+
+    return base64.b64encode(buffer.getvalue()).decode('utf-8')

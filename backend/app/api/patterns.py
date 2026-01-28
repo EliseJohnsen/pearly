@@ -14,6 +14,7 @@ from app.services.image_processing import (
 )
 from app.services.ai_generation import AIGenerationService
 from app.services.pdf_generator import generate_pattern_pdf
+from app.services.pattern_generator import render_grid_to_base64
 from app.core.config import settings
 from pathlib import Path
 import uuid
@@ -443,6 +444,40 @@ def update_pattern_grid(
         "success": True,
         "message": "Pattern grid updated successfully"
     }
+
+@router.get("/patterns/{pattern_id}/render-grid")
+def render_pattern_grid(pattern_id: str, bead_size: int = 10, db: Session = Depends(get_db)):
+    """
+    Renders the pattern grid to a base64 PNG image.
+    Useful for generating up-to-date pattern images after grid modifications.
+
+    Args:
+        pattern_id: The pattern ID
+        bead_size: Size of each bead in pixels (default: 10)
+
+    Returns:
+        JSON with base64 encoded PNG image
+    """
+    pattern = db.query(Pattern).filter(Pattern.id == pattern_id).first()
+
+    if not pattern:
+        raise HTTPException(status_code=404, detail="Pattern not found")
+
+    if not pattern.pattern_data or "grid" not in pattern.pattern_data:
+        raise HTTPException(status_code=400, detail="Pattern has no grid data")
+
+    try:
+        grid = pattern.pattern_data["grid"]
+        base64_image = render_grid_to_base64(grid, bead_size=bead_size)
+
+        return {
+            "pattern_image_base64": base64_image,
+            "width": len(grid[0]) if grid else 0,
+            "height": len(grid),
+            "bead_size": bead_size
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error rendering grid: {str(e)}")
 
 @router.get("/perle-colors")
 def get_perle_colors():
