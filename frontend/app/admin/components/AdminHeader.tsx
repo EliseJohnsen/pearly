@@ -7,8 +7,8 @@ export default function AdminHeader() {
   const pathname = usePathname()
 
   const navItems = [
-    { href: '/preview', label: 'Opprett mønster / produkt' },
-    { href: '/admin/patterns', label: 'Mønstre' },
+    { href: '/lag-ditt-eget-motiv', label: 'Opprett mønster / produkt' },
+    { href: '/admin/patterns', label: 'Mønster' },
     { href: '/admin/orders', label: 'Bestillinger' },
   ]
 

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import BeadPatternDisplay from "@/app/components/BeadPatternDisplay";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
-import { ArrowLeftIcon, BackwardIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { Pattern } from "@/app/models/patternModels";
 import { client } from "@/lib/sanity";
 import { productsByPatternIdQuery } from "@/lib/queries";
@@ -52,8 +52,6 @@ export default function PatternDetailPage() {
       if (!patternId || isNaN(patternId)) return;
       try {
         const data = await client.fetch(productsByPatternIdQuery, { patternId: patternId.toString() });
-        console.log("Fetched product data:", data);
-        console.log("Product images:", data?.images);
         setProducts(data);
       } catch (error) {
         console.error("Error fetching product:", error);
@@ -92,7 +90,7 @@ export default function PatternDetailPage() {
     );
   }
 
-  if (error || !pattern) {
+  if (!loading && (error || !pattern)) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
@@ -100,10 +98,10 @@ export default function PatternDetailPage() {
           <p className="text-red-600">{error || "Mønster ikke funnet"}</p>
           <button
             onClick={() => router.push("/admin/patterns")}
-            className="mt-4 text-purple hover:text-blue-800 font-medium"
+            className="flex items-center gap-2 px-4 py-2 my-4 bg-purple text-white hover:bg-primary-dark-pink rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <BackwardIcon className="w-5 h-5" />
-            <span>Tilbake til oversikt</span>
+            <ArrowLeftIcon className="w-5 h-5" />
+              <span>Tilbake til oversikt</span>
           </button>
         </div>
       </div>
@@ -124,32 +122,34 @@ export default function PatternDetailPage() {
         </div>
 
         <CollapsableCard header="Produkter knyttet til dette mønsteret">
-          {products?.map((product: any) => (
-            <a
-                key={product._id}
-                href={`/produkter/${product.slug.current}`}
-                className="rounded-lg p-4 hover:shadow-lg transition block w-75"
-            >
-                {product.images && product.images.length > 0 && (() => {
-                  const primaryImage = product.images.find((img: any) => img.isPrimary) || product.images[0]
-                  return (
-                    <img
-                      src={primaryImage.asset.url}
-                      alt={primaryImage.alt || product.title}
-                      className="aspect-3/4 object-cover rounded mb-4"
-                    />
-                  )
-                })()}
-                <h3 className="font-semibold text-lg mb-2">
-                {product.title}
-                </h3>
-                {product.description && (
-                <p className="text-gray-600 text-sm">
-                    {product.description}
-                </p>
-                )}
-            </a>
-          ))}
+          <div className="grid grid-cols-3 gap-2">
+            {products?.map((product: any) => (
+              <a
+                  key={product._id}
+                  href={`/produkter/${product.slug.current}`}
+                  className="rounded-lg p-4 hover:shadow-lg transition block w-75"
+              >
+                  {product.images && product.images.length > 0 && (() => {
+                    const primaryImage = product.images.find((img: any) => img.isPrimary) || product.images[0]
+                    return (
+                      <img
+                        src={primaryImage.asset.url}
+                        alt={primaryImage.alt || product.title}
+                        className="aspect-3/4 object-cover rounded mb-4"
+                      />
+                    )
+                  })()}
+                  <h3 className="font-semibold text-lg mb-2">
+                  {product.title}
+                  </h3>
+                  {product.description && (
+                  <p className="text-gray-600 text-sm">
+                      {product.description}
+                  </p>
+                  )}
+              </a>
+            ))}
+          </div>
         </CollapsableCard>
 
         <CollapsableCard header="Mønster">

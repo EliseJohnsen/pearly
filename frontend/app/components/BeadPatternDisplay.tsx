@@ -5,40 +5,10 @@ import {useUIString} from '@/app/hooks/useSanityData'
 import { ShoppingBagIcon, ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import CreateProductModal from "./CreateProductModal";
 import ColorPickerModal from "./ColorPickerModal";
+import { Pattern } from "../models/patternModels";
 
 interface BeadPatternDisplayProps {
-  pattern: {
-    id: string;
-    uuid: string;
-    pattern_image_url: string;
-    grid_size: number;
-    colors_used: Array<{
-      hex: string;
-      name: string;
-      count: number;
-      code?: string;
-    }>;
-    created_at: string;
-    boards_width?: number;
-    boards_height?: number;
-    pattern_data?: {
-      grid: string[][];
-      width: number;
-      height: number;
-      boards_width?: number;
-      boards_height?: number;
-      board_size?: number;
-      ai_generated?: boolean;
-      ai_prompt?: string;
-      ai_style?: string;
-      ai_model?: string;
-      styled?: boolean;
-      style?: string;
-      styled_image_path?: string;
-    };
-    pattern_image_base64?: string;
-    styled_image_base64?: string;
-  };
+  pattern: Pattern;
   beadSize?: number;
   pop_art_url?: string;
   showPDFButton?: boolean;
