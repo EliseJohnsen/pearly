@@ -152,9 +152,11 @@ export default function PatternDetailPage() {
           </div>
         </CollapsableCard>
 
+
         <CollapsableCard header="Mønster">
+
           <BeadPatternDisplay
-            pattern={pattern}
+            pattern={pattern!}
             showPDFButton={true}
             beadSize={10}
             onPatternUpdate={fetchPattern}
@@ -163,7 +165,7 @@ export default function PatternDetailPage() {
 
         <CollapsableCard header="Farger du trenger">
           <div>
-            {pattern.colors_used
+            {pattern!.colors_used
               .slice()
               .sort((a, b) => {
                 const codeA = a.code || '';
@@ -223,20 +225,20 @@ export default function PatternDetailPage() {
               <div className="flex text-sm">
                 <dt className="text-gray-600 mr-3">Totalt antall farger:</dt>
                 <dd className="font-semibold text-gray-900">
-                  {pattern.colors_used.length}
+                  {pattern!.colors_used.length}
                 </dd>
               </div>
               <div className="flex text-sm">
                 <dt className="text-gray-600 mr-3">Totalt antall perler:</dt>
                 <dd className="font-semibold text-gray-900">
-                  {pattern.colors_used.reduce((sum, color) => sum + color.count, 0)}
+                  {pattern!.colors_used.reduce((sum, color) => sum + color.count, 0)}
                 </dd>
               </div>
-              {pattern.boards_width && pattern.boards_height && (
+              {pattern!.boards_width && pattern!.boards_height && (
                 <div className="flex text-sm">
                   <dt className="text-gray-600 mr-3">Antall brett:</dt>
                   <dd className="font-semibold text-gray-900">
-                    {pattern.boards_width * pattern.boards_height}
+                    {pattern!.boards_width * pattern!.boards_height}
                   </dd>
                 </div>
               )}
