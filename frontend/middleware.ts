@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 // Routes that require authentication
-const protectedRoutes = ['/patterns', '/preview']
+const protectedRoutes = ['/admin/patterns', '/admin/orders', '/preview']
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -55,7 +55,8 @@ export async function middleware(request: NextRequest) {
 // Configure which routes use this middleware
 export const config = {
   matcher: [
-    '/patterns/:path*',
+    '/admin/patterns/:path*',
+    '/admin/orders/:path*',
     '/preview/:path*',
   ],
 }

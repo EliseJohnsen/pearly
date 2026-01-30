@@ -1,21 +1,7 @@
 "use client";
 import {useUIString} from '@/app/hooks/useSanityData'
+import { PatternDisplayProps } from '../models/patternModels';
 
-interface PatternDisplayProps {
-  pattern: {
-    uuid: string;
-    pattern_image_url: string;
-    grid_size: number;
-    colors_used: Array<{
-      hex: string;
-      name: string;
-      count: number;
-    }>;
-    created_at: string;
-    boards_width?: number;
-    boards_height?: number;
-  };
-}
 
 export default function PatternDisplay({ pattern }: PatternDisplayProps) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -67,7 +53,7 @@ export default function PatternDisplay({ pattern }: PatternDisplayProps) {
 
       <div className="mb-6 space-y-2">
         <p className="text-sm text-gray-600">
-          Mønster ID: <span className="font-mono">{pattern.uuid}</span>
+          Mønster ID: <span className="font-mono">{pattern.id}</span>
         </p>
         {pattern.boards_width && pattern.boards_height ? (
           <>

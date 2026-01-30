@@ -2,31 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import LoadingSpinner from "../components/LoadingSpinner";
+import LoadingSpinner from "@/app/components/LoadingSpinner";
 import { authenticatedFetch } from "@/lib/auth";
-
-interface Pattern {
-  id: number;
-  uuid: string;
-  pattern_image_url: string;
-  grid_size: number;
-  colors_used: Array<{
-    hex: string;
-    name: string;
-    count: number;
-    code?: string;
-  }>;
-  created_at: string;
-  boards_width?: number;
-  boards_height?: number;
-  pattern_data?: {
-    ai_generated?: boolean;
-    ai_prompt?: string;
-    styled?: boolean;
-    style?: string;
-    sanity_product_id?: string;
-  };
-}
+import { Pattern } from "@/app/models/patternModels";
 
 type SortField = "id" | "created_at" | null;
 type SortDirection = "asc" | "desc";
@@ -95,7 +73,7 @@ export default function PatternsListPage() {
       let comparison = 0;
 
       if (sortField === "id") {
-        comparison = a.id - b.id;
+        comparison = parseInt(a.id) - parseInt(b.id);
       } else if (sortField === "created_at") {
         comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
       }
@@ -104,8 +82,8 @@ export default function PatternsListPage() {
     });
   }, [patterns, sortField, sortDirection]);
 
-  const handleRowClick = (uuid: string) => {
-    router.push(`/patterns/${uuid}`);
+  const handleRowClick = (id: string) => {
+    router.push(`/admin/patterns/${id}`);
   };
 
   const handleDeleteClick = (pattern: Pattern, e: React.MouseEvent) => {
@@ -121,7 +99,7 @@ export default function PatternsListPage() {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
       const response = await authenticatedFetch(
-        `${apiUrl}/api/patterns/${patternToDelete.uuid}`,
+        `${apiUrl}/api/patterns/${patternToDelete.id}`,
         {
           method: "DELETE",
         }
@@ -149,7 +127,7 @@ export default function PatternsListPage() {
 
   const SortIcon = ({ field }: { field: SortField }) => {
     if (sortField !== field) {
-      return <span className="ml-1 text-gray-400">⇅</span>;
+      return <span className="ml-1">⇅</span>;
     }
     return (
       <span className="ml-1">
@@ -160,7 +138,7 @@ export default function PatternsListPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <LoadingSpinner loadingMessage="Laster inn alle mønster..."/>
       </div>
     );
@@ -168,7 +146,7 @@ export default function PatternsListPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
           <p className="text-red-800 font-semibold mb-2">Feil</p>
           <p className="text-red-600">{error}</p>
@@ -178,11 +156,11 @@ export default function PatternsListPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-background py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Alle perlemønstre</h1>
-          <p className="mt-2 text-gray-600">
+          <h1 className="text-3xl font-bold">Alle perlemønstre</h1>
+          <p className="mt-2">
             Totalt {patterns.length} {patterns.length === 1 ? "mønster" : "mønstre"}
           </p>
         </div>
@@ -190,17 +168,11 @@ export default function PatternsListPage() {
         <div className="bg-white shadow-md rounded-lg overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+              <thead className="bg-primary-light">
                 <tr>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Forhåndsvisning
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                    className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
                     onClick={() => handleSort("id")}
                   >
                     <div className="flex items-center">
@@ -210,31 +182,31 @@ export default function PatternsListPage() {
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                   >
                     UUID
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                   >
                     Størrelse
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                   >
                     Farger
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                   >
                     Type
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                    className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
                     onClick={() => handleSort("created_at")}
                   >
                     <div className="flex items-center">
@@ -244,7 +216,7 @@ export default function PatternsListPage() {
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                   >
                     Handlinger
                   </th>
@@ -253,35 +225,26 @@ export default function PatternsListPage() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {sortedPatterns.map((pattern) => (
                   <tr
-                    key={pattern.uuid}
-                    onClick={() => handleRowClick(pattern.uuid)}
-                    className="hover:bg-gray-50 cursor-pointer transition-colors"
+                    key={pattern.id}
+                    onClick={() => handleRowClick(pattern.id)}
+                    className="hover:bg-background cursor-pointer transition-colors"
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="h-16 w-16 relative">
-                        <img
-                          src={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}${pattern.pattern_image_url}`}
-                          alt="Pattern thumbnail"
-                          className="h-full w-full object-cover rounded border border-gray-200"
-                        />
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-mono text-gray-900">
+                      <div className="text-sm font-mono">
                         {pattern.id}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-mono text-gray-900">
+                      <div className="text-sm font-mono">
                         {pattern.uuid.substring(0, 8)}...
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
+                      <div className="text-sm">
                         {pattern.boards_width && pattern.boards_height ? (
                           <>
                             {pattern.boards_width * 29} × {pattern.boards_height * 29} perler
-                            <div className="text-xs text-gray-500">
+                            <div className="text-xs">
                               {pattern.boards_width} × {pattern.boards_height} brett
                             </div>
                           </>
@@ -292,7 +255,7 @@ export default function PatternsListPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <span className="text-sm text-gray-900">
+                        <span className="text-sm">
                           {pattern.colors_used.length}
                         </span>
                         <div className="ml-2 flex -space-x-1">
@@ -306,7 +269,7 @@ export default function PatternsListPage() {
                           ))}
                           {pattern.colors_used.length > 3 && (
                             <div className="w-6 h-6 rounded-full border-2 border-white bg-gray-200 flex items-center justify-center">
-                              <span className="text-xs text-gray-600">
+                              <span className="text-xs">
                                 +{pattern.colors_used.length - 3}
                               </span>
                             </div>
@@ -327,16 +290,16 @@ export default function PatternsListPage() {
                           </span>
                         )}
                         {!pattern.pattern_data?.ai_generated && !pattern.pattern_data?.styled && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100">
                             Opplastet
                           </span>
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
                       {formatDate(pattern.created_at)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <button
                         onClick={(e) => handleDeleteClick(pattern, e)}
                         className="text-red-600 hover:text-red-800 font-medium"
@@ -363,7 +326,7 @@ export default function PatternsListPage() {
       {deleteModalOpen && patternToDelete && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">
+            <h2 className="text-xl font-bold mb-4">
               Bekreft sletting
             </h2>
 
@@ -372,7 +335,7 @@ export default function PatternsListPage() {
                 Er du sikker på at du vil slette dette mønsteret?
               </p>
 
-              <div className="bg-gray-50 rounded-lg p-4 mb-4">
+              <div className="bg-background rounded-lg p-4 mb-4">
                 <div className="flex items-center gap-4">
                   <img
                     src={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}${patternToDelete.pattern_image_url}`}
@@ -380,17 +343,17 @@ export default function PatternsListPage() {
                     className="h-16 w-16 object-cover rounded border border-gray-200"
                   />
                   <div>
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-sm font-medium">
                       ID: {patternToDelete.id}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs">
                       UUID: {patternToDelete.uuid.substring(0, 8)}...
                     </p>
                   </div>
                 </div>
               </div>
 
-              {patternToDelete.pattern_data?.sanity_product_id && (
+              {/* {patternToDelete.pattern_data?.sanity_product_id && (
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                   <p className="text-sm font-semibold text-yellow-800 mb-1">
                     ⚠️ Advarsel
@@ -400,14 +363,14 @@ export default function PatternsListPage() {
                     Produktet vil ikke bli slettet automatisk.
                   </p>
                 </div>
-              )}
+              )} */}
             </div>
 
             <div className="flex gap-3 justify-end">
               <button
                 onClick={handleDeleteCancel}
                 disabled={deleting}
-                className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium disabled:opacity-50"
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium disabled:opacity-50"
               >
                 Avbryt
               </button>

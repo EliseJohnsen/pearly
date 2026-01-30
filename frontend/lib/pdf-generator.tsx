@@ -1,19 +1,7 @@
+import { PatternPDFProps } from '@/app/models/patternModels';
 import { Document, Page, Text, View, Image, StyleSheet, Font } from '@react-pdf/renderer';
 
-interface PatternPDFProps {
-  patternImageUrl: string;
-  patternData: {
-    gridSize: number;
-    boards_width?: number;
-    boards_height?: number;
-    colors_used?: Array<{
-      hex: string;
-      name: string;
-      count: number;
-    }>;
-  };
-  customerEmail?: string;
-}
+
 
 const styles = StyleSheet.create({
   page: {

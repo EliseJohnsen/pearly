@@ -3,24 +3,8 @@ import { getAuthHeaders } from "@/lib/auth";
 
 import { useState, useEffect } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
+import { PatternData } from "../models/patternModels";
 
-interface PatternData {
-  uuid: string;
-  pattern_image_url: string;
-  grid_size: number;
-  colors_used: Array<{
-    hex: string;
-    name: string;
-    count: number;
-    code?: string;
-  }>;
-  created_at: string;
-  boards_width?: number;
-  boards_height?: number;
-  pattern_data?: any;
-  pattern_image_base64?: string;
-  styled_image_base64?: string;
-}
 
 interface CreateProductModalProps {
   pattern: PatternData;
@@ -35,12 +19,39 @@ export default function CreateProductModal({
 }: CreateProductModalProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [loadingPreview, setLoadingPreview] = useState(true);
 
   useEffect(() => {
     if (!pattern?.uuid) {
       setError("Mønster UUID mangler. Kan ikke opprette produkt.");
     }
   }, [pattern]);
+
+  useEffect(() => {
+    const loadPreviewImage = async () => {
+      setLoadingPreview(true);
+      try {
+        let imageBase64: string;
+        if (pattern.pattern_data?.grid && pattern.id) {
+          // Render grid to base64 image
+          imageBase64 = await renderGridToBase64(pattern.id);
+        } else {
+          // Fallback: use existing base64 or fetch from URL
+          imageBase64 = pattern.pattern_image_base64 || await convertImageToBase64(pattern.pattern_image_url);
+        }
+        setPreviewImage(`data:image/png;base64,${imageBase64}`);
+      } catch (err) {
+        console.error("Failed to load preview image:", err);
+        setError("Kunne ikke laste forhåndsvisning av bildet");
+      } finally {
+        setLoadingPreview(false);
+      }
+    };
+
+    loadPreviewImage();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pattern.id, pattern.pattern_data?.grid]);
 
   const [productName, setProductName] = useState("");
   const [description, setDescription] = useState("");
@@ -81,6 +92,18 @@ export default function CreateProductModal({
     });
   };
 
+  const renderGridToBase64 = async (patternId: string): Promise<string> => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    const response = await fetch(`${apiUrl}/api/patterns/${patternId}/render-grid`);
+
+    if (!response.ok) {
+      throw new Error("Failed to render grid to image");
+    }
+
+    const data = await response.json();
+    return data.pattern_image_base64;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -95,12 +118,17 @@ export default function CreateProductModal({
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-      // Use base64 images from pattern response if available
-      // Otherwise fall back to fetching from the API (for backwards compatibility)
-      let patternImageBase64 = pattern.pattern_image_base64;
-      if (!patternImageBase64) {
-        const patternImageUrl = `${apiUrl}${pattern.pattern_image_url}`;
-        patternImageBase64 = await convertImageToBase64(patternImageUrl);
+      // Reuse preview image if already loaded, otherwise generate it
+      let patternImageBase64: string;
+      if (previewImage) {
+        // Extract base64 from data URL
+        patternImageBase64 = previewImage.split(',')[1];
+      } else if (pattern.pattern_data?.grid && pattern.id) {
+        // Render grid to base64 image
+        patternImageBase64 = await renderGridToBase64(pattern.id);
+      } else {
+        // Fallback: use existing base64 or fetch from URL
+        patternImageBase64 = pattern.pattern_image_base64 || await convertImageToBase64(pattern.pattern_image_url);
       }
 
       // Use styled image base64 if available
@@ -272,11 +300,21 @@ export default function CreateProductModal({
           <div className="border-t border-gray-200 pt-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-3">Forhåndsvisning</h3>
             <div className="p-4 bg-gray-50 rounded-lg">
-              <img
-                src={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}${pattern.pattern_image_url}`}
-                alt="Pattern preview"
-                className="w-full h-auto rounded-lg border border-gray-300"
-              />
+              {loadingPreview ? (
+                <div className="flex items-center justify-center h-64">
+                  <div className="text-gray-500">Laster forhåndsvisning...</div>
+                </div>
+              ) : previewImage ? (
+                <img
+                  src={previewImage}
+                  alt="Pattern preview"
+                  className="w-full h-auto rounded-lg border border-gray-300"
+                />
+              ) : (
+                <div className="flex items-center justify-center h-64 text-red-500">
+                  Kunne ikke laste forhåndsvisning
+                </div>
+              )}
             </div>
           </div>
 

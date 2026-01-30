@@ -1,7 +1,6 @@
 "use client";
 
 import { client } from "@/lib/sanity";
-import { groq } from "next-sanity";
 import { notFound } from "next/navigation";
 import { use, useEffect, useState } from "react";
 import { productQuery } from "@/lib/queries";
@@ -84,6 +83,7 @@ export default function ProductDetailPage({
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [creatingOrder, setCreatingOrder] = useState(false);
 
   useEffect(() => {
     async function fetchProduct() {
@@ -126,15 +126,73 @@ export default function ProductDetailPage({
     }).format(price);
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!product) return;
 
-    // TODO: Implement cart functionality
-    console.log("Add to cart:", {
-      product: product.title,
-      price: product.price,
-    });
-    alert(`${product.title} lagt til i handlekurv!`);
+    setCreatingOrder(true);
+
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+      // Create order with dummy customer and address data
+      const orderData = {
+        customer: {
+          name: "Test Kunde",
+          email: "elise.johnsen@gmail.com"
+        },
+        order_lines: [
+          {
+            product_id: product._id,
+            unit_price: Math.round(product.price * 100), // Convert to øre
+            quantity: 1
+          }
+        ],
+        addresses: [
+          {
+            type: "billing",
+            name: "Test Kunde",
+            address_line_1: "Testveien 123",
+            address_line_2: null,
+            postal_code: "0123",
+            city: "Oslo",
+            country: "NO"
+          },
+          {
+            type: "shipping",
+            name: "Test Kunde",
+            address_line_1: "Testveien 123",
+            address_line_2: null,
+            postal_code: "0123",
+            city: "Oslo",
+            country: "NO"
+          }
+        ],
+        status: "new",
+        currency: product.currency || "NOK"
+      };
+
+      const response = await fetch(`${apiUrl}/api/orders`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(orderData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Kunne ikke opprette ordre");
+      }
+
+      const order = await response.json();
+      console.log("Ordre opprettet:", order);
+
+      alert(`${product.title} lagt til i handlekurv!\n\nOrdre: ${order.order_number}\nTotalt: ${(order.total_amount / 100).toFixed(2)} ${order.currency}`);
+    } catch (error) {
+      console.error("Feil ved opprettelse av ordre:", error);
+      alert("Kunne ikke legge til produkt i handlekurv. Prøv igjen senere.");
+    } finally {
+      setCreatingOrder(false);
+    }
   };
 
   return (
@@ -232,10 +290,12 @@ export default function ProductDetailPage({
 
             <button
               onClick={handleAddToCart}
-              disabled={product.status === "out_of_stock" || product.status === "coming_soon"}
+              // disabled={product.status === "out_of_stock" || product.status === "coming_soon" || creatingOrder}
               className="w-full bg-primary text-white py-4 px-6 rounded-lg font-semibold hover:bg-primary/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {product.status === "out_of_stock"
+              {creatingOrder
+                ? "Oppretter ordre..."
+                : product.status === "out_of_stock"
                 ? "Utsolgt"
                 : "Legg i handlekurv"}
             </button>
