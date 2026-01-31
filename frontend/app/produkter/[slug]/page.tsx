@@ -10,7 +10,7 @@ import { PortableText } from "@portabletext/react";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
 import { useCart } from "@/app/contexts/CartContext";
 import { CheckIcon } from "@heroicons/react/24/outline";
-import VippsCheckoutButton from "@/app/components/VippsCheckoutButton";
+import VippsCheckoutButton, { OrderLine } from "@/app/components/VippsCheckoutButton";
 
 
 
