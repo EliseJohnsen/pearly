@@ -88,6 +88,8 @@ class OrderResponse(BaseModel):
     order_number: str
     customer_id: int
     status: str
+    payment_status: Optional[str] = "pending"
+    vipps_reference: Optional[str] = None
     total_amount: Optional[int]
     currency: Optional[str]
     created_at: datetime
@@ -110,6 +112,7 @@ class OrderListResponse(BaseModel):
     customer_name: str
     customer_email: str
     status: str
+    payment_status: Optional[str] = "pending"
     total_amount: Optional[int]
     currency: Optional[str]
     order_line_count: int

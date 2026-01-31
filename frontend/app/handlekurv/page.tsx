@@ -1,17 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
+import VippsCheckoutButton, { OrderLine } from "@/app/components/VippsCheckoutButton";
 import { useCart } from "@/app/contexts/CartContext";
 import { TrashIcon, MinusIcon, PlusIcon, ShoppingBagIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 
 export default function CartPage() {
-  const router = useRouter();
   const { items, removeItem, updateQuantity, clearCart, totalPrice } = useCart();
-  const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   const formatPrice = (price: number, currency: string = "NOK") => {
     return new Intl.NumberFormat("nb-NO", {
@@ -20,18 +17,15 @@ export default function CartPage() {
     }).format(price);
   };
 
-  const handleCheckout = async () => {
-    if (items.length === 0) return;
-
-    setIsCheckingOut(true);
-
-    // TODO: Implement Vipps checkout integration here
-    alert("Vipps-integrasjon kommer snart!");
-
-    setIsCheckingOut(false);
-  };
-
   const currency = items.length > 0 ? items[0].currency : "NOK";
+
+  // Prepare order lines for checkout - convert price to øre
+  const orderLines: OrderLine[] = items.map((item) => ({
+    product_id: item.productId,
+    name: item.title,
+    unit_price: Math.round(item.price * 100), // Convert to øre
+    quantity: item.quantity,
+  }));
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -194,13 +188,10 @@ export default function CartPage() {
                 </div>
               </div>
 
-              <button
-                onClick={handleCheckout}
-                disabled={isCheckingOut || items.length === 0}
-                className="w-full bg-primary text-white py-4 px-6 rounded-lg font-semibold hover:bg-primary/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isCheckingOut ? "Behandler..." : "Gå til betaling"}
-              </button>
+              <VippsCheckoutButton
+                orderLines={orderLines}
+                currency={currency}
+              />
 
               <button
                 onClick={clearCart}

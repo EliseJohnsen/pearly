@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 
 export interface CartItem {
   productId: string;
@@ -50,7 +50,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [items, isInitialized]);
 
-  const addItem = (item: Omit<CartItem, "quantity">) => {
+  const addItem = useCallback((item: Omit<CartItem, "quantity">) => {
     setItems((prev) => {
       const existingIndex = prev.findIndex((i) => i.productId === item.productId);
       if (existingIndex >= 0) {
@@ -60,27 +60,26 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
       return [...prev, { ...item, quantity: 1 }];
     });
-  };
+  }, []);
 
-  const removeItem = (productId: string) => {
+  const removeItem = useCallback((productId: string) => {
     setItems((prev) => prev.filter((item) => item.productId !== productId));
-  };
+  }, []);
 
-  const updateQuantity = (productId: string, quantity: number) => {
-    if (quantity <= 0) {
-      removeItem(productId);
-      return;
-    }
-    setItems((prev) =>
-      prev.map((item) =>
+  const updateQuantity = useCallback((productId: string, quantity: number) => {
+    setItems((prev) => {
+      if (quantity <= 0) {
+        return prev.filter((item) => item.productId !== productId);
+      }
+      return prev.map((item) =>
         item.productId === productId ? { ...item, quantity } : item
-      )
-    );
-  };
+      );
+    });
+  }, []);
 
-  const clearCart = () => {
+  const clearCart = useCallback(() => {
     setItems([]);
-  };
+  }, []);
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = items.reduce((sum, item) => sum + item.price * item.quantity, 0);

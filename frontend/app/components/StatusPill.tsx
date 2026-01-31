@@ -11,11 +11,11 @@ export default function StatusPill({ status }: StatusPillProps = {}) {
       case "new":
         return "bg-primary-dark-pink";
       case "paid":
-        return "bg-primary-neon-green";
+        return "bg-primary-green";
       case "shipped":
         return "bg-purple-100 text-purple-800";
       case "cancelled":
-        return "bg-primary-red text-red-800";
+        return "bg-primary-red text-white";
       default:
         return "bg-gray-100 text-gray-800";
     }

@@ -317,7 +317,7 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
               <button
                 onClick={handleSaveChanges}
                 disabled={isSaving}
-                className="px-4 py-2 bg-green-600 text-white hover:bg-green-700 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-primary-green text-white rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSaving ? "Lagrer..." : "Lagre endringer"}
               </button>
@@ -326,8 +326,8 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
         )}
 
         {productCreated && productId && (
-        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-          <p className="text-sm text-green-800">
+        <div className="mb-6 p-4 bg-primary-green border border-green-200 rounded-lg">
+          <p className="text-sm text-primary-green">
             ✅ Produkt opprettet! Du kan nå redigere produktet i Sanity Studio.
           </p>
         </div>

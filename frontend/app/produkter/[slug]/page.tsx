@@ -10,6 +10,7 @@ import { PortableText } from "@portabletext/react";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
 import { useCart } from "@/app/contexts/CartContext";
 import { CheckIcon } from "@heroicons/react/24/outline";
+import VippsCheckoutButton from "@/app/components/VippsCheckoutButton";
 
 
 
@@ -147,6 +148,13 @@ export default function ProductDetailPage({
     setTimeout(() => setAddedToCart(false), 2000);
   };
 
+  const orderLines: OrderLine[] = [{
+    product_id: product._id,
+    name: product.title,
+    unit_price: Math.round(product.price * 100), // Konverter til øre
+    quantity: 1,
+  }];
+
   return (
     <div className="min-h-screen bg-[var(--background)]">
       <Header />
@@ -260,6 +268,11 @@ export default function ProductDetailPage({
                 "Legg i handlekurv"
               )}
             </button>
+            <VippsCheckoutButton 
+              disabled={product.status === "out_of_stock" || addedToCart}
+              orderLines={orderLines} 
+              currency={product.currency} 
+            />
 
             {product.status === "coming_soon" && (
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">

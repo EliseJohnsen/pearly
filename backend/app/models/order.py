@@ -16,8 +16,10 @@ class Order(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     order_number = Column(String, unique=True, index=True, nullable=False, default=generate_order_number)
-    customer_id = Column(Integer, ForeignKey("customers.id"), nullable=False, index=True)
+    customer_id = Column(Integer, ForeignKey("customers.id"), nullable=True, index=True)
     status = Column(String, nullable=False)
+    payment_status = Column(String, default="pending")  # pending, paid, failed, cancelled
+    vipps_reference = Column(String, nullable=True, index=True)  # Vipps checkout session reference
     total_amount = Column(Integer)
     currency = Column(String, default="NOK")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
