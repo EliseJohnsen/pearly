@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
 import { CheckCircleIcon } from "@heroicons/react/24/outline";
 import { useCart } from "@/app/contexts/CartContext";
+import LoadingSpinner from "@/app/components/LoadingSpinner";
 
 interface OrderStatus {
   order_id: number;
@@ -18,7 +19,7 @@ interface OrderStatus {
   customer_email: string | null;
 }
 
-export default function PaymentSuccessPage() {
+function PaymentSuccessContent() {
   const searchParams = useSearchParams();
   const reference = searchParams.get("reference");
   const [orderStatus, setOrderStatus] = useState<OrderStatus | null>(null);
@@ -144,5 +145,23 @@ export default function PaymentSuccessPage() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function PaymentSuccessPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-background flex flex-col">
+          <Header />
+          <main className="flex-1 max-w-2xl mx-auto w-full px-4 py-12">
+            <LoadingSpinner loadingMessage="Laster..." />
+          </main>
+          <Footer />
+        </div>
+      }
+    >
+      <PaymentSuccessContent />
+    </Suspense>
   );
 }
