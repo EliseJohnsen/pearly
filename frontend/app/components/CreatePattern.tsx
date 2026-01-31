@@ -21,7 +21,7 @@ export default function Main() {
   return (
     <div className="min-h-screen bg-[var(--background)]">
       <Header />
-      <main className="h-dvh overflow-hidden bg-primary-light py-12">
+      <main className="h-dvh overflow-scroll bg-primary-light py-12">
         <div className="max-w-4xl mx-auto px-4">
           <ImageUpload
             onPatternGenerated={handlePatternGenerated}
