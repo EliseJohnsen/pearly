@@ -2,6 +2,7 @@ from fastapi import APIRouter, UploadFile, File, Depends, HTTPException
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
+from typing import List, Optional
 from app.core.database import get_db
 from app.core.dependencies import get_current_admin
 from app.models.admin_user import AdminUser
@@ -13,10 +14,12 @@ from app.services.image_processing import (
 )
 from app.services.ai_generation import AIGenerationService
 from app.services.pdf_generator import generate_pattern_pdf
+from app.services.pattern_generator import render_grid_to_base64
 from app.core.config import settings
 from pathlib import Path
 import uuid
 import base64
+import json
 from datetime import datetime, timedelta
 
 router = APIRouter()
@@ -155,9 +158,9 @@ def get_all_patterns(
         for pattern in patterns
     ]
 
-@router.get("/patterns/{pattern_uuid}", response_model=PatternResponse)
-def get_pattern(pattern_uuid: str, db: Session = Depends(get_db)):
-    pattern = db.query(Pattern).filter(Pattern.uuid == pattern_uuid).first()
+@router.get("/patterns/{pattern_id}", response_model=PatternResponse)
+def get_pattern(pattern_id: str, db: Session = Depends(get_db)):
+    pattern = db.query(Pattern).filter(Pattern.id == pattern_id).first()
 
     if not pattern:
         raise HTTPException(status_code=404, detail="Pattern not found")
@@ -301,14 +304,14 @@ async def upload_image_with_style(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing image with style: {str(e)}")
 
-@router.get("/patterns/{pattern_uuid}/pdf")
-def download_pattern_pdf(pattern_uuid: str, db: Session = Depends(get_db)):
+@router.get("/patterns/{pattern_id}/pdf")
+def download_pattern_pdf(pattern_id: str, db: Session = Depends(get_db)):
     """
     Generates and downloads a PDF with the bead pattern.
     Each page represents one 29x29 board with beads shown as colored circles
     containing the color code from perle-colors.json.
     """
-    pattern = db.query(Pattern).filter(Pattern.uuid == pattern_uuid).first()
+    pattern = db.query(Pattern).filter(Pattern.id == pattern_id).first()
 
     if not pattern:
         raise HTTPException(status_code=404, detail="Pattern not found")
@@ -326,19 +329,19 @@ def download_pattern_pdf(pattern_uuid: str, db: Session = Depends(get_db)):
             content=pdf_bytes,
             media_type="application/pdf",
             headers={
-                "Content-Disposition": f"attachment; filename=perlemønster_{pattern_uuid}.pdf"
+                "Content-Disposition": f"attachment; filename=perlemønster_{pattern_id}.pdf"
             }
         )
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating PDF: {str(e)}")
 
-@router.get("/patterns/{pattern_uuid}/image")
-def get_pattern_image(pattern_uuid: str, db: Session = Depends(get_db)):
+@router.get("/patterns/{pattern_id}/image")
+def get_pattern_image(pattern_id: str, db: Session = Depends(get_db)):
     """
     Serve the pattern image file from the uploads directory.
     """
-    pattern_path = UPLOAD_DIR / f"{pattern_uuid}_pattern.png"
+    pattern_path = UPLOAD_DIR / f"{pattern_id}_pattern.png"
 
     if not pattern_path.exists():
         raise HTTPException(status_code=404, detail="Pattern image file not found")
@@ -348,7 +351,7 @@ def get_pattern_image(pattern_uuid: str, db: Session = Depends(get_db)):
 
     return Response(content=image_data, media_type="image/png")
 
-@router.get("/patterns/{pattern_uuid}/styled-image")
+@router.get("/patterns/{pattern_id}/styled-image")
 def get_styled_image(pattern_uuid: str, db: Session = Depends(get_db)):
     """
     Serve the styled image file from the uploads directory.
@@ -363,9 +366,9 @@ def get_styled_image(pattern_uuid: str, db: Session = Depends(get_db)):
 
     return Response(content=image_data, media_type="image/png")
 
-@router.delete("/patterns/{pattern_uuid}")
+@router.delete("/patterns/{pattern_id}")
 def delete_pattern(
-    pattern_uuid: str,
+    pattern_id: str,
     db: Session = Depends(get_db),
     admin: AdminUser = Depends(get_current_admin)
 ):
@@ -373,7 +376,7 @@ def delete_pattern(
     Delete a pattern by UUID.
     Returns information about whether the pattern has an associated product.
     """
-    pattern = db.query(Pattern).filter(Pattern.uuid == pattern_uuid).first()
+    pattern = db.query(Pattern).filter(Pattern.id == pattern_id).first()
 
     if not pattern:
         raise HTTPException(status_code=404, detail="Pattern not found")
@@ -395,3 +398,100 @@ def delete_pattern(
         "has_product": has_product,
         "sanity_product_id": sanity_product_id
     }
+
+class ColorUsed(BaseModel):
+    hex: str
+    name: str
+    count: int
+    code: Optional[str] = None
+
+class UpdateGridRequest(BaseModel):
+    grid: List[List[str]]
+    colors_used: Optional[List[ColorUsed]] = None
+
+@router.patch("/patterns/{pattern_id}/grid")
+def update_pattern_grid(
+    pattern_id: str,
+    update_request: UpdateGridRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Update the grid data and optionally colors_used for a specific pattern.
+    """
+    pattern = db.query(Pattern).filter(Pattern.id == pattern_id).first()
+
+    if not pattern:
+        raise HTTPException(status_code=404, detail="Pattern not found")
+
+    if not pattern.pattern_data:
+        raise HTTPException(status_code=400, detail="Pattern has no pattern data")
+
+    # Update the grid in pattern_data
+    pattern.pattern_data["grid"] = update_request.grid
+
+    # Update colors_used if provided
+    if update_request.colors_used is not None:
+        pattern.colors_used = [color.model_dump() for color in update_request.colors_used]
+
+    # Mark the pattern_data as modified (required for JSONB fields in SQLAlchemy)
+    from sqlalchemy.orm.attributes import flag_modified
+    flag_modified(pattern, "pattern_data")
+
+    db.commit()
+    db.refresh(pattern)
+
+    return {
+        "success": True,
+        "message": "Pattern grid updated successfully"
+    }
+
+@router.get("/patterns/{pattern_id}/render-grid")
+def render_pattern_grid(pattern_id: str, bead_size: int = 10, db: Session = Depends(get_db)):
+    """
+    Renders the pattern grid to a base64 PNG image.
+    Useful for generating up-to-date pattern images after grid modifications.
+
+    Args:
+        pattern_id: The pattern ID
+        bead_size: Size of each bead in pixels (default: 10)
+
+    Returns:
+        JSON with base64 encoded PNG image
+    """
+    pattern = db.query(Pattern).filter(Pattern.id == pattern_id).first()
+
+    if not pattern:
+        raise HTTPException(status_code=404, detail="Pattern not found")
+
+    if not pattern.pattern_data or "grid" not in pattern.pattern_data:
+        raise HTTPException(status_code=400, detail="Pattern has no grid data")
+
+    try:
+        grid = pattern.pattern_data["grid"]
+        base64_image = render_grid_to_base64(grid, bead_size=bead_size)
+
+        return {
+            "pattern_image_base64": base64_image,
+            "width": len(grid[0]) if grid else 0,
+            "height": len(grid),
+            "bead_size": bead_size
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error rendering grid: {str(e)}")
+
+@router.get("/perle-colors")
+def get_perle_colors():
+    """
+    Returns the list of available perle colors from perle-colors.json
+    """
+    colors_file = Path(__file__).parent.parent / "data" / "perle-colors.json"
+
+    if not colors_file.exists():
+        raise HTTPException(status_code=404, detail="Perle colors file not found")
+
+    try:
+        with open(colors_file, "r", encoding="utf-8") as f:
+            colors = json.load(f)
+        return colors
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error reading perle colors: {str(e)}")

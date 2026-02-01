@@ -4,120 +4,81 @@ import React, { useState, useEffect } from "react";
 import {useUIString} from '@/app/hooks/useSanityData'
 import { ShoppingBagIcon, ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import CreateProductModal from "./CreateProductModal";
+import ColorPickerModal from "./ColorPickerModal";
+import { Pattern } from "../models/patternModels";
 
 interface BeadPatternDisplayProps {
-  pattern: {
-    uuid: string;
-    pattern_image_url: string;
-    grid_size: number;
-    colors_used: Array<{
-      hex: string;
-      name: string;
-      count: number;
-      code?: string;
-    }>;
-    created_at: string;
-    boards_width?: number;
-    boards_height?: number;
-    pattern_data?: {
-      grid: string[][];
-      width: number;
-      height: number;
-      boards_width?: number;
-      boards_height?: number;
-      board_size?: number;
-      ai_generated?: boolean;
-      ai_prompt?: string;
-      ai_style?: string;
-      ai_model?: string;
-      styled?: boolean;
-      style?: string;
-      styled_image_path?: string;
-    };
-    pattern_image_base64?: string;
-    styled_image_base64?: string;
-  };
+  pattern: Pattern;
   beadSize?: number;
   pop_art_url?: string;
   showPDFButton?: boolean;
+  onPatternUpdate?: () => void;
 }
 
 const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
   pattern,
   beadSize = 10,
   pop_art_url,
-  showPDFButton = false
+  showPDFButton = false,
+  onPatternUpdate,
 }) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
   const imageUrl = `${apiUrl}${pattern.pattern_image_url}`;
   const [patternGrid, setPatternGrid] = useState<string[][] | null>(
     pattern.pattern_data?.grid || null
   );
-  const [email, setEmail] = useState("");
-  const [sendingEmail, setSendingEmail] = useState(false);
-  const [emailSent, setEmailSent] = useState(false);
-  const [emailError, setEmailError] = useState<string | null>(null);
+
   const [showProductModal, setShowProductModal] = useState(false);
   const [productCreated, setProductCreated] = useState(false);
   const [productId, setProductId] = useState<number | null>(null);
   const [downloadingPDF, setDownloadingPDF] = useState(false);
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const [selectedBead, setSelectedBead] = useState<{ row: number; col: number } | null>(null);
+  const [perleColors, setPerleColors] = useState<Array<{ name: string; code: string; hex: string }>>([]);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [originalGrid, setOriginalGrid] = useState<string[][] | null>(pattern.pattern_data?.grid || null);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const colorsYouNeedText = useUIString('colors_you_need')
   const pearlsText = useUIString('pearls')
 
   // Update pattern grid when pattern data changes
   useEffect(() => {
     if (pattern.pattern_data?.grid) {
       setPatternGrid(pattern.pattern_data.grid);
+      setOriginalGrid(pattern.pattern_data.grid);
+      setHasUnsavedChanges(false);
     }
   }, [pattern.pattern_data]);
 
-  const handleSendEmail = async () => {
-    if (!email) {
-      setEmailError("Vennligst oppgi en e-postadresse");
-      return;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setEmailError("Vennligst oppgi en gyldig e-postadresse");
-      return;
-    }
-
-    setSendingEmail(true);
-    setEmailError(null);
-
-    try {
-      const response = await fetch("/api/send-email", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          to: email,
-          type: "pattern",
-          patternUuid: pattern.uuid,
-          templateId: "pattern-generated",
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Kunne ikke sende e-post");
+  useEffect(() => {
+    const loadColors = async () => {
+      try {
+        const response = await fetch(`${apiUrl}/api/perle-colors`);
+        if (response.ok) {
+          const colors = await response.json();
+          setPerleColors(colors);
+        }
+      } catch (error) {
+        console.error("Failed to load perle colors:", error);
       }
+    };
+    loadColors();
+  }, [apiUrl]);
 
-      setEmailSent(true);
-      setEmail("");
-    } catch (error) {
-      setEmailError(
-        error instanceof Error ? error.message : "En feil oppstod ved sending av e-post"
-      );
-    } finally {
-      setSendingEmail(false);
-    }
-  };
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        return (e.returnValue = "");
+      }
+    };
 
-  const colorInfoMap = pattern.colors_used.reduce(
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [hasUnsavedChanges]);
+
+
+  const colorInfoMap = perleColors.reduce(
     (acc, color) => {
       const info = { name: color.name, hex: color.hex, code: color.code };
       acc[color.hex] = info;
@@ -142,7 +103,7 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
   const handleDownloadPDF = async () => {
     setDownloadingPDF(true);
     try {
-      const response = await fetch(`${apiUrl}/api/patterns/${pattern.uuid}/pdf`);
+      const response = await fetch(`${apiUrl}/api/patterns/${pattern.id}/pdf`);
 
       if (!response.ok) {
         throw new Error("Kunne ikke generere PDF");
@@ -152,7 +113,7 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `perlemønster_${pattern.uuid}.pdf`;
+      a.download = `perlemønster_${pattern.id}.pdf`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -165,6 +126,121 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
     }
   };
 
+  const getSurroundingColors = (row: number, col: number): (string | null)[][] => {
+    if (!patternGrid) return [];
+
+    // Create a 3x3 grid with the center being the selected color
+    const grid: (string | null)[][] = [
+      [null, null, null],
+      [null, patternGrid[row][col], null],
+      [null, null, null]
+    ];
+
+    const directions = [
+      [-1, -1, 0, 0], [-1, 0, 0, 1], [-1, 1, 0, 2],  // top row
+      [0, -1, 1, 0],                 [0, 1, 1, 2],    // middle row (left & right)
+      [1, -1, 2, 0],  [1, 0, 2, 1],  [1, 1, 2, 2]     // bottom row
+    ];
+
+    for (const [dRow, dCol, gridRow, gridCol] of directions) {
+      const newRow = row + dRow;
+      const newCol = col + dCol;
+
+      if (newRow >= 0 && newRow < patternGrid.length &&
+          newCol >= 0 && newCol < patternGrid[0].length) {
+        grid[gridRow][gridCol] = patternGrid[newRow][newCol];
+      }
+    }
+
+    return grid;
+  };
+
+  const handleBeadClick = (row: number, col: number) => {
+    setSelectedBead({ row, col });
+    setShowColorPicker(true);
+  };
+
+  const calculateColorsUsed = (grid: string[][]) => {
+    const colorCounts = new Map<string, number>();
+
+    grid.forEach(row => {
+      row.forEach(colorCode => {
+        colorCounts.set(colorCode, (colorCounts.get(colorCode) || 0) + 1);
+      });
+    });
+
+    return Array.from(colorCounts.entries()).map(([colorCode, count]) => {
+      const colorInfo = colorInfoMap[colorCode];
+      return {
+        hex: colorInfo?.hex || colorCode,
+        name: colorInfo?.name || "Unknown",
+        count,
+        code: colorInfo?.code
+      };
+    });
+  };
+
+  const handleColorSelect = (newHex: string) => {
+    if (!selectedBead || !patternGrid) return;
+
+    const newGrid = patternGrid.map((row, rowIndex) =>
+      row.map((color, colIndex) => {
+        if (rowIndex === selectedBead.row && colIndex === selectedBead.col) {
+          return newHex;
+        }
+        return color;
+      })
+    );
+
+    setPatternGrid(newGrid);
+    setHasUnsavedChanges(true);
+    setShowColorPicker(false);
+    setSelectedBead(null);
+  };
+
+  const handleSaveChanges = async () => {
+    if (!patternGrid || !pattern.id) return;
+
+    setIsSaving(true);
+    try {
+      const colorsUsed = calculateColorsUsed(patternGrid);
+
+      const response = await fetch(`${apiUrl}/api/patterns/${pattern.id}/grid`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          grid: patternGrid,
+          colors_used: colorsUsed
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save grid changes");
+      }
+
+      setOriginalGrid(patternGrid);
+      setHasUnsavedChanges(false);
+
+      if (onPatternUpdate) {
+        onPatternUpdate();
+      }
+    } catch (error) {
+      console.error("Failed to save grid changes:", error);
+      alert("Kunne ikke lagre endringene. Prøv igjen.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDiscardChanges = () => {
+    if (originalGrid) {
+      setPatternGrid(originalGrid);
+      setHasUnsavedChanges(false);
+    }
+  };
+
   return (
     <>
       {showProductModal && (
@@ -172,6 +248,20 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
           pattern={pattern}
           onClose={() => setShowProductModal(false)}
           onSuccess={handleProductCreated}
+        />
+      )}
+
+      {showColorPicker && selectedBead && patternGrid && (
+        <ColorPickerModal
+          colors={perleColors}
+          currentColor={patternGrid[selectedBead.row][selectedBead.col]}
+          surroundingColors={getSurroundingColors(selectedBead.row, selectedBead.col)}
+          onSelectColor={handleColorSelect}
+          onClose={() => {
+            setShowColorPicker(false);
+            setSelectedBead(null);
+          }}
+          position={selectedBead}
         />
       )}
 
@@ -194,7 +284,7 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
             <button
               onClick={handleDownloadPDF}
               disabled={downloadingPDF}
-              className="flex items-center gap-2 px-4 py-2 bg-purple text-white hover:bg-green-700 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-2 bg-purple text-white hover:bg-primary-dark-pink rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ArrowDownTrayIcon className="w-5 h-5" />
               <span>{downloadingPDF ? "Genererer PDF..." : "Last ned PDF"}</span>
@@ -210,6 +300,30 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
             </button>
           </div>
         </div>
+
+        {hasUnsavedChanges && (
+          <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-amber-600 font-medium">⚠️ Du har ulagrede endringer</span>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={handleDiscardChanges}
+                disabled={isSaving}
+                className="px-4 py-2 text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Forkast
+              </button>
+              <button
+                onClick={handleSaveChanges}
+                disabled={isSaving}
+                className="px-4 py-2 bg-green-600 text-white hover:bg-green-700 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSaving ? "Lagrer..." : "Lagre endringer"}
+              </button>
+            </div>
+          </div>
+        )}
 
         {productCreated && productId && (
         <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
@@ -288,6 +402,7 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
                         <div
                           key={`${rowIndex}-${colIndex}`}
                           title={tooltipText}
+                          onClick={() => handleBeadClick(rowIndex, colIndex)}
                           style={{
                             width: `${beadSize}px`,
                             height: `${beadSize}px`,

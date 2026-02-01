@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
   const resend = new Resend(process.env.RESEND_API_KEY);
   try {
     const body = await request.json();
-    const { to, name, type = 'welcome', patternUuid, templateId = 'pattern-generated' } = body;
+    const { to, name, type = 'welcome', patternId, templateId = 'pattern-generated' } = body;
 
     if (!to) {
       return NextResponse.json(
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({ success: true, data }, { status: 200 });
     } else if (type === 'pattern') {
-      if (!patternUuid) {
+      if (!patternId) {
         return NextResponse.json(
           { error: 'Missing required field: patternUuid' },
           { status: 400 }
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
       }
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      const patternResponse = await fetch(`${apiUrl}/api/patterns/${patternUuid}`);
+      const patternResponse = await fetch(`${apiUrl}/api/patterns/${patternId}`);
 
       if (!patternResponse.ok) {
         return NextResponse.json(

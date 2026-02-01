@@ -15,6 +15,7 @@ import {
   footerPagesQuery,
   footerQuery,
   comingSoonQuery,
+  allEmailTemplatesQuery,
 } from '@/lib/queries'
 import type {
   Navigation,
@@ -25,6 +26,7 @@ import type {
   PageSettings,
   Footer,
   ComingSoon,
+  EmailTemplate,
 } from '@/types/sanity'
 
 // Generic hook for fetching data
@@ -75,6 +77,10 @@ export function useBanner() {
 // How It Works hook
 export function useHowItWorks() {
   return useSanityQuery<HowItWorks>(howItWorksQuery)
+}
+
+export function useAllEmailTemplate() {
+  return useSanityQuery<EmailTemplate[]>(allEmailTemplatesQuery)
 }
 
 // UI Strings hooks

@@ -37,7 +37,7 @@ export default function AdminLoginPage() {
 
       document.cookie = cookieString
 
-      router.push('/patterns')
+      router.push('/admin/patterns')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Noe gikk galt')
     } finally {
@@ -46,7 +46,7 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
