@@ -253,6 +253,11 @@
     "name": "Dark blush",
     "code": "111",
     "hex": "#9c6261"
+  },
+  {
+    "name": "Midnight blue",
+    "code": "116",
+    "hex": "#0c1d33"
   }
 ]
 
