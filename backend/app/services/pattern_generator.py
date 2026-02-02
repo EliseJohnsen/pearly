@@ -269,7 +269,6 @@ def convert_image_to_pattern(
         min_percentage=0.005
     )
 
-    # Create and save pattern image
     pattern_img = create_pattern_image(pattern_data, scale=20)
     pattern_img.save(output_path)
     print(f"Pattern image saved to: {output_path}")
