@@ -22,6 +22,8 @@ class Order(Base):
     vipps_reference = Column(String, nullable=True, index=True)  # Vipps checkout session reference
     total_amount = Column(Integer)
     currency = Column(String, default="NOK")
+    shipping_method_id = Column(String, nullable=True)  # ID of selected shipping option
+    shipping_amount = Column(Integer, nullable=True)  # Shipping cost in øre
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 

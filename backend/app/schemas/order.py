@@ -92,6 +92,8 @@ class OrderResponse(BaseModel):
     vipps_reference: Optional[str] = None
     total_amount: Optional[int]
     currency: Optional[str]
+    shipping_method_id: Optional[str] = None
+    shipping_amount: Optional[int] = None
     created_at: datetime
     updated_at: datetime
 

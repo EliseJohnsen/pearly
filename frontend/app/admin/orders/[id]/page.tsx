@@ -275,6 +275,19 @@ export default function OrderDetailPage() {
                 </div>
               )}
             </div>
+            <div className="grid grid-cols-3 font-semibold mt-2">
+              Valgt fraktalternativ:
+              {order.shipping_method_id && (
+                <div>
+                  {order.shipping_method_id}
+                </div>
+              )}
+              {order.shipping_amount && (
+                <div>
+                  {formatCurrency(order.shipping_amount, order.currency)}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

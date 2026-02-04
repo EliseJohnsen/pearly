@@ -129,6 +129,33 @@ class VippsClient:
                 "paymentDescription": f"Ordre {reference}",
                 "orderLines": vipps_order_lines,
             },
+            "logistics": {
+                "fixedOptions": [
+                    {
+                        "brand": "POSTEN",
+                        "amount": {
+                            "value": 9900,
+                            "currency": currency,
+                        },
+                        "id": "postenservicepakke1",
+                        "priority": 1,
+                        "isDefault": True,
+                        "description": "Vi sender pakken hjem til døra di"
+                    },
+                    {
+                        "brand": "POSTEN",
+                        "amount": {
+                            "value": 19900,
+                            "currency": currency,
+                        },
+                        "type": "PICKUP_POINT",
+                        "id": "postenservicepakke2",
+                        "priority": 2,
+                        "isDefault": False,
+                        "description": "Pakken sendes til ditt nærmeste hentested"
+                    }
+                ],
+            }
         }
 
         logger.info(f"Creating Vipps checkout session for reference: {reference}")

@@ -108,6 +108,12 @@ async def vipps_webhook(
                 )
                 db.add(shipping_address)
 
+                # Store shipping method info
+                order.shipping_method_id = shipping_details.get("shippingMethodId")
+                shipping_amount = shipping_details.get("amount", {})
+                if shipping_amount:
+                    order.shipping_amount = shipping_amount.get("value")
+
             # Create/link customer from Vipps user info
                 email = shipping_details.get("email")
                 name = f"{shipping_details.get('firstName', '')} {shipping_details.get('lastName', '')}".strip() if shipping_details else ""

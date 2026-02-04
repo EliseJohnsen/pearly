@@ -213,6 +213,8 @@ def get_order(
         vipps_reference=order.vipps_reference,
         total_amount=order.total_amount,
         currency=order.currency,
+        shipping_method_id=order.shipping_method_id,
+        shipping_amount=order.shipping_amount,
         created_at=order.created_at,
         updated_at=order.updated_at,
         customer=CustomerResponse(
