@@ -1,6 +1,6 @@
 """Add pick up point id to addresses
 
-Revision ID: 007_add_pick_up_point_id_on_addresses
+Revision ID: 007_add_pickup_point_id
 Revises: 006_add_shipping_fields
 Create Date: 2026-02-05 12:00:00.000000
 
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '007_add_pick_up_point_id_on_address'
+revision: str = '007_add_pickup_point_id'
 down_revision: Union[str, None] = '006_add_shipping_fields'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
