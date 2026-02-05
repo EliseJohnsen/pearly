@@ -11,7 +11,7 @@ export default function StatusPill({ status }: StatusPillProps = {}) {
       case "new":
         return "bg-primary-dark-pink";
       case "paid":
-        return "bg-primary-green";
+        return "bg-success";
       case "shipped":
         return "bg-purple-100 text-purple-800";
       case "cancelled":
