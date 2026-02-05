@@ -246,6 +246,7 @@ def get_order(
                 city=addr.city,
                 country=addr.country,
                 created_at=addr.created_at,
+                pick_up_point_id=addr.pick_up_point_id,
             )
             for addr in order.addresses
         ],

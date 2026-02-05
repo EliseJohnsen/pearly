@@ -81,7 +81,25 @@ export default function OrderDetailPage() {
   };
 
   const getAddressTypeText = (type: string) => {
-    return type === "billing" ? "Fakturaadresse" : "Leveringsadresse";
+    switch (type) {
+      case "billing":
+        return "Fakturaadresse"
+      case "shipping":
+        return "Leveringsadresse"
+      case "pickUpPoint":
+        return "Hentested"
+    }
+  };
+
+  const formatShippingMethod = (value: string) => {
+    switch (value) {
+      case "postenservicepakke1":
+        return "Posten servicepakke 1"
+      case "postenservicepakke2":
+        return "Posten servicepakke 2"
+      default:
+        return value;
+    }
   };
 
   const getProductName = (id: string ) => {return products.find((product) => product._id === id)?.title};
@@ -161,9 +179,6 @@ export default function OrderDetailPage() {
     );
   }
 
-  const billingAddress = order.addresses.find((a) => a.type === "billing");
-  const shippingAddress = order.addresses.find((a) => a.type === "shipping");
-
   return (
     <div className="min-h-screen bg-background py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
@@ -232,59 +247,46 @@ export default function OrderDetailPage() {
           {/* Addresses */}
           <div className="bg-white shadow-md rounded-lg p-6">
             <h2 className="text-xl font-bold mb-4">Adresser</h2>
-            <div className="space-y-4 grid grid-cols-2">
-              {billingAddress && (
-                <div>
-                  <div className=" font-semibold mb-2">
-                    {getAddressTypeText(billingAddress.type)}
-                  </div>
-                  <div className=" space-y-1">
-                    <div>{billingAddress.name}</div>
-                    <div>{billingAddress.address_line_1}</div>
-                    {billingAddress.address_line_2 && (
-                      <div>{billingAddress.address_line_2}</div>
-                    )}
-                    <div>
-                      {billingAddress.postal_code} {billingAddress.city}
-                    </div>
-                    <div>{billingAddress.country}</div>
-                  </div>
-                </div>
-              )}
-              {shippingAddress && (
-                <div>
-                  <div className=" font-semibold mb-2">
-                    {getAddressTypeText(shippingAddress.type)}
-                  </div>
-                  <div className=" space-y-1">
-                    <div>{shippingAddress.name}</div>
-                    <div>{shippingAddress.address_line_1}</div>
-                    {shippingAddress.address_line_2 && (
-                      <div>{shippingAddress.address_line_2}</div>
-                    )}
-                    <div>
-                      {shippingAddress.postal_code} {shippingAddress.city}
-                    </div>
-                    <div>{shippingAddress.country}</div>
-                  </div>
-                </div>
-              )}
-              {order.addresses.length === 0 && (
-                <div className="">
-                  Ingen adresser registrert
-                </div>
-              )}
-            </div>
-            <div className="grid grid-cols-3 font-semibold mt-2">
-              Valgt fraktalternativ:
+            <div className="grid grid-cols-3 my-4">
+              <div className="font-semibold">
+                Valgt fraktalternativ:
+              </div>
               {order.shipping_method_id && (
                 <div>
-                  {order.shipping_method_id}
+                  {formatShippingMethod(order.shipping_method_id)}
                 </div>
               )}
               {order.shipping_amount && (
                 <div>
                   {formatCurrency(order.shipping_amount, order.currency)}
+                </div>
+              )}
+            </div>
+            <div className="space-y-4 grid grid-cols-2">
+              {order.addresses?.map((address, index) => (
+                <div>
+                  <div className=" font-semibold mb-2">
+                    {getAddressTypeText(address.type)}
+                      {address.pick_up_point_id && (
+                        <span> - {address.pick_up_point_id}</span>
+                      )}
+                  </div>
+                  <div className=" space-y-1">
+                    <div>{address.name}</div>
+                    <div>{address.address_line_1}</div>
+                    {address.address_line_2 && (
+                      <div>{address.address_line_2}</div>
+                    )}
+                    <div>
+                      {address.postal_code} {address.city}
+                    </div>
+                    <div>{address.country}</div>
+                  </div>
+                </div>
+              ))}
+              {order.addresses.length === 0 && (
+                <div className="">
+                  Ingen adresser registrert
                 </div>
               )}
             </div>

@@ -17,6 +17,7 @@ class AddressCreate(BaseModel):
     postal_code: str
     city: str
     country: str = "NO"
+    pick_up_point_id: Optional[str] = None
 
 
 class CustomerCreate(BaseModel):
@@ -43,6 +44,7 @@ class AddressResponse(BaseModel):
     city: str
     country: str
     created_at: datetime
+    pick_up_point_id: Optional[str]
 
     class Config:
         from_attributes = True

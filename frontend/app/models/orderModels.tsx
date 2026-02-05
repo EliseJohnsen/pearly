@@ -9,6 +9,7 @@ export interface Address {
   city: string;
   country: string;
   created_at: string;
+  pick_up_point_id: string | null;
 }
 
 export interface OrderLine {

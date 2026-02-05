@@ -114,6 +114,20 @@ async def vipps_webhook(
                 if shipping_amount:
                     order.shipping_amount = shipping_amount.get("value")
 
+                pick_up_point = shipping_details.get("pickupPoint")
+                if pick_up_point:
+                    pick_up_address = Address(
+                        order_id=order.id,
+                        type="pickUpPoint",
+                        name=pick_up_point.get("name"),
+                        address_line_1=pick_up_point.get("address", ""),
+                        postal_code=pick_up_point.get("postalCode", ""),
+                        city=pick_up_point.get("city", ""),
+                        country=pick_up_point.get("country", "NO"),
+                        pick_up_point_id=pick_up_point.get("id"),
+                    )
+                    db.add(pick_up_address)
+
             # Create/link customer from Vipps user info
                 email = shipping_details.get("email")
                 name = f"{shipping_details.get('firstName', '')} {shipping_details.get('lastName', '')}".strip() if shipping_details else ""
