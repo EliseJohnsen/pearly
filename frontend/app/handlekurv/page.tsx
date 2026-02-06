@@ -37,7 +37,7 @@ export default function CartPage() {
         {items.length === 0 ? (
           <div className="bg-white shadow-md rounded-lg p-8 text-center">
             <ShoppingBagIcon className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-600 mb-6">Handlekurven din er tom</p>
+            <p className="mb-6">Handlekurven din er tom</p>
             <Link
               href="/perle-kits"
               className="inline-block bg-primary text-white py-3 px-6 rounded-lg font-semibold hover:bg-primary/90 transition"
@@ -77,7 +77,7 @@ export default function CartPage() {
                           >
                             {item.title}
                           </Link>
-                          <p className="text-gray-600 mt-1">
+                          <p className="mt-1">
                             {formatPrice(item.price, item.currency)}
                           </p>
                         </div>
@@ -174,11 +174,11 @@ export default function CartPage() {
               <h2 className="text-xl font-bold mb-4">Oppsummering</h2>
 
               <div className="space-y-3 mb-6">
-                <div className="flex justify-between text-gray-600">
+                <div className="flex justify-between">
                   <span>Delsum</span>
                   <span>{formatPrice(totalPrice, currency)}</span>
                 </div>
-                <div className="flex justify-between text-gray-600">
+                <div className="flex justify-between">
                   <span>Frakt</span>
                   <span>Gratis</span>
                 </div>
