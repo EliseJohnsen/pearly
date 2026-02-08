@@ -39,7 +39,7 @@ export default function CartPage() {
             <ShoppingBagIcon className="w-16 h-16 mx-auto text-gray-300 mb-4" />
             <p className="mb-6">Handlekurven din er tom</p>
             <Link
-              href="/perle-kits"
+              href="/perlepakker"
               className="inline-block bg-primary text-white py-3 px-6 rounded-lg font-semibold hover:bg-primary/90 transition"
             >
               Se produkter
@@ -204,7 +204,7 @@ export default function CartPage() {
             {/* Continue shopping */}
             <div className="text-center">
               <Link
-                href="/perle-kits"
+                href="/perlepakker"
                 className="text-primary hover:underline font-medium"
               >
                 ← Fortsett å handle

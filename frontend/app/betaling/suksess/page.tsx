@@ -134,7 +134,7 @@ function PaymentSuccessContent() {
             </p>
 
             <Link
-              href="/perle-kits"
+              href="/perlepakker"
               className="inline-block bg-primary text-white py-3 px-6 rounded-lg font-semibold hover:bg-primary/90 transition"
             >
               Fortsett å handle
