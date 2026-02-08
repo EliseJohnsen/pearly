@@ -76,6 +76,7 @@ export default async function RootLayout({
           </CartProvider>
         </LocaleProvider>
         {draft.isEnabled && <VisualEditingWrapper />}
+        <script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
       </body>
     </html>
   );
