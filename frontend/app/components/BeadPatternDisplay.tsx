@@ -347,21 +347,6 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
       )}
 
         <div className="grid grid-cols-1 gap-6 mb-6">
-          {pattern.pattern_data?.styled && (
-            <div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">
-                Stilisert bilde ({pattern.pattern_data.style})
-              </h3>
-              <div className="overflow-auto">
-                <img
-                  src={`${apiUrl}/api/patterns/${pattern.uuid}/styled-image`}
-                  alt="Stilisert versjon"
-                  className="w-full h-auto rounded-lg border-2 border-gray-300 shadow-md"
-                />
-              </div>
-            </div>
-          )}
-
           {pop_art_url && (
             <div>
               <h3 className="text-lg font-semibold text-gray-800 mb-3">

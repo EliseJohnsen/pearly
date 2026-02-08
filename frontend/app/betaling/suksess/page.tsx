@@ -128,9 +128,6 @@ function PaymentSuccessContent() {
 
             <p className="mb-6">
               Du vil motta en bekreftelse på e-post 
-              {orderStatus?.customer_email &&
-                <span> {orderStatus.customer_email}</span>
-              }
             </p>
 
             <Link
