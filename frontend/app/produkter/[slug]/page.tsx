@@ -250,7 +250,7 @@ export default function ProductDetailPage({
 
             <button
               onClick={handleAddToCart}
-              disabled={product.status === "out_of_stock" || addedToCart}
+              disabled={product.status !== "in_stock" || addedToCart}
               className={`w-full py-4 px-6 rounded-lg font-semibold transition disabled:cursor-not-allowed flex items-center justify-center gap-2 ${
                 addedToCart
                   ? "bg-success text-white"
@@ -269,7 +269,7 @@ export default function ProductDetailPage({
               )}
             </button>
             <VippsCheckoutButton 
-              disabled={product.status === "out_of_stock" || addedToCart}
+              disabled={product.status !== "in_stock" || addedToCart}
               orderLines={orderLines} 
               currency={product.currency} 
             />
