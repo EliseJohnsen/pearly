@@ -16,10 +16,14 @@ class Order(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     order_number = Column(String, unique=True, index=True, nullable=False, default=generate_order_number)
-    customer_id = Column(Integer, ForeignKey("customers.id"), nullable=False, index=True)
+    customer_id = Column(Integer, ForeignKey("customers.id"), nullable=True, index=True)
     status = Column(String, nullable=False)
+    payment_status = Column(String, default="pending")  # pending, paid, failed, cancelled
+    vipps_reference = Column(String, nullable=True, index=True)  # Vipps checkout session reference
     total_amount = Column(Integer)
     currency = Column(String, default="NOK")
+    shipping_method_id = Column(String, nullable=True)  # ID of selected shipping option
+    shipping_amount = Column(Integer, nullable=True)  # Shipping cost in øre
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 

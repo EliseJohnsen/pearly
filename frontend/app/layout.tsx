@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Quicksand } from "next/font/google";
 import "./globals.css";
 import {LocaleProvider} from "./contexts/LocaleContext";
+import { CartProvider } from "./contexts/CartContext";
 import { VisualEditingWrapper } from "./components/VisualEditingWrapper";
 import { draftMode } from "next/headers";
 import { fetchSanityData } from "@/lib/sanity.server";
@@ -70,7 +71,9 @@ export default async function RootLayout({
     <html lang="no">
       <body className={`${quicksand.variable} antialiased`}>
         <LocaleProvider>
-          {children}
+          <CartProvider>
+            {children}
+          </CartProvider>
         </LocaleProvider>
         {draft.isEnabled && <VisualEditingWrapper />}
         <script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>

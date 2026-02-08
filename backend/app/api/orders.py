@@ -102,6 +102,8 @@ def create_order(
         order_number=order.order_number,
         customer_id=order.customer_id,
         status=order.status,
+        payment_status=order.payment_status,
+        vipps_reference=order.vipps_reference,
         total_amount=order.total_amount,
         currency=order.currency,
         created_at=order.created_at,
@@ -169,6 +171,7 @@ def get_all_orders(
             customer_name=order.customer_name,
             customer_email=order.customer_email,
             status=order.Order.status,
+            payment_status=order.Order.payment_status,
             total_amount=order.Order.total_amount,
             currency=order.Order.currency,
             order_line_count=order.order_line_count,
@@ -206,8 +209,12 @@ def get_order(
         order_number=order.order_number,
         customer_id=order.customer_id,
         status=order.status,
+        payment_status=order.payment_status,
+        vipps_reference=order.vipps_reference,
         total_amount=order.total_amount,
         currency=order.currency,
+        shipping_method_id=order.shipping_method_id,
+        shipping_amount=order.shipping_amount,
         created_at=order.created_at,
         updated_at=order.updated_at,
         customer=CustomerResponse(
@@ -239,6 +246,7 @@ def get_order(
                 city=addr.city,
                 country=addr.country,
                 created_at=addr.created_at,
+                pick_up_point_id=addr.pick_up_point_id,
             )
             for addr in order.addresses
         ],

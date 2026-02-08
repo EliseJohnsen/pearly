@@ -62,14 +62,18 @@ async def create_product_from_pattern_data(
 
         styled_image_asset_id = None
         if product_data.styled_image_base64:
-            styled_image_bytes = base64.b64decode(product_data.styled_image_base64)
-            styled_filename = f"{product_data.slug}-styled.png"
-            styled_upload_result = await sanity_service.upload_image_from_bytes(
-                styled_image_bytes,
-                styled_filename
-            )
-            styled_image_asset_id = styled_upload_result['asset_id']
-            logger.info(f"Uploaded styled image to Sanity: {styled_image_asset_id}")
+            try:
+                styled_image_bytes = base64.b64decode(product_data.styled_image_base64)
+                styled_filename = f"{product_data.slug}-styled.png"
+                styled_upload_result = await sanity_service.upload_image_from_bytes(
+                    styled_image_bytes,
+                    styled_filename
+                )
+                styled_image_asset_id = styled_upload_result['asset_id']
+                logger.info(f"Uploaded styled image to Sanity: {styled_image_asset_id}")
+            except Exception as e:
+                logger.warning(f"Failed to upload styled image: {str(e)}", exc_info=True)
+
 
     except Exception as e:
         logger.error(f"Failed to upload images to Sanity: {str(e)}")
@@ -121,22 +125,11 @@ async def create_product_from_pattern_data(
 
     pattern_uuid = str(uuid_lib.uuid4())
 
-    updated_pattern_data = {
-        **product_data.pattern_data,
-        "sanity_pattern_image_id": pattern_upload_result['asset_id'],
-        "sanity_pattern_image_url": pattern_upload_result['url'],
-        "sanity_product_sku": product_data.sku,
-        "sanity_product_slug": product_data.slug,
-    }
-
-    if styled_image_asset_id:
-        updated_pattern_data["sanity_styled_image_id"] = styled_image_asset_id
-
     grid_size = product_data.pattern_data.get("width", 29)
 
     db_pattern = Pattern(
         uuid=pattern_uuid,
-        pattern_data=updated_pattern_data,
+        pattern_data=product_data.pattern_data,
         grid_size=grid_size,
         colors_used=product_data.colors_used,
     )
