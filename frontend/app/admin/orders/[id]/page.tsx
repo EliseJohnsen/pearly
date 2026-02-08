@@ -94,9 +94,9 @@ export default function OrderDetailPage() {
   const formatShippingMethod = (value: string) => {
     switch (value) {
       case "postenservicepakke1":
-        return "Posten servicepakke 1"
+        return "Posten hjem"
       case "postenservicepakke2":
-        return "Posten servicepakke 2"
+        return "Posten hentested"
       default:
         return value;
     }
