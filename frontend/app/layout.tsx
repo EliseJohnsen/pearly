@@ -73,6 +73,7 @@ export default async function RootLayout({
           {children}
         </LocaleProvider>
         {draft.isEnabled && <VisualEditingWrapper />}
+        <script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
       </body>
     </html>
   );
