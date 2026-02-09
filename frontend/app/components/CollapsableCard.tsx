@@ -19,13 +19,13 @@ export default function CollapsableCard({
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
   return (
-    <div className={`bg-white rounded-lg shadow-lg overflow-hidden mb-3 ${className}`}>
+    <div className={`overflow-hidden m-0 ${className}`}>
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-6 hover:bg-gray-50 transition-colors"
+        className="w-full flex items-center justify-between p-4 cursor-pointer transition-colors"
       >
         {typeof header === "string" ? (
-          <h3 className="text-lg font-semibold text-gray-900">{header}</h3>
+          <h3 className="text-2xl text-gray-900">{header}</h3>
         ) : (
           header
         )}

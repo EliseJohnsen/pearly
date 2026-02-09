@@ -10,6 +10,7 @@ export interface OrderLine {
 }
 
 interface VippsCheckoutButtonProps {
+  buttonText?: string;
   orderLines: OrderLine[];
   currency?: string;
   disabled?: boolean;
@@ -19,6 +20,7 @@ interface VippsCheckoutButtonProps {
 }
 
 export default function VippsCheckoutButton({
+  buttonText,
   orderLines,
   currency = "NOK",
   disabled = false,
@@ -81,10 +83,10 @@ export default function VippsCheckoutButton({
         disabled={isCheckingOut || orderLines.length === 0 || disabled}
         className={
           className ||
-          "w-full bg-primary text-white py-4 px-6 rounded-lg font-semibold hover:bg-primary/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          "w-full bg-primary text-white py-4 px-6 rounded-lg font-semibold cursor-pointer hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
         }
       >
-        {isCheckingOut ? "Starter Vipps..." : "Betal med Vipps"}
+        {isCheckingOut ? "Starter Vipps..." : buttonText || "Kjøp nå med Vipps"}
       </button>
     </div>
   );

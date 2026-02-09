@@ -11,6 +11,7 @@ import LoadingSpinner from "@/app/components/LoadingSpinner";
 import { useCart } from "@/app/contexts/CartContext";
 import { CheckIcon } from "@heroicons/react/24/outline";
 import VippsCheckoutButton, { OrderLine } from "@/app/components/VippsCheckoutButton";
+import CollapsableCard from "@/app/components/CollapsableCard";
 
 
 
@@ -164,7 +165,7 @@ export default function ProductDetailPage({
           <div className="space-y-4">
             {/* Main Image */}
             {selectedImage && (
-              <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
+              <div className="relative aspect-square overflow-hidden bg-gray-100">
                 <img
                   src={selectedImage.asset.url}
                   alt={selectedImage.alt || product.title}
@@ -198,7 +199,7 @@ export default function ProductDetailPage({
 
           <div className="space-y-6">
             <div>
-              <h1 className="text-3xl font-bold mb-2">{product.title}</h1>
+              <h1 className="text-4xl text-dark-purple font-bold mb-2">{product.title}</h1>
               {product.category && (
                 <p className="text-sm text-gray-500 uppercase tracking-wide">
                   {product.category.name}
@@ -234,27 +235,21 @@ export default function ProductDetailPage({
               </div>
             )}
 
-            {/* Price */}
-            <div className="py-4 border-y border-purple">
-              <div className="flex items-baseline gap-3">
-                <p className="text-3xl font-bold text-primary">
-                  {formatPrice(product.price, product.currency)}
-                </p>
-                {product.originalPrice && product.originalPrice > product.price && (
-                  <p className="text-xl text-gray-500 line-through">
-                    {formatPrice(product.originalPrice, product.currency)}
-                  </p>
-                )}
+            {product.status === "coming_soon" && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <p className="text-yellow-800 font-medium">Kommer snart!</p>
               </div>
-            </div>
+            )}
 
             <button
               onClick={handleAddToCart}
               disabled={product.status !== "in_stock" || addedToCart}
-              className={`w-full py-4 px-6 rounded-lg font-semibold transition disabled:cursor-not-allowed flex items-center justify-center gap-2 ${
+              className={`w-full py-4 px-6 rounded-lg font-semibold transition cursor-pointer disabled:cursor-not-allowed flex items-center justify-center gap-2 
+                border
+                ${
                 addedToCart
                   ? "bg-success text-white"
-                  : "bg-primary text-white hover:bg-primary/90 disabled:opacity-50"
+                  : "hover:shadow-lg disabled:opacity-50"
               }`}
             >
               {addedToCart ? (
@@ -265,7 +260,11 @@ export default function ProductDetailPage({
               ) : product.status === "out_of_stock" ? (
                 "Utsolgt"
               ) : (
-                "Legg i handlekurv"
+                <>
+                  Legg i handlekurv - {product.originalPrice && product.originalPrice > product.price && (
+                    <span className="line-through opacity-70">{formatPrice(product.originalPrice, product.currency)}</span>
+                  )} {formatPrice(product.price, product.currency)}
+                </>
               )}
             </button>
             <VippsCheckoutButton 
@@ -293,14 +292,22 @@ export default function ProductDetailPage({
               </div>
             )}
 
-            {product.longDescription && (
-              <div className="pt-6 border-t border-purple">
-                <h2 className="text-xl font-semibold mb-4">Om produktet</h2>
-                <div className="prose prose-sm max-w-none text-gray-700">
-                  <PortableText value={product.longDescription} />
+            <CollapsableCard header="Innhold" defaultExpanded={false} className="border-t border-purple">
+              {product.longDescription && (
+                <div className="pt-6">
+                  <h2 className="text-lg font-semibold mb-4">Om produktet</h2>
+                  <div className="prose prose-sm max-w-none text-gray-700">
+                    <PortableText value={product.longDescription} />
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </CollapsableCard>
+            <CollapsableCard header="Levering" defaultExpanded={false} className="border-y border-purple">
+              Tekst her
+            </CollapsableCard>
+            <CollapsableCard header="Bytte og retur" defaultExpanded={false} className="border-b border-purple">
+              Tekst her
+            </CollapsableCard>
           </div>
         </div>
       </main>
