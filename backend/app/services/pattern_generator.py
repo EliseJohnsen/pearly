@@ -376,6 +376,180 @@ def convert_image_to_pattern_from_file(
     )
 
 
+def convert_image_to_pattern_in_memory(
+    image: Image.Image,
+    boards_width: int = 1,
+    boards_height: int = 1,
+    use_perle_colors: bool = True,
+    use_quantization: bool = True,
+    use_dithering: bool = False,
+    enhance_contrast: float = 1.2,
+    use_advanced_preprocessing: bool = False,
+    remove_bg: bool = False,
+    enhance_colors: bool = True,
+    color_boost: float = 1.5,
+    contrast_boost: float = 1.3,
+    brightness_boost: float = 1.0,
+    simplify_details: bool = True,
+    simplification_method: str = "bilateral",
+    simplification_strength: str = "medium",
+    use_nearest_neighbor: bool = False
+) -> Tuple[str, List[Dict], Dict]:
+    """
+    Converts an image to a bead pattern entirely in memory.
+    Returns base64 encoded image instead of saving to file.
+
+    Args:
+        image: PIL Image object
+        boards_width: Number of 29x29 boards in width
+        boards_height: Number of 29x29 boards in height
+        use_perle_colors: If True, use perle colors (legacy parameter, always True)
+        use_quantization: If True, use color quantization for better results
+        use_dithering: If True, use Floyd-Steinberg dithering
+        enhance_contrast: Contrast enhancement factor (1.0 = no change, 1.2 = slight boost) - LEGACY
+        use_advanced_preprocessing: If True, use enhanced preprocessing pipeline
+        remove_bg: Whether to remove background (requires use_advanced_preprocessing)
+        enhance_colors: Whether to enhance colors (requires use_advanced_preprocessing)
+        color_boost: Color saturation multiplier (1.0 = no change, 1.5 = 50% more)
+        contrast_boost: Contrast multiplier (1.0 = no change, 1.3 = 30% more)
+        brightness_boost: Brightness multiplier (1.0 = no change)
+        simplify_details: Whether to simplify details (requires use_advanced_preprocessing)
+        simplification_method: "bilateral", "mean_shift", or "gaussian"
+        simplification_strength: "light", "medium", or "strong"
+        use_nearest_neighbor: Whether to use nearest neighbor resampling
+
+    Returns:
+        Tuple of (pattern_image_base64, colors_used, pattern_data)
+    """
+    bead_colors = get_perle_colors()
+
+    if not bead_colors:
+        raise HTTPException(status_code=500, detail="Perle color data is not available for processing.")
+
+    print("Pre-processing image...")
+    if use_advanced_preprocessing:
+        image = enhanced_preprocess_image(
+            image,
+            remove_bg=remove_bg,
+            enhance_colors=enhance_colors,
+            color_boost=color_boost,
+            contrast_boost=contrast_boost,
+            brightness_boost=brightness_boost,
+            simplify_details=simplify_details,
+            simplification_method=simplification_method,
+            simplification_strength=simplification_strength
+        )
+    else:
+        image = basic_preprocess_image(image, enhance_contrast=enhance_contrast)
+
+    max_width = boards_width * BOARD_SIZE
+    max_height = boards_height * BOARD_SIZE
+
+    new_width, new_height = calculate_dimensions_maintaining_aspect_ratio(
+        image.width,
+        image.height,
+        max_width,
+        max_height
+    )
+
+    resampling_method = Image.Resampling.NEAREST if use_nearest_neighbor else Image.Resampling.LANCZOS
+    img_resized = image.resize((new_width, new_height), resampling_method)
+    print(f"Image resized to: {img_resized.size} using {resampling_method} (aspect ratio maintained)")
+
+    if use_quantization:
+        print("Applying color quantization...")
+        img_resized = quantize_to_perle_colors(
+            img_resized,
+            bead_colors,
+            use_dithering=use_dithering
+        )
+
+    pattern_data = []
+    color_counts = {}
+
+    print("Starting pixel-by-pixel color matching...")
+    for y in range(new_height):
+        row = []
+        for x in range(new_width):
+            pixel_rgb = img_resized.getpixel((x, y))
+            closest_bead = find_closest_color(pixel_rgb, bead_colors)
+            row.append(closest_bead["hex"])
+
+            color_key = closest_bead["hex"]
+            color_counts[color_key] = color_counts.get(color_key, 0) + 1
+
+        pattern_data.append(row)
+
+    print("Color matching complete.")
+
+    # Filter out rare colors
+    pattern_data, color_counts = filter_rare_colors(
+        pattern_data,
+        color_counts,
+        bead_colors,
+        min_percentage=0.005
+    )
+
+    # Create pattern image
+    pattern_img = create_pattern_image(pattern_data, scale=20)
+
+    # Convert to base64
+    buffer = io.BytesIO()
+    pattern_img.save(buffer, format='PNG')
+    buffer.seek(0)
+    pattern_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+
+    # Build colors_used list
+    colors_used = []
+    bead_color_lookup = {bc["hex"]: bc for bc in bead_colors}
+
+    for hex_color, count in color_counts.items():
+        bead = bead_color_lookup.get(hex_color)
+        if bead:
+            colors_used.append({
+                "hex": hex_color,
+                "name": bead["name"],
+                "code": bead.get("code", ""),
+                "count": count
+            })
+        else:
+            print(f"Warning: Hex color {hex_color} found in pattern but not in bead colors.")
+            colors_used.append({
+                "hex": hex_color,
+                "name": "Unknown Color",
+                "code": "",
+                "count": count
+            })
+
+    print(f"Unique colors used: {len(colors_used)}")
+
+    return pattern_base64, colors_used, {
+        "grid": pattern_data,
+        "width": new_width,
+        "height": new_height,
+        "boards_width": boards_width,
+        "boards_height": boards_height,
+        "board_size": BOARD_SIZE
+    }
+
+
+def image_to_base64(image: Image.Image, format: str = 'PNG') -> str:
+    """
+    Convert a PIL Image to base64 string.
+
+    Args:
+        image: PIL Image object
+        format: Image format (default: PNG)
+
+    Returns:
+        Base64 encoded image string
+    """
+    buffer = io.BytesIO()
+    image.save(buffer, format=format)
+    buffer.seek(0)
+    return base64.b64encode(buffer.getvalue()).decode('utf-8')
+
+
 def render_grid_to_image(grid: List[List[str]], bead_size: int = 10) -> Image.Image:
     """
     Renders a grid of color codes to a PIL Image with circular beads.

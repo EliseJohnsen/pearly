@@ -28,4 +28,3 @@ class CheckoutStatusResponse(BaseModel):
     payment_status: str
     total_amount: Optional[int]
     currency: Optional[str]
-    customer_email: Optional[str]

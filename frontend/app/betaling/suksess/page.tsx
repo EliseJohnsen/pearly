@@ -75,10 +75,9 @@ function PaymentSuccessContent() {
 
       <main className="flex-1 max-w-2xl mx-auto w-full px-4 py-12">
         {loading ? (
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p>Henter ordredetaljer...</p>
-          </div>
+          <LoadingSpinner
+            loadingMessage="Henter ordredetaljer...">
+          </LoadingSpinner>
         ) : error ? (
           <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
             <p className="text-red-800 font-semibold mb-2">Feil</p>
@@ -128,9 +127,6 @@ function PaymentSuccessContent() {
 
             <p className="mb-6">
               Du vil motta en bekreftelse på e-post 
-              {orderStatus?.customer_email &&
-                <span> {orderStatus.customer_email}</span>
-              }
             </p>
 
             <Link
