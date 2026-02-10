@@ -406,7 +406,7 @@ def render_grid_to_image(grid: List[List[str]], bead_size: int = 10) -> Image.Im
             y = row_idx * bead_size
 
             # Draw circular bead
-            draw.ellipse(
+            draw.rectangle(
                 [x, y, x + bead_size, y + bead_size],
                 fill=hex_color,
                 outline=None
