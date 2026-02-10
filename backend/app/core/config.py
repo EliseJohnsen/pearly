@@ -28,7 +28,7 @@ class Settings(BaseSettings):
 
     # Email settings (Resend)
     RESEND_API_KEY: str = ""
-    RESEND_FROM_EMAIL: str = "hei@feelpearly.no"
+    RESEND_FROM_EMAIL: str = "hei@kontakt.feelpearly.no"
 
     class Config:
         env_file = ".env"
