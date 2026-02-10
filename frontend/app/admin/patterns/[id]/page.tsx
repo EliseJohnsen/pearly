@@ -66,8 +66,9 @@ export default function PatternDetailPage() {
   const getBeadWeight = (beadCount: number) => {
     const adjustedCount = beadCount < 100
       ? beadCount + 5
-      : beadCount * 1.05;
-    return Math.ceil(adjustedCount / 1000 * 60);
+      : beadCount + 20;
+    const value = (adjustedCount / 1000 * 60)
+    return Math.round(value * 10) / 10;
   }
 
   const toggleColorCheck = (colorHex: string) => {

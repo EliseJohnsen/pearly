@@ -8,6 +8,9 @@ import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
 import { PortableText } from "@portabletext/react";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
+import { useCart } from "@/app/contexts/CartContext";
+import { CheckIcon } from "@heroicons/react/24/outline";
+import VippsCheckoutButton, { OrderLine } from "@/app/components/VippsCheckoutButton";
 
 
 
@@ -83,7 +86,8 @@ export default function ProductDetailPage({
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [creatingOrder, setCreatingOrder] = useState(false);
+  const [addedToCart, setAddedToCart] = useState(false);
+  const { addItem } = useCart();
 
   useEffect(() => {
     async function fetchProduct() {
@@ -126,74 +130,30 @@ export default function ProductDetailPage({
     }).format(price);
   };
 
-  const handleAddToCart = async () => {
+  const handleAddToCart = () => {
     if (!product) return;
 
-    setCreatingOrder(true);
+    const primaryImage = productImages.find((img) => img.isPrimary) || productImages[0];
 
-    try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    addItem({
+      productId: product._id,
+      title: product.title,
+      price: product.price,
+      currency: product.currency || "NOK",
+      imageUrl: primaryImage?.asset.url,
+      slug: product.slug.current,
+    });
 
-      // Create order with dummy customer and address data
-      const orderData = {
-        customer: {
-          name: "Test Kunde",
-          email: "elise.johnsen@gmail.com"
-        },
-        order_lines: [
-          {
-            product_id: product._id,
-            unit_price: Math.round(product.price * 100), // Convert to øre
-            quantity: 1
-          }
-        ],
-        addresses: [
-          {
-            type: "billing",
-            name: "Test Kunde",
-            address_line_1: "Testveien 123",
-            address_line_2: null,
-            postal_code: "0123",
-            city: "Oslo",
-            country: "NO"
-          },
-          {
-            type: "shipping",
-            name: "Test Kunde",
-            address_line_1: "Testveien 123",
-            address_line_2: null,
-            postal_code: "0123",
-            city: "Oslo",
-            country: "NO"
-          }
-        ],
-        status: "new",
-        currency: product.currency || "NOK"
-      };
-
-      const response = await fetch(`${apiUrl}/api/orders`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(orderData),
-      });
-
-      if (!response.ok) {
-        throw new Error("Kunne ikke opprette ordre");
-      }
-
-      const order = await response.json();
-      console.log("Ordre opprettet:", order);
-
-      alert(`${product.title} lagt til i handlekurv!\n\nOrdre: ${order.order_number}\nTotalt: ${(order.total_amount / 100).toFixed(2)} ${order.currency}`);
-    } catch (error) {
-      console.error("Feil ved opprettelse av ordre:", error);
-      alert("Kunne ikke legge til produkt i handlekurv. Prøv igjen senere.");
-    } finally {
-      setCreatingOrder(false);
-    }
+    setAddedToCart(true);
+    setTimeout(() => setAddedToCart(false), 2000);
   };
+
+  const orderLines: OrderLine[] = [{
+    product_id: product._id,
+    name: product.title,
+    unit_price: Math.round(product.price * 100), // Konverter til øre
+    quantity: 1,
+  }];
 
   return (
     <div className="min-h-screen bg-[var(--background)]">
@@ -290,15 +250,29 @@ export default function ProductDetailPage({
 
             <button
               onClick={handleAddToCart}
-              // disabled={product.status === "out_of_stock" || product.status === "coming_soon" || creatingOrder}
-              className="w-full bg-primary text-white py-4 px-6 rounded-lg font-semibold hover:bg-primary/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={product.status !== "in_stock" || addedToCart}
+              className={`w-full py-4 px-6 rounded-lg font-semibold transition disabled:cursor-not-allowed flex items-center justify-center gap-2 ${
+                addedToCart
+                  ? "bg-success text-white"
+                  : "bg-primary text-white hover:bg-primary/90 disabled:opacity-50"
+              }`}
             >
-              {creatingOrder
-                ? "Oppretter ordre..."
-                : product.status === "out_of_stock"
-                ? "Utsolgt"
-                : "Legg i handlekurv"}
+              {addedToCart ? (
+                <>
+                  <CheckIcon className="w-5 h-5" />
+                  Lagt til i handlekurv
+                </>
+              ) : product.status === "out_of_stock" ? (
+                "Utsolgt"
+              ) : (
+                "Legg i handlekurv"
+              )}
             </button>
+            <VippsCheckoutButton 
+              disabled={product.status !== "in_stock" || addedToCart}
+              orderLines={orderLines} 
+              currency={product.currency} 
+            />
 
             {product.status === "coming_soon" && (
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">

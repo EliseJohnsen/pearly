@@ -16,6 +16,7 @@ class Address(Base):
     city = Column(String, nullable=False)
     country = Column(String, nullable=False, default="NO")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    pick_up_point_id = Column(String, nullable=True)
 
     # Relationships
     order = relationship("Order", back_populates="addresses")

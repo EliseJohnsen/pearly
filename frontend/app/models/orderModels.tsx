@@ -9,6 +9,7 @@ export interface Address {
   city: string;
   country: string;
   created_at: string;
+  pick_up_point_id: string | null;
 }
 
 export interface OrderLine {
@@ -43,6 +44,8 @@ export interface Order {
   status: string;
   total_amount: number | null;
   currency: string | null;
+  shipping_method_id: string | null;
+  shipping_amount: number | null;
   created_at: string;
   updated_at: string;
   customer: Customer | null;

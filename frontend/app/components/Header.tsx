@@ -9,7 +9,9 @@ import {
 import {
   Bars3Icon,
   XMarkIcon,
+  ShoppingCartIcon,
 } from '@heroicons/react/24/outline'
+import { useCart } from '@/app/contexts/CartContext'
 import {useNavigationByType} from '@/app/hooks/useSanityData'
 import {useUIString} from '@/app/hooks/useSanityData'
 
@@ -17,6 +19,7 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const {data: mainNav, loading: mainNavLoading} = useNavigationByType('main')
   const {data: ctaNav, loading: ctaNavLoading} = useNavigationByType('cta')
+  const { totalItems } = useCart()
 
   const openMainMenuText = useUIString('open_main_menu')
   const loadingText = useUIString('loading')
@@ -69,7 +72,7 @@ export default function Header() {
           ))}
         </div>
         <div className="lg:col-span-2 col-span-1">
-          <div className="flex justify-evenly hidden lg:flex">
+          <div className="flex justify-evenly items-center hidden lg:flex">
             {mainNavLoading ? (
               <div className="text-sm/6 font-semibold text-gray-900">{ loadingText }</div>
             ) : mainNav && mainNav.length > 2 ? (
@@ -85,8 +88,24 @@ export default function Header() {
                   </Link>
                 ))
             ) : null}
+            <Link href="/handlekurv" className="relative text-primary-light hover:text-white transition-colors">
+              <ShoppingCartIcon className="w-6 h-6" />
+              {totalItems > 0 && (
+                <span className="absolute -top-2 -right-2 bg-primary-red text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {totalItems > 9 ? '9+' : totalItems}
+                </span>
+              )}
+            </Link>
           </div>
-          <div className="lg:hidden justify-self-end">
+          <div className="lg:hidden justify-self-end flex items-center gap-3">
+              <Link href="/handlekurv" className="relative text-primary-light hover:text-white transition-colors">
+                <ShoppingCartIcon className="w-6 h-6" />
+                {totalItems > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-primary-red text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                    {totalItems > 9 ? '9+' : totalItems}
+                  </span>
+                )}
+              </Link>
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(true)}
@@ -105,7 +124,7 @@ export default function Header() {
         <DialogPanel className="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-white p-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
           <div className="flex items-center justify-between">
             <Link href="/" className="-m-1.5 p-1.5">
-              <span className="text-2xl font-bold text-primary-red">feelin pearly</span>
+              <span className="text-2xl font-bold text-primary-red">Feel pearly</span>
             </Link>
             <button
               type="button"
@@ -142,6 +161,21 @@ export default function Header() {
                     {item.title}
                   </Link>
                 ))}
+
+                {/* Cart link in mobile */}
+                <Link
+                  href="/handlekurv"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="-mx-3 flex items-center gap-2 rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
+                >
+                  <ShoppingCartIcon className="w-5 h-5" />
+                  Handlekurv
+                  {totalItems > 0 && (
+                    <span className="bg-primary-red text-white text-xs font-bold rounded-full px-2 py-0.5">
+                      {totalItems}
+                    </span>
+                  )}
+                </Link>
               </div>
             </div>
           </div>

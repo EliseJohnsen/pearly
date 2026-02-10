@@ -17,6 +17,7 @@ class AddressCreate(BaseModel):
     postal_code: str
     city: str
     country: str = "NO"
+    pick_up_point_id: Optional[str] = None
 
 
 class CustomerCreate(BaseModel):
@@ -43,6 +44,7 @@ class AddressResponse(BaseModel):
     city: str
     country: str
     created_at: datetime
+    pick_up_point_id: Optional[str]
 
     class Config:
         from_attributes = True
@@ -88,8 +90,12 @@ class OrderResponse(BaseModel):
     order_number: str
     customer_id: int
     status: str
+    payment_status: Optional[str] = "pending"
+    vipps_reference: Optional[str] = None
     total_amount: Optional[int]
     currency: Optional[str]
+    shipping_method_id: Optional[str] = None
+    shipping_amount: Optional[int] = None
     created_at: datetime
     updated_at: datetime
 
@@ -110,6 +116,7 @@ class OrderListResponse(BaseModel):
     customer_name: str
     customer_email: str
     status: str
+    payment_status: Optional[str] = "pending"
     total_amount: Optional[int]
     currency: Optional[str]
     order_line_count: int

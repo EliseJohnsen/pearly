@@ -17,6 +17,15 @@ class Settings(BaseSettings):
     SANITY_WEBHOOK_SECRET: str = ""  # Optional: For verifying webhook signatures
     SECRET_KEY: str = "your-secret-key-change-this-in-production"  # For JWT tokens
 
+    # Vipps Checkout settings
+    VIPPS_CLIENT_ID: str = ""
+    VIPPS_CLIENT_SECRET: str = ""
+    VIPPS_SUBSCRIPTION_KEY: str = ""
+    VIPPS_MERCHANT_SERIAL_NUMBER: str = ""
+    VIPPS_API_URL: str = "https://apitest.vipps.no"  # Use https://api.vipps.no for production
+    VIPPS_CALLBACK_PREFIX: str = ""  # Backend URL for Vipps callbacks
+    FRONTEND_URL: str = "http://localhost:3000"  # Frontend URL for redirects
+
     class Config:
         env_file = ".env"
         case_sensitive = True
