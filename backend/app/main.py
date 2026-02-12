@@ -49,7 +49,7 @@ def run_migrations():
 async def lifespan(_: FastAPI):
     """Lifespan context manager for startup and shutdown events"""
     # Startup
-    logger.info("🚀 Starting application...")
+    logger.info("Starting application...")
 
     # Run migrations automatically
     run_migrations()
@@ -57,7 +57,7 @@ async def lifespan(_: FastAPI):
     yield
 
     # Shutdown (cleanup code goes here if needed)
-    logger.info("👋 Shutting down application...")
+    logger.info("Shutting down application...")
 
 
 app = FastAPI(
