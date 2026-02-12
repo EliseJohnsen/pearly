@@ -269,7 +269,6 @@ def convert_image_to_pattern(
         min_percentage=0.005
     )
 
-    # Create and save pattern image
     pattern_img = create_pattern_image(pattern_data, scale=20)
     pattern_img.save(output_path)
     print(f"Pattern image saved to: {output_path}")
@@ -581,7 +580,7 @@ def render_grid_to_image(grid: List[List[str]], bead_size: int = 10) -> Image.Im
             y = row_idx * bead_size
 
             # Draw circular bead
-            draw.ellipse(
+            draw.rectangle(
                 [x, y, x + bead_size, y + bead_size],
                 fill=hex_color,
                 outline=None
