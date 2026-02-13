@@ -50,3 +50,11 @@ venv/
 # Backend uploads
 backend/uploads/
 uploads/
+
+ngrok.zip
+ngrok.exe
+
+.claude
+
+# IDE settings
+.vscode/

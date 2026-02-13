@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
-import { CheckCircleIcon } from "@heroicons/react/24/outline";
+import { CheckCircleIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { useCart } from "@/app/contexts/CartContext";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
 
@@ -96,6 +96,20 @@ function PaymentSuccessContent() {
             <h1 className="text-2xl md:text-3xl font-bold mb-2">
               Takk for din bestilling!
             </h1>
+
+            {orderStatus && orderStatus.payment_status !== "paid" && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6 text-left">
+                <div className="flex items-start">
+                  <ExclamationTriangleIcon className="w-6 h-6 text-yellow-600 mr-3 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-yellow-800 font-semibold mb-1">Betalingsstatus ukjent</p>
+                    <p className="text-yellow-700 text-sm">
+                      Vi kunne ikke bekrefte betalingsstatusen automatisk. Vennligst sjekk ordrehistorikken din eller kontakt kundeservice hvis du har spørsmål.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <p className="text-gray-600 mb-6">
               Vi har mottatt din betaling og behandler ordren din.

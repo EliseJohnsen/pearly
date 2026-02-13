@@ -36,7 +36,7 @@ export default function CartPage() {
 
         {items.length === 0 ? (
           <div className="bg-white shadow-md rounded-lg p-8 text-center">
-            <ShoppingBagIcon className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+            <ShoppingBagIcon className="w-16 h-16 mx-auto text-primary mb-4" />
             <p className="mb-6">Handlekurven din er tom</p>
             <Link
               href="/perlepakker"
@@ -83,7 +83,7 @@ export default function CartPage() {
                         </div>
                         <button
                           onClick={() => removeItem(item.productId)}
-                          className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                          className="text-gray-500 hover:text-red-500 transition-colors p-1"
                           aria-label="Fjern produkt"
                         >
                           <TrashIcon className="w-5 h-5" />
@@ -157,7 +157,7 @@ export default function CartPage() {
                         </span>
                         <button
                           onClick={() => removeItem(item.productId)}
-                          className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                          className="text-gray-500 hover:text-red-500 transition-colors p-1"
                           aria-label="Fjern produkt"
                         >
                           <TrashIcon className="w-5 h-5" />
