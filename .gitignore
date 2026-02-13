@@ -55,3 +55,6 @@ ngrok.zip
 ngrok.exe
 
 .claude
+
+# IDE settings
+.vscode/
