@@ -117,7 +117,7 @@ class VippsClient:
         payload = {
             "merchantInfo": {
                 "callbackUrl": f"{self.callback_prefix}/api/webhooks/vipps",
-                "returnUrl": f"{self.frontend_url}/betaling/suksess?reference={reference}",
+                "returnUrl": f"{self.frontend_url}/betaling/resultat?reference={reference}",
                 "callbackAuthorizationToken": settings.SECRET_KEY,
             },
             "transaction": {
