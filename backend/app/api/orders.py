@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm.attributes import flag_modified
 from app.core.database import get_db
 from app.core.dependencies import get_current_admin
 from app.models.admin_user import AdminUser
@@ -17,6 +18,7 @@ from app.schemas.order import (
     OrderLineResponse,
     AddressResponse,
     OrderCreate,
+    OrderUpdate,
 )
 from sqlalchemy import func
 
@@ -96,52 +98,7 @@ def create_order(
         .filter(Order.id == order.id)
         .first()
     )
-
-    return OrderResponse(
-        id=order.id,
-        order_number=order.order_number,
-        customer_id=order.customer_id,
-        status=order.status,
-        payment_status=order.payment_status,
-        vipps_reference=order.vipps_reference,
-        total_amount=order.total_amount,
-        currency=order.currency,
-        created_at=order.created_at,
-        updated_at=order.updated_at,
-        customer=CustomerResponse(
-            id=order.customer.id,
-            name=order.customer.name,
-            email=order.customer.email,
-            created_at=order.customer.created_at,
-        ),
-        order_lines=[
-            OrderLineResponse(
-                id=line.id,
-                order_id=line.order_id,
-                product_id=line.product_id,
-                unit_price=line.unit_price,
-                quantity=line.quantity,
-                line_total=line.line_total,
-            )
-            for line in order.order_lines
-        ],
-        addresses=[
-            AddressResponse(
-                id=addr.id,
-                order_id=addr.order_id,
-                type=addr.type,
-                name=addr.name,
-                address_line_1=addr.address_line_1,
-                address_line_2=addr.address_line_2,
-                postal_code=addr.postal_code,
-                city=addr.city,
-                country=addr.country,
-                created_at=addr.created_at,
-            )
-            for addr in order.addresses
-        ],
-    )
-
+    return _map_to_order_response(order)
 
 @router.get("/orders")
 def get_all_orders(
@@ -156,7 +113,7 @@ def get_all_orders(
             Customer.email.label("customer_email"),
             func.count(OrderLine.id).label("order_line_count")
         )
-        .join(Customer, Order.customer_id == Customer.id)
+        .outerjoin(Customer, Order.customer_id == Customer.id)
         .outerjoin(OrderLine, Order.id == OrderLine.order_id)
         .group_by(Order.id, Customer.name, Customer.email)
         .order_by(Order.created_at.desc())
@@ -168,8 +125,8 @@ def get_all_orders(
             id=order.Order.id,
             order_number=order.Order.order_number,
             customer_id=order.Order.customer_id,
-            customer_name=order.customer_name,
-            customer_email=order.customer_email,
+            customer_name=order.customer_name or "Ingen kunde",
+            customer_email=order.customer_email or "",
             status=order.Order.status,
             payment_status=order.Order.payment_status,
             total_amount=order.Order.total_amount,
@@ -204,7 +161,90 @@ def get_order(
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
 
-    return OrderResponse(
+    return _map_to_order_response(order)
+
+
+@router.patch("/orders/{order_id}", response_model=OrderResponse)
+def update_order(
+    order_id: int,
+    order_update: OrderUpdate,
+    db: Session = Depends(get_db),
+    admin: AdminUser = Depends(get_current_admin)
+):
+    """Update order fields (generic endpoint for admin updates)"""
+
+    # Get the order
+    order = db.query(Order).filter(Order.id == order_id).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    # Update fields if provided
+    if order_update.shipping_tracking_number is not None:
+        order.shipping_tracking_number = order_update.shipping_tracking_number
+
+    if order_update.shipping_tracking_url is not None:
+        order.shipping_tracking_url = order_update.shipping_tracking_url
+
+    if order_update.status is not None:
+        order.status = order_update.status
+
+    db.commit()
+    db.refresh(order)
+
+    # Fetch the complete order with relationships
+    order = (
+        db.query(Order)
+        .options(
+            joinedload(Order.customer),
+            joinedload(Order.order_lines),
+            joinedload(Order.addresses),
+            joinedload(Order.logs)
+        )
+        .filter(Order.id == order_id)
+        .first()
+    )
+
+    return _map_to_order_response(order)
+
+
+@router.post("/orders/{order_id}/logs", response_model=OrderLogResponse, status_code=201)
+def create_order_log(
+    order_id: int,
+    log_data: OrderLogCreate,
+    db: Session = Depends(get_db),
+    admin: AdminUser = Depends(get_current_admin)
+):
+    """Create a new log entry for an order"""
+
+    # Verify order exists
+    order = db.query(Order).filter(Order.id == order_id).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    # Create log entry
+    log = OrderLog(
+        order_id=order_id,
+        created_by_type="admin",
+        created_by_admin_id=admin.id,
+        message=log_data.message
+    )
+    db.add(log)
+    db.commit()
+    db.refresh(log)
+
+    return OrderLogResponse(
+        id=log.id,
+        order_id=log.order_id,
+        created_by_type=log.created_by_type,
+        created_by_admin_id=log.created_by_admin_id,
+        message=log.message,
+        created_at=log.created_at,
+    )
+
+def _map_to_order_response(
+    order: Order
+):
+   return OrderResponse(
         id=order.id,
         order_number=order.order_number,
         customer_id=order.customer_id,
@@ -215,6 +255,8 @@ def get_order(
         currency=order.currency,
         shipping_method_id=order.shipping_method_id,
         shipping_amount=order.shipping_amount,
+        shipping_tracking_number=order.shipping_tracking_number,
+        shipping_tracking_url=order.shipping_tracking_url,
         created_at=order.created_at,
         updated_at=order.updated_at,
         customer=CustomerResponse(
@@ -263,37 +305,3 @@ def get_order(
         ],
     )
 
-
-@router.post("/orders/{order_id}/logs", response_model=OrderLogResponse, status_code=201)
-def create_order_log(
-    order_id: int,
-    log_data: OrderLogCreate,
-    db: Session = Depends(get_db),
-    admin: AdminUser = Depends(get_current_admin)
-):
-    """Create a new log entry for an order"""
-
-    # Verify order exists
-    order = db.query(Order).filter(Order.id == order_id).first()
-    if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
-
-    # Create log entry
-    log = OrderLog(
-        order_id=order_id,
-        created_by_type="admin",
-        created_by_admin_id=admin.id,
-        message=log_data.message
-    )
-    db.add(log)
-    db.commit()
-    db.refresh(log)
-
-    return OrderLogResponse(
-        id=log.id,
-        order_id=log.order_id,
-        created_by_type=log.created_by_type,
-        created_by_admin_id=log.created_by_admin_id,
-        message=log.message,
-        created_at=log.created_at,
-    )
