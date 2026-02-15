@@ -88,7 +88,7 @@ class OrderLogResponse(BaseModel):
 class OrderResponse(BaseModel):
     id: int
     order_number: str
-    customer_id: int
+    customer_id: Optional[int] = None
     status: str
     payment_status: Optional[str] = "pending"
     vipps_reference: Optional[str] = None
@@ -96,6 +96,8 @@ class OrderResponse(BaseModel):
     currency: Optional[str]
     shipping_method_id: Optional[str] = None
     shipping_amount: Optional[int] = None
+    shipping_tracking_number: Optional[str] = None
+    shipping_tracking_url: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 
@@ -112,7 +114,7 @@ class OrderResponse(BaseModel):
 class OrderListResponse(BaseModel):
     id: int
     order_number: str
-    customer_id: int
+    customer_id: Optional[int] = None
     customer_name: str
     customer_email: str
     status: str
@@ -125,6 +127,15 @@ class OrderListResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# Order Update Schemas
+class OrderUpdate(BaseModel):
+    """Generic schema for updating order fields by admin"""
+    shipping_tracking_number: Optional[str] = None
+    shipping_tracking_url: Optional[str] = None
+    status: Optional[str] = None
+    # Add more updatable fields here as needed in the future
 
 
 # Order Log Schemas
