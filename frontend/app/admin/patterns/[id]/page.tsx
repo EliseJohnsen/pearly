@@ -21,6 +21,7 @@ export default function PatternDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [checkedColors, setCheckedColors] = useState<Set<string>>(new Set());
+  const [perleColors, setPerleColors] = useState<Array<{ name: string; code: string; hex: string }>>([]);
 
   const fetchPattern = async () => {
     if (!patternId || isNaN(patternId)) return;
@@ -47,6 +48,23 @@ export default function PatternDetailPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [patternId]);
 
+  // Load perle colors for hex lookup
+  useEffect(() => {
+    const loadColors = async () => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+        const response = await fetch(`${apiUrl}/api/perle-colors`);
+        if (response.ok) {
+          const colors = await response.json();
+          setPerleColors(colors);
+        }
+      } catch (error) {
+        console.error("Failed to load perle colors:", error);
+      }
+    };
+    loadColors();
+  }, []);
+
   useEffect(() => {
     async function fetchProduct() {
       if (!patternId || isNaN(patternId)) return;
@@ -63,6 +81,26 @@ export default function PatternDetailPage() {
     fetchProduct();
   }, [patternId]);
 
+  // Build color lookup map (code -> hex)
+  const colorCodeToHex = perleColors.reduce(
+    (acc, color) => {
+      acc[color.code] = color.hex;
+      return acc;
+    },
+    {} as Record<string, string>
+  );
+
+  // Get hex for a color (from colors_used or lookup from code)
+  const getColorHex = (color: { hex?: string; code?: string }): string => {
+    if (color.hex) {
+      return color.hex; // Legacy patterns have hex
+    }
+    if (color.code && colorCodeToHex[color.code]) {
+      return colorCodeToHex[color.code]; // Lookup from code
+    }
+    return "#CCCCCC"; // Fallback gray
+  };
+
   const getBeadWeight = (beadCount: number) => {
     const adjustedCount = beadCount < 100
       ? beadCount + 5
@@ -71,13 +109,13 @@ export default function PatternDetailPage() {
     return Math.round(value * 10) / 10;
   }
 
-  const toggleColorCheck = (colorHex: string) => {
+  const toggleColorCheck = (colorCode: string) => {
     setCheckedColors(prev => {
       const newSet = new Set(prev);
-      if (newSet.has(colorHex)) {
-        newSet.delete(colorHex);
+      if (newSet.has(colorCode)) {
+        newSet.delete(colorCode);
       } else {
-        newSet.add(colorHex);
+        newSet.add(colorCode);
       }
       return newSet;
     });
@@ -175,40 +213,44 @@ export default function PatternDetailPage() {
                 const numB = parseInt(codeB) || 0;
                 return numA - numB;
               })
-              .map((color) => (
-              <div
-                key={color.hex}
-                className={`flex items-center gap-4 p-3 max-w-2xl rounded-lg hover:bg-primary-light transition-colors ${
-                  checkedColors.has(color.hex) ? 'bg-gray-300' : 'bg-background'
-                }`}
-              >
-                <div
-                  onClick={() => toggleColorCheck(color.hex)}
-                  className="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center cursor-pointer relative"
-                  style={{ backgroundColor: color.hex }}
-                >
-                  {checkedColors.has(color.hex) && (
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                    </svg>
-                  )}
-                </div>
-                <div className="grid grid-cols-[60px_2fr_200px_120px] gap-4 flex-1 items-center">
-                  <p className="text-gray-900 truncate">
-                    {color.code}
-                  </p>
-                  <p className="text-bold text-gray-900">
-                    {getBeadWeight(color.count)} gram
-                  </p>
-                  <p className="text-medium text-gray-500">
-                    {color.name}
-                  </p>
-                  <p className="text-medium text-gray-600">
-                    {color.count} perler
-                  </p>
-                </div>
-              </div>
-            ))}
+              .map((color) => {
+                const colorCode = color.code || '';
+                const colorHex = getColorHex(color);
+                return (
+                  <div
+                    key={colorCode}
+                    className={`flex items-center gap-4 p-3 max-w-2xl rounded-lg hover:bg-primary-light transition-colors ${
+                      checkedColors.has(colorCode) ? 'bg-gray-300' : 'bg-background'
+                    }`}
+                  >
+                    <div
+                      onClick={() => toggleColorCheck(colorCode)}
+                      className="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center cursor-pointer relative"
+                      style={{ backgroundColor: colorHex }}
+                    >
+                      {checkedColors.has(colorCode) && (
+                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-[60px_2fr_200px_120px] gap-4 flex-1 items-center">
+                      <p className="text-gray-900 truncate">
+                        {color.code}
+                      </p>
+                      <p className="text-bold text-gray-900">
+                        {getBeadWeight(color.count)} gram
+                      </p>
+                      <p className="text-medium text-gray-500">
+                        {color.name}
+                      </p>
+                      <p className="text-medium text-gray-600">
+                        {color.count} perler
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
           </div>
 
           <button
