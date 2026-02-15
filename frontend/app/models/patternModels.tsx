@@ -4,7 +4,7 @@ export interface Pattern {
   pattern_image_url: string;
   grid_size: number;
   colors_used: Array<{
-    hex: string;
+    hex?: string;  // Optional - can be looked up from code
     name: string;
     count: number;
     code?: string;
@@ -13,7 +13,10 @@ export interface Pattern {
   boards_width?: number;
   boards_height?: number;
   pattern_data?: {
-    grid: string[][];
+    grid: string[][];  // Color codes (v2) or hex codes (v1)
+    grid_hex?: string[][];  // Legacy hex grid (for transition)
+    storage_version?: number;  // 1 (hex) or 2 (codes)
+    custom_colors?: Record<string, string>;  // Fallback colors map
     width: number;
     height: number;
     boards_width?: number;
