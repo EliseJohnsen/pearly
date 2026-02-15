@@ -38,7 +38,7 @@ export interface PatternData {
     pattern_image_url: string;
     grid_size: number;
     colors_used: Array<{
-    hex: string;
+    hex?: string;  // Optional - can be looked up from code
     name: string;
     count: number;
     code?: string;
@@ -58,9 +58,10 @@ export interface PatternDisplayProps {
     pattern_image_url: string;
     grid_size: number;
     colors_used: Array<{
-      hex: string;
+      hex?: string;  // Optional - can be looked up from code
       name: string;
       count: number;
+      code?: string;
     }>;
     created_at: string;
     boards_width?: number;
@@ -75,9 +76,10 @@ export interface PatternPDFProps {
     boards_width?: number;
     boards_height?: number;
     colors_used?: Array<{
-      hex: string;
+      hex?: string;  // Optional - can be looked up from code
       name: string;
       count: number;
+      code?: string;
     }>;
   };
   customerEmail?: string;
