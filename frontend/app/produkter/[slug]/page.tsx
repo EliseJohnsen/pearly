@@ -64,6 +64,7 @@ interface Product {
   category?: Category;
   colors?: number;
   gridSize?: string;
+  totalBeads: number;
   tags?: string[];
   currency: string;
   vatRate: number;
@@ -94,13 +95,21 @@ export default function ProductDetailPage({
   const bytteOgReturText = useUIString("bytte_og_retur_tekst");
   const leveringHeader = useUIString("levering_header");
   const leveringText = useUIString("levering_tekst");
+  const innholdHeader = useUIString("innhold_header");
+  const innholdText = useUIStringWithVars("innhold_tekst", {
+    dimensjon: product?.gridSize || "",
+  });
+  const antallPerlerText = useUIStringWithVars("antall_perler", {
+    antall_perler: product?.totalBeads || "",
+  });
+  const antallFargerText = useUIStringWithVars("antall_farger", {
+    antall_farger: product?.colors || "",
+  });
 
   useEffect(() => {
     async function fetchProduct() {
       try {
         const data = await client.fetch(productQuery, { slug });
-        console.log("Fetched product data:", data);
-        console.log("Product images:", data?.images);
         setProduct(data);
       } catch (error) {
         console.error("Error fetching product:", error);
@@ -297,7 +306,7 @@ export default function ProductDetailPage({
               </div>
             )}
 
-            <CollapsableCard header="Innhold" defaultExpanded={false} className="border-t border-purple">
+            <CollapsableCard header={innholdHeader} defaultExpanded={false} className="border-t border-purple">
               {product.longDescription && (
                 <div className="pt-6">
                   <h2 className="text-lg font-semibold mb-4">Om produktet</h2>
@@ -306,6 +315,13 @@ export default function ProductDetailPage({
                   </div>
                 </div>
               )}
+              {innholdText}
+              <p className="py-1">
+                {antallPerlerText}
+              </p>
+              <p className="py-1">
+                {antallFargerText}
+              </p>
             </CollapsableCard>
             <CollapsableCard header={leveringHeader} defaultExpanded={false} className="border-y border-purple">
               {leveringText}

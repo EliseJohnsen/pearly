@@ -187,6 +187,26 @@ export default defineType({
       },
     }),
     defineField({
+      name: 'colors',
+      title: 'Antall farger',
+      type: 'number'
+    }),
+    defineField({
+      name: 'patternBeadWdth',
+      title: 'Antall perler i bredden',
+      type: 'number'
+    }),
+    defineField({
+      name: 'patternBeadHeight',
+      title: 'Antall perler i høyden',
+      type: 'number'
+    }),
+    defineField({
+      name: 'totalBeads',
+      title: 'Totalt antall perler',
+      type: 'number'
+    }),
+    defineField({
       name: 'seo',
       title: 'SEO',
       type: 'object',
