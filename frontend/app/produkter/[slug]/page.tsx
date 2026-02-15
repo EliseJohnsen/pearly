@@ -12,6 +12,7 @@ import { useCart } from "@/app/contexts/CartContext";
 import { CheckIcon } from "@heroicons/react/24/outline";
 import VippsCheckoutButton, { OrderLine } from "@/app/components/VippsCheckoutButton";
 import CollapsableCard from "@/app/components/CollapsableCard";
+import { useUIString, useUIStringWithVars } from "@/app/hooks/useSanityData";
 
 
 
@@ -63,6 +64,7 @@ interface Product {
   category?: Category;
   colors?: number;
   gridSize?: string;
+  totalBeads: number;
   tags?: string[];
   currency: string;
   vatRate: number;
@@ -89,13 +91,26 @@ export default function ProductDetailPage({
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [addedToCart, setAddedToCart] = useState(false);
   const { addItem } = useCart();
+  const bytteOgReturHeader = useUIString("bytte_og_retur_header");
+  const bytteOgReturText = useUIString("bytte_og_retur_tekst");
+  const leveringHeader = useUIString("levering_header");
+  const leveringText = useUIString("levering_tekst");
+  const innholdHeader = useUIString("innhold_header");
+  const innholdText = useUIString("innhold_tekst")
+  const dimensjonText = useUIStringWithVars("dimensjon_tekst", {
+    dimensjon: product?.gridSize || "",
+  });
+  const antallPerlerText = useUIStringWithVars("antall_perler", {
+    antall_perler: product?.totalBeads || "",
+  });
+  const antallFargerText = useUIStringWithVars("antall_farger", {
+    antall_farger: product?.colors || "",
+  });
 
   useEffect(() => {
     async function fetchProduct() {
       try {
         const data = await client.fetch(productQuery, { slug });
-        console.log("Fetched product data:", data);
-        console.log("Product images:", data?.images);
         setProduct(data);
       } catch (error) {
         console.error("Error fetching product:", error);
@@ -292,7 +307,7 @@ export default function ProductDetailPage({
               </div>
             )}
 
-            <CollapsableCard header="Innhold" defaultExpanded={false} className="border-t border-purple">
+            <CollapsableCard header={innholdHeader} defaultExpanded={false} className="border-t border-purple">
               {product.longDescription && (
                 <div className="pt-6">
                   <h2 className="text-lg font-semibold mb-4">Om produktet</h2>
@@ -301,12 +316,31 @@ export default function ProductDetailPage({
                   </div>
                 </div>
               )}
+              <p>
+                {innholdText}
+              </p>
+              {product.gridSize && (
+                <p className="pt-2">
+                  {dimensjonText}
+                </p>
+              )}
+              {product.totalBeads && (
+                <p className="pt-2">
+                  {antallPerlerText}
+                </p>
+              )}
+              {product.colors && (
+                <p className="pt-2">
+                  {antallFargerText}
+                </p>
+              )}
+
             </CollapsableCard>
-            <CollapsableCard header="Levering" defaultExpanded={false} className="border-y border-purple">
-              Tekst her
+            <CollapsableCard header={leveringHeader} defaultExpanded={false} className="border-y border-purple">
+              {leveringText}
             </CollapsableCard>
-            <CollapsableCard header="Bytte og retur" defaultExpanded={false} className="border-b border-purple">
-              Tekst her
+            <CollapsableCard header={bytteOgReturHeader} defaultExpanded={false} className="border-b border-purple">
+              {bytteOgReturText}
             </CollapsableCard>
           </div>
         </div>
