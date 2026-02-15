@@ -96,7 +96,8 @@ export default function ProductDetailPage({
   const leveringHeader = useUIString("levering_header");
   const leveringText = useUIString("levering_tekst");
   const innholdHeader = useUIString("innhold_header");
-  const innholdText = useUIStringWithVars("innhold_tekst", {
+  const innholdText = useUIString("innhold_tekst")
+  const dimensjonText = useUIStringWithVars("dimensjon_tekst", {
     dimensjon: product?.gridSize || "",
   });
   const antallPerlerText = useUIStringWithVars("antall_perler", {
@@ -315,7 +316,14 @@ export default function ProductDetailPage({
                   </div>
                 </div>
               )}
-              {innholdText}
+              <p>
+                {innholdText}
+              </p>
+              {product.gridSize && (
+                <p className="pt-2">
+                  {dimensjonText}
+                </p>
+              )}
               {product.totalBeads && (
                 <p className="pt-2">
                   {antallPerlerText}
