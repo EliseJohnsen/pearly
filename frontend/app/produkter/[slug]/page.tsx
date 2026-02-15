@@ -12,6 +12,7 @@ import { useCart } from "@/app/contexts/CartContext";
 import { CheckIcon } from "@heroicons/react/24/outline";
 import VippsCheckoutButton, { OrderLine } from "@/app/components/VippsCheckoutButton";
 import CollapsableCard from "@/app/components/CollapsableCard";
+import { useUIString, useUIStringWithVars } from "@/app/hooks/useSanityData";
 
 
 
@@ -89,6 +90,10 @@ export default function ProductDetailPage({
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [addedToCart, setAddedToCart] = useState(false);
   const { addItem } = useCart();
+  const bytteOgReturHeader = useUIString("bytte_og_retur_header");
+  const bytteOgReturText = useUIString("bytte_og_retur_tekst");
+  const leveringHeader = useUIString("levering_header");
+  const leveringText = useUIString("levering_tekst");
 
   useEffect(() => {
     async function fetchProduct() {
@@ -302,11 +307,11 @@ export default function ProductDetailPage({
                 </div>
               )}
             </CollapsableCard>
-            <CollapsableCard header="Levering" defaultExpanded={false} className="border-y border-purple">
-              Tekst her
+            <CollapsableCard header={leveringHeader} defaultExpanded={false} className="border-y border-purple">
+              {leveringText}
             </CollapsableCard>
-            <CollapsableCard header="Bytte og retur" defaultExpanded={false} className="border-b border-purple">
-              Tekst her
+            <CollapsableCard header={bytteOgReturHeader} defaultExpanded={false} className="border-b border-purple">
+              {bytteOgReturText}
             </CollapsableCard>
           </div>
         </div>
