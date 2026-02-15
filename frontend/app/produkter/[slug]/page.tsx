@@ -316,12 +316,17 @@ export default function ProductDetailPage({
                 </div>
               )}
               {innholdText}
-              <p className="py-1">
-                {antallPerlerText}
-              </p>
-              <p className="py-1">
-                {antallFargerText}
-              </p>
+              {product.totalBeads && (
+                <p className="pt-2">
+                  {antallPerlerText}
+                </p>
+              )}
+              {product.colors && (
+                <p className="pt-2">
+                  {antallFargerText}
+                </p>
+              )}
+
             </CollapsableCard>
             <CollapsableCard header={leveringHeader} defaultExpanded={false} className="border-y border-purple">
               {leveringText}
