@@ -15,6 +15,7 @@ interface OrderStatus {
   status: string;
   payment_status: string;
   total_amount: number | null;
+  shipping_amount: number | null;
   currency: string | null;
   customer_email: string | null;
 }
@@ -67,6 +68,13 @@ function PaymentSuccessContent() {
       style: "currency",
       currency: currency || "NOK",
     }).format(amountInKroner);
+  };
+
+  const formatTotal = (amount: number | null, currency: string | null) => {
+    if (amount === null) return "—";
+    const shipping = orderStatus?.shipping_amount ? orderStatus?.shipping_amount : 0;
+    const total = amount + shipping;
+    return formatPrice(total, currency)
   };
 
   return (
@@ -132,7 +140,7 @@ function PaymentSuccessContent() {
                   <div className="flex justify-between">
                     <span>Totalt:</span>
                     <span className="font-bold">
-                      {formatPrice(orderStatus.total_amount, orderStatus.currency)}
+                      {formatTotal(orderStatus.total_amount, orderStatus.currency)}
                     </span>
                   </div>
                 </div>
@@ -140,7 +148,7 @@ function PaymentSuccessContent() {
             )}
 
             <p className="mb-6">
-              Du vil motta en bekreftelse på e-post 
+              Du vil motta en bekreftelse på e-post
             </p>
 
             <Link

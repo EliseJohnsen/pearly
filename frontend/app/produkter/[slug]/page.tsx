@@ -180,7 +180,7 @@ export default function ProductDetailPage({
           <div className="space-y-4">
             {/* Main Image */}
             {selectedImage && (
-              <div className="relative aspect-square overflow-hidden bg-gray-100">
+              <div className="min-h-100 md:min-h-150 lg:min-h-175 px-6 py-10 bg-primary-light-pink content-center relative overflow-hidden bg-gray-100">
                 <img
                   src={selectedImage.asset.url}
                   alt={selectedImage.alt || product.title}
@@ -214,40 +214,11 @@ export default function ProductDetailPage({
 
           <div className="space-y-6">
             <div>
-              <h1 className="text-4xl text-dark-purple font-bold mb-2">{product.title}</h1>
-              {product.category && (
-                <p className="text-sm text-gray-500 uppercase tracking-wide">
-                  {product.category.name}
-                </p>
-              )}
+              <h1 className="text-5xl text-dark-purple font-bold mb-2">{product.title}</h1>
             </div>
 
             {product.description && (
               <p className="text-gray-700 text-lg">{product.description}</p>
-            )}
-
-            {/* Difficulty and Details */}
-            {(product.difficulty || product.colors || product.gridSize) && (
-              <div className="flex flex-wrap gap-4 py-4 border-y border-purple content-between">
-                {product.difficulty && (
-                  <div>
-                    <span className="text-sm text-gray-500">Vanskelighetsgrad:</span>
-                    <p className="font-medium capitalize">{product.difficulty}</p>
-                  </div>
-                )}
-                {product.colors && (
-                  <div>
-                    <span className="text-sm text-gray-500">Antall farger:</span>
-                    <p className="font-medium">{product.colors}</p>
-                  </div>
-                )}
-                {product.gridSize && (
-                  <div>
-                    <span className="text-sm text-gray-500">Størrelse:</span>
-                    <p className="font-medium">{product.gridSize}</p>
-                  </div>
-                )}
-              </div>
             )}
 
             {product.status === "coming_soon" && (
@@ -287,25 +258,6 @@ export default function ProductDetailPage({
               orderLines={orderLines} 
               currency={product.currency} 
             />
-
-            {product.status === "coming_soon" && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <p className="text-yellow-800 font-medium">Kommer snart!</p>
-              </div>
-            )}
-
-            {product.tags && product.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 pt-4">
-                {product.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="px-3 py-1 bg-purple text-white text-sm rounded-full"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            )}
 
             <CollapsableCard header={innholdHeader} defaultExpanded={false} className="border-t border-purple">
               {product.longDescription && (

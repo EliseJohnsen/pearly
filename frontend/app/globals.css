@@ -8,8 +8,8 @@
 
 :root {
   /* Bakgrunnsfarger */
-  --background: #FFF8F0;
-  --background-secondary: #f9fafb;
+  --background: #FDFBF9;
+  --background-secondary: #FDFBF9;
   --foreground: #111827;
 
   /* Primærfarger */
@@ -19,6 +19,7 @@
   --primary-dark: #1e3a8a;
   --primary-pink: #FBE7F5;
   --primary-dark-pink: #F5B0DF;
+  --primary-light-pink: #FbF2F8;
   --primary-red: #AC0D2E;
   --primary-neon-green: #DEF46B;
   
@@ -77,6 +78,7 @@
   --color-primary-light: var(--primary-light);
   --color-primary-pink: var(--primary-pink);
   --color-primary-dark-pink: var(--primary-dark-pink);
+  --color-primary-light-pink: var(--primary-light-pink);
   --color-primary-red: var(--primary-red);
 
   --color-purple: var(--purple);
