@@ -78,8 +78,9 @@
   --color-primary-pink: var(--primary-pink);
   --color-primary-dark-pink: var(--primary-dark-pink);
   --color-primary-red: var(--primary-red);
-  
+
   --color-purple: var(--purple);
+  --color-dark-purple: var(--dark-purple);
 
   /* Sekundærfarger - bruk som bg-success, hover:bg-success-hover */
   --color-success: var(--success);

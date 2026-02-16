@@ -13,8 +13,8 @@ interface CollapsableCardProps {
 export default function CollapsableCard({
   header,
   children,
-  defaultExpanded = true,
-  className = "",
+  defaultExpanded = false,
+  className = "border-t border-purple",
 }: CollapsableCardProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
@@ -22,21 +22,21 @@ export default function CollapsableCard({
     <div className={`overflow-hidden m-0 ${className}`}>
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-4 cursor-pointer transition-colors"
+        className="w-full flex items-center justify-between p-4 cursor-pointer transition-colors hover:bg-gray-50"
       >
         {typeof header === "string" ? (
-          <h3 className="text-2xl text-gray-900">{header}</h3>
+          <h3 className="text-xl font-medium">{header}</h3>
         ) : (
           header
         )}
         {isExpanded ? (
-          <ChevronUpIcon className="w-5 h-5 text-gray-600" />
+          <ChevronUpIcon className="w-5 h-5 text-dark-purple flex-shrink-0" />
         ) : (
-          <ChevronDownIcon className="w-5 h-5 text-gray-600" />
+          <ChevronDownIcon className="w-5 h-5 text-dark-purple flex-shrink-0" />
         )}
       </button>
 
-      {isExpanded && <div className="px-6 pb-6">{children}</div>}
+      {isExpanded && <div className="px-4 pb-6 text-black">{children}</div>}
     </div>
   );
 }
