@@ -43,13 +43,17 @@ def calculate_dimensions_maintaining_aspect_ratio(
     return new_width, new_height
 
 
-def suggest_board_dimensions(image: Image.Image) -> Dict:
+def suggest_board_dimensions(image: Image.Image, min_boards_per_side: int = 2) -> Dict:
     """
     Analyzes image and suggests three size options: small, medium, and large.
     Small: max 58x58 beads (2x2 boards)
     Medium: max 116x116 beads (4x4 boards)
     Large: max 174x174 beads (6x6 boards)
     Each size maintains the aspect ratio of the original image.
+
+    Args:
+        image: PIL Image to analyze
+        min_boards_per_side: Minimum number of boards for the shortest side (default: 2)
     """
     aspect_ratio = image.width / image.height
 
@@ -65,10 +69,10 @@ def suggest_board_dimensions(image: Image.Image) -> Dict:
 
         if image.width >= image.height:
             boards_width = max_boards
-            boards_height = max(1, round(max_boards / aspect_ratio))
+            boards_height = max(min_boards_per_side, round(max_boards / aspect_ratio))
         else:
             boards_height = max_boards
-            boards_width = max(1, round(max_boards * aspect_ratio))
+            boards_width = max(min_boards_per_side, round(max_boards * aspect_ratio))
 
         actual_beads_width = boards_width * BOARD_SIZE
         actual_beads_height = boards_height * BOARD_SIZE
@@ -99,10 +103,14 @@ def suggest_board_dimensions(image: Image.Image) -> Dict:
     }
 
 
-def suggest_board_dimensions_from_file(image_path: str) -> Dict:
+def suggest_board_dimensions_from_file(image_path: str, min_boards_per_side: int = 2) -> Dict:
     """
     Wrapper function that accepts a file path instead of an Image object.
     For compatibility with patterns.py API.
+
+    Args:
+        image_path: Path to the image file
+        min_boards_per_side: Minimum number of boards for the shortest side (default: 2)
     """
     img = Image.open(image_path)
-    return suggest_board_dimensions(img)
+    return suggest_board_dimensions(img, min_boards_per_side=min_boards_per_side)

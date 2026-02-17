@@ -2,7 +2,7 @@ from fastapi import APIRouter, UploadFile, File, Depends, HTTPException
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from app.core.database import get_db
 from app.core.dependencies import get_current_admin
 from app.models.admin_user import AdminUser
@@ -17,6 +17,8 @@ from app.services.ai_generation import AIGenerationService
 from app.services.pdf_generator import generate_pattern_pdf
 from app.services.pattern_generator import render_grid_to_base64, render_grid_to_image
 from app.services.color_service import clear_color_cache
+from app.services.room_template_service import RoomTemplateService
+from app.services.mockup_generator import MockupGenerator
 from app.core.config import settings
 from pathlib import Path
 from PIL import Image
@@ -24,10 +26,234 @@ import uuid
 import io
 import json
 import tempfile
+import asyncio
+import base64
+import logging
 from datetime import datetime
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+
+class GenerateThreeSizesRequest(BaseModel):
+    image: str  # base64 encoded image
+    style: str  # "realistic" or "ai-style"
+
+class PatternSizeResult(BaseModel):
+    size: str
+    boardsWidth: int
+    boardsHeight: int
+    patternBase64: str
+    mockupBase64: Optional[str] = None
+    colorsUsed: List[Dict[str, Any]]
+    patternData: Dict[str, Any]
+
+class GenerateThreeSizesResponse(BaseModel):
+    patterns: List[PatternSizeResult]
+
+class GenerateMockupRequest(BaseModel):
+    patternBase64: str  # base64 encoded pattern image
+    boardsWidth: int
+    boardsHeight: int
+
+class GenerateMockupResponse(BaseModel):
+    mockupBase64: str
+
+@router.post("/patterns/generate-three-sizes", response_model=GenerateThreeSizesResponse)
+async def generate_three_sizes(request: GenerateThreeSizesRequest):
+    """
+    Generate patterns in three sizes (small, medium, large).
+    Runs generation in parallel for faster response.
+    Mockups can be generated separately using /patterns/generate-mockup endpoint.
+
+    Args:
+        request: Contains base64 image and style ("realistic" or "ai-style")
+
+    Returns:
+        Three patterns in different sizes (without mockups for faster response)
+    """
+    try:
+        # Decode base64 image
+        image_data = base64.b64decode(request.image.split(',')[1] if ',' in request.image else request.image)
+        image = Image.open(io.BytesIO(image_data))
+
+        if image.mode != 'RGB':
+            image = image.convert('RGB')
+
+        # Define max boards per side - pattern generator will maintain aspect ratio
+        # So a 2x2 board area (58x58 beads max) will scale down to match image aspect ratio
+        # e.g. landscape image might become 58x33 beads, portrait might become 33x58 beads
+        aspect_ratio = image.width / image.height
+        logger.info(f"Image aspect ratio: {aspect_ratio:.2f} ({image.width}x{image.height})")
+
+        sizes = [
+            {"name": "small", "boards": 2},   # Max 58x58 beads area
+            {"name": "medium", "boards": 4},  # Max 116x116 beads area
+            {"name": "large", "boards": 6},   # Max 174x174 beads area
+        ]
+
+        # Use same boards for both dimensions - pattern generator maintains aspect ratio internally
+        sizes = [
+            {
+                "name": size["name"],
+                "boards_w": size["boards"],
+                "boards_h": size["boards"]
+            }
+            for size in sizes
+        ]
+
+        # AI transformation once for all sizes (if ai-style selected)
+        base_image = image
+        if request.style == "ai-style":
+            temp_original = None
+            temp_styled = None
+            try:
+                # Save original image to temp file
+                temp_original = tempfile.NamedTemporaryFile(suffix='.png', delete=False)
+                image.save(temp_original.name, format='PNG')
+                temp_original.close()
+
+                # Create temp file for styled output
+                temp_styled = tempfile.NamedTemporaryFile(suffix='.png', delete=False)
+                temp_styled.close()
+
+                # Transform image with AI ONCE for all sizes
+                replicate_token = settings.REPLICATE_API_TOKEN
+                if not replicate_token:
+                    logger.warning("REPLICATE_API_TOKEN not set, skipping AI transformation")
+                else:
+                    ai_service = AIGenerationService(api_token=replicate_token)
+                    logger.info(f"Transforming image with AI (once for all sizes)...")
+
+                    await ai_service.transform_and_download(
+                        image_path=temp_original.name,
+                        save_path=temp_styled.name,
+                        style="wpap",  # Use WPAP style for bead patterns
+                        model="google/nano-banana",
+                        optimize_for_beads=True
+                    )
+
+                    # Load transformed image (load into memory to release file lock on Windows)
+                    with Image.open(temp_styled.name) as img:
+                        base_image = img.convert('RGB').copy()  # Load into memory and close file
+                    logger.info(f"AI transformation complete, using for all sizes")
+
+            except Exception as e:
+                logger.error(f"AI transformation failed: {str(e)}, using original image")
+                # Fall back to original image
+                base_image = image
+            finally:
+                # Clean up temp files
+                if temp_original and Path(temp_original.name).exists():
+                    Path(temp_original.name).unlink()
+                if temp_styled and Path(temp_styled.name).exists():
+                    Path(temp_styled.name).unlink()
+
+        # Generate all patterns in parallel (using base_image which is either original or AI-transformed)
+        async def generate_single_size(size_config: Dict) -> PatternSizeResult:
+            boards_w = size_config["boards_w"]
+            boards_h = size_config["boards_h"]
+
+            logger.info(f"Generating {size_config['name']} pattern ({boards_w}x{boards_h})...")
+
+            # Generate pattern from image (original or AI-transformed)
+            pattern_base64, colors_used, pattern_data = convert_image_to_pattern_in_memory(
+                base_image,
+                boards_width=boards_w,
+                boards_height=boards_h,
+                use_perle_colors=True,
+                use_dithering=False,
+                use_advanced_preprocessing=False,  # Don't double-process if already AI-transformed
+                remove_bg=False,
+                enhance_colors=False,
+                color_boost=1.0,
+                contrast_boost=1.0,
+                brightness_boost=1.0,
+                simplify_details=False,
+                simplification_method="none",
+                simplification_strength="none",
+                use_nearest_neighbor=True
+            )
+
+            # Mockup generation moved to separate endpoint for better UX
+            # Frontend can load mockups progressively via /patterns/generate-mockup
+
+            return PatternSizeResult(
+                size=size_config["name"],
+                boardsWidth=boards_w,
+                boardsHeight=boards_h,
+                patternBase64=pattern_base64,
+                mockupBase64=None,  # Load separately via /patterns/generate-mockup
+                colorsUsed=colors_used,
+                patternData=pattern_data
+            )
+
+        # Run all generations in parallel
+        results = await asyncio.gather(*[generate_single_size(size) for size in sizes])
+
+        return GenerateThreeSizesResponse(patterns=results)
+
+    except Exception as e:
+        logger.error(f"Error in generate_three_sizes: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Error generating patterns: {str(e)}")
+
+@router.post("/patterns/generate-mockup", response_model=GenerateMockupResponse)
+async def generate_mockup(request: GenerateMockupRequest):
+    """
+    Generate a room mockup for a given pattern.
+    This endpoint allows frontend to load mockups progressively after initial pattern generation.
+
+    Args:
+        request: Contains pattern base64 image, board width, and board height
+
+    Returns:
+        Room mockup with pattern placed in interior setting
+    """
+    try:
+        # Get room template for dimensions
+        room_template_service = RoomTemplateService()
+        room_template = await room_template_service.get_room_template_for_dimensions(
+            request.boardsWidth, request.boardsHeight
+        )
+
+        if not room_template:
+            raise HTTPException(
+                status_code=404,
+                detail=f"No room template found for {request.boardsWidth}x{request.boardsHeight} boards"
+            )
+
+        logger.info(f"Generating mockup for {request.boardsWidth}x{request.boardsHeight}...")
+
+        # Download room image
+        room_image_bytes = await room_template_service.download_room_image(
+            room_template["imageUrl"]
+        )
+
+        # Decode pattern base64 to bytes
+        pattern_bytes = base64.b64decode(
+            request.patternBase64.split(',')[1] if ',' in request.patternBase64 else request.patternBase64
+        )
+
+        # Generate mockup
+        mockup_bytes = await MockupGenerator.generate_mockup(
+            pattern_image_bytes=pattern_bytes,
+            room_image_bytes=room_image_bytes,
+            frame_zone=room_template.get("frameZone"),
+            frame_settings=room_template.get("frameSettings")
+        )
+
+        # Convert mockup to base64
+        mockup_base64 = f"data:image/png;base64,{base64.b64encode(mockup_bytes).decode()}"
+        logger.info(f"Mockup generated successfully")
+
+        return GenerateMockupResponse(mockupBase64=mockup_base64)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating mockup: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Error generating mockup: {str(e)}")
 
 @router.post("/patterns/suggest-boards")
 async def suggest_boards(file: UploadFile = File(...)):

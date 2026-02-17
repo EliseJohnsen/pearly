@@ -548,11 +548,11 @@ def convert_image_to_pattern_in_memory(
     # Create pattern image using hex grid for rendering
     pattern_img = create_pattern_image(pattern_data_hex, scale=20)
 
-    # Convert to base64
+    # Convert to base64 with data URI prefix for consistency
     buffer = io.BytesIO()
     pattern_img.save(buffer, format='PNG')
     buffer.seek(0)
-    pattern_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+    pattern_base64 = f"data:image/png;base64,{base64.b64encode(buffer.getvalue()).decode('utf-8')}"
 
     # Build colors_used list (without hex - can be looked up from code)
     colors_used = []
@@ -675,9 +675,9 @@ def render_grid_to_base64(grid: List[List[str]], bead_size: int = 10, storage_ve
     """
     image = render_grid_to_image(grid, bead_size, storage_version)
 
-    # Convert to base64
+    # Convert to base64 with data URI prefix for consistency
     buffer = io.BytesIO()
     image.save(buffer, format='PNG')
     buffer.seek(0)
 
-    return base64.b64encode(buffer.getvalue()).decode('utf-8')
+    return f"data:image/png;base64,{base64.b64encode(buffer.getvalue()).decode('utf-8')}"

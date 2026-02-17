@@ -41,7 +41,7 @@ export default function CollapsableCardsSection({
   const sortedCards = [...data.cards].sort((a, b) => a.order - b.order);
 
   return (
-    <section className="container mx-auto px-4 py-10 md:py-16">
+    <section className="container max-w-3xl mx-auto px-4 py-10 md:py-16">
       {/* Section Title */}
       <div className="mb-8">
         <h2 className="text-3xl md:text-4xl font-bold text-dark-purple">
@@ -50,7 +50,7 @@ export default function CollapsableCardsSection({
       </div>
 
       {/* Collapsable Cards */}
-      <div className="max-w-3xl mx-auto">
+      <div className="mx-auto">
         {sortedCards.map((card, index) => {
           const IconComponent = getIconComponent(card.icon);
           const isLast = index === sortedCards.length - 1;
