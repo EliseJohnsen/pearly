@@ -182,8 +182,8 @@ export function PatternPDF({ patternImageUrl, patternData, customerEmail }: Patt
             <View style={styles.colorTable}>
               {patternData.colors_used.map((color, index) => (
                 <View key={index} style={styles.colorRow}>
-                  <View style={{ ...styles.colorSwatch, backgroundColor: color.hex }} />
-                  <Text style={styles.colorName}>{color.name}</Text>
+                  <View style={{ ...styles.colorSwatch, backgroundColor: color.hex || '#CCCCCC' }} />
+                  <Text style={styles.colorName}>{color.name}{color.code ? ` (${color.code})` : ''}</Text>
                   <Text style={styles.colorCount}>{color.count} perler</Text>
                 </View>
               ))}

@@ -8,6 +8,8 @@ from typing import List, Dict, Tuple
 import io
 import os
 
+from .color_service import code_to_hex
+
 
 # Register custom fonts
 def _register_fonts():
@@ -163,6 +165,7 @@ def generate_pattern_pdf(
     boards_width = pattern_data.get('boards_width', 1)
     boards_height = pattern_data.get('boards_height', 1)
     board_size = pattern_data.get('board_size', 29)
+    storage_version = pattern_data.get('storage_version', 1)  # Default to v1 for legacy patterns
 
     color_info = {c['hex']: c for c in colors_used}
 
@@ -211,9 +214,19 @@ def generate_pattern_pdf(
             for row_idx in range(start_y, end_y):
                 for col_idx in range(start_x, end_x):
                     if row_idx < len(grid) and col_idx < len(grid[row_idx]):
-                        hex_color = grid[row_idx][col_idx]
+                        color_value = grid[row_idx][col_idx]
 
-                        color_code = color_info.get(hex_color, {}).get('code', '?')
+                        # Convert to hex and code based on storage version
+                        if storage_version == 2:
+                            # Grid contains codes, convert to hex for rendering
+                            color_code = color_value
+                            hex_color = code_to_hex(color_value)
+                            if not hex_color:
+                                hex_color = "#FFFFFF"  # Fallback to white for unknown codes
+                        else:
+                            # Grid contains hex, extract code from color_info
+                            hex_color = color_value
+                            color_code = color_info.get(hex_color, {}).get('code', '?')
 
                         # Note: PDF coordinates start from bottom-left
                         # We need to flip the y-coordinate

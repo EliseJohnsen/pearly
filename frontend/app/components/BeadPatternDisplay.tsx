@@ -24,6 +24,7 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
 }) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
   const imageUrl = `${apiUrl}${pattern.pattern_image_url}`;
+  const storageVersion = pattern.pattern_data?.storage_version || 1;
   const [patternGrid, setPatternGrid] = useState<string[][] | null>(
     pattern.pattern_data?.grid || null
   );
@@ -172,10 +173,10 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
     return Array.from(colorCounts.entries()).map(([colorCode, count]) => {
       const colorInfo = colorInfoMap[colorCode];
       return {
-        hex: colorInfo?.hex || colorCode,
+        // Don't include hex - it can be looked up from code
         name: colorInfo?.name || "Unknown",
         count,
-        code: colorInfo?.code
+        code: colorInfo?.code || colorCode
       };
     });
   };
@@ -183,10 +184,15 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
   const handleColorSelect = (newHex: string) => {
     if (!selectedBead || !patternGrid) return;
 
+    // Convert hex to code if storage version is 2
+    const newValue = storageVersion === 2
+      ? (perleColors.find(c => c.hex === newHex)?.code || "99")
+      : newHex;
+
     const newGrid = patternGrid.map((row, rowIndex) =>
       row.map((color, colIndex) => {
         if (rowIndex === selectedBead.row && colIndex === selectedBead.col) {
-          return newHex;
+          return newValue;
         }
         return color;
       })
@@ -347,21 +353,6 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
       )}
 
         <div className="grid grid-cols-1 gap-6 mb-6">
-          {pattern.pattern_data?.styled && (
-            <div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">
-                Stilisert bilde ({pattern.pattern_data.style})
-              </h3>
-              <div className="overflow-auto">
-                <img
-                  src={`${apiUrl}/api/patterns/${pattern.uuid}/styled-image`}
-                  alt="Stilisert versjon"
-                  className="w-full h-auto rounded-lg border-2 border-gray-300 shadow-md"
-                />
-              </div>
-            </div>
-          )}
-
           {pop_art_url && (
             <div>
               <h3 className="text-lg font-semibold text-gray-800 mb-3">

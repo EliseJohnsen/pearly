@@ -9,23 +9,25 @@ from app.models.admin_user import AdminUser
 from app.models.pattern import Pattern
 from app.schemas.pattern import PatternResponse
 from app.services.image_processing import (
-    convert_image_to_pattern_from_file,
+    convert_image_to_pattern_in_memory,
+    image_to_base64,
     suggest_board_dimensions_from_file,
 )
 from app.services.ai_generation import AIGenerationService
 from app.services.pdf_generator import generate_pattern_pdf
-from app.services.pattern_generator import render_grid_to_base64
+from app.services.pattern_generator import render_grid_to_base64, render_grid_to_image
+from app.services.color_service import clear_color_cache
 from app.core.config import settings
 from pathlib import Path
+from PIL import Image
 import uuid
-import base64
+import io
 import json
-from datetime import datetime, timedelta
+import tempfile
+from datetime import datetime
 
 router = APIRouter()
 
-UPLOAD_DIR = Path("./uploads")
-UPLOAD_DIR.mkdir(exist_ok=True)
 
 @router.post("/patterns/suggest-boards")
 async def suggest_boards(file: UploadFile = File(...)):
@@ -36,24 +38,24 @@ async def suggest_boards(file: UploadFile = File(...)):
     if not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="File must be an image")
 
-    # Save temporary file
-    temp_uuid = str(uuid.uuid4())
-    temp_path = UPLOAD_DIR / f"{temp_uuid}_temp{Path(file.filename).suffix}"
-
+    temp_file = None
     try:
-        with open(temp_path, "wb") as buffer:
-            content = await file.read()
-            buffer.write(content)
+        # Create temporary file for analysis
+        suffix = Path(file.filename).suffix if file.filename else '.png'
+        temp_file = tempfile.NamedTemporaryFile(suffix=suffix, delete=False)
+        content = await file.read()
+        temp_file.write(content)
+        temp_file.close()
 
-        suggestion = suggest_board_dimensions_from_file(str(temp_path))
+        suggestion = suggest_board_dimensions_from_file(temp_file.name)
 
         return suggestion
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error analyzing image: {str(e)}")
     finally:
         # Clean up temp file
-        if temp_path.exists():
-            temp_path.unlink()
+        if temp_file and Path(temp_file.name).exists():
+            Path(temp_file.name).unlink()
 
 @router.post("/patterns/upload", response_model=PatternResponse)
 async def upload_image(
@@ -75,17 +77,18 @@ async def upload_image(
         raise HTTPException(status_code=400, detail="File must be an image")
 
     file_uuid = str(uuid.uuid4())
-    original_path = UPLOAD_DIR / f"{file_uuid}_original{Path(file.filename).suffix}"
-    pattern_path = UPLOAD_DIR / f"{file_uuid}_pattern.png"
 
-    with open(original_path, "wb") as buffer:
-        content = await file.read()
-        buffer.write(content)
+    # Read file content and process in memory
+    content = await file.read()
+    image = Image.open(io.BytesIO(content))
+
+    # Ensure RGB mode
+    if image.mode != 'RGB':
+        image = image.convert('RGB')
 
     try:
-        output_path, colors_used, pattern_data = convert_image_to_pattern_from_file(
-            str(original_path),
-            str(pattern_path),
+        pattern_image_base64, colors_used, pattern_data = convert_image_to_pattern_in_memory(
+            image,
             boards_width=boards_width,
             boards_height=boards_height,
             use_perle_colors=True,
@@ -110,21 +113,9 @@ async def upload_image(
     # Create timestamp since we're not saving to DB yet
     created_at = datetime.utcnow()
 
-    # Read pattern image and encode as base64
-    with open(pattern_path, "rb") as f:
-        pattern_image_base64 = base64.b64encode(f.read()).decode('utf-8')
-
-    # Read styled image if it exists
-    styled_image_base64 = None
-    if pattern_data.get("styled") and "styled_image_path" in pattern_data:
-        styled_path = Path(pattern_data["styled_image_path"])
-        if styled_path.exists():
-            with open(styled_path, "rb") as f:
-                styled_image_base64 = base64.b64encode(f.read()).decode('utf-8')
-
     return PatternResponse(
         uuid=file_uuid,
-        pattern_image_url=f"/api/patterns/{file_uuid}/image",
+        pattern_image_url="",  # No file-based URL anymore
         grid_size=grid_size,
         colors_used=colors_used,
         created_at=created_at,
@@ -132,7 +123,7 @@ async def upload_image(
         boards_height=boards_height,
         pattern_data=pattern_data,
         pattern_image_base64=pattern_image_base64,
-        styled_image_base64=styled_image_base64
+        styled_image_base64=None
     )
 
 @router.get("/patterns")
@@ -227,29 +218,45 @@ async def upload_image_with_style(
         raise HTTPException(status_code=400, detail="File must be an image")
 
     file_uuid = str(uuid.uuid4())
-    original_path = UPLOAD_DIR / f"{file_uuid}_original{Path(file.filename).suffix}"
-    styled_path = UPLOAD_DIR / f"{file_uuid}_styled.png"
-    pattern_path = UPLOAD_DIR / f"{file_uuid}_pattern.png"
+    content = await file.read()
 
-    with open(original_path, "wb") as buffer:
-        content = await file.read()
-        buffer.write(content)
+    # Use temporary files for AI processing (required by Replicate API)
+    temp_original = None
+    temp_styled = None
 
     try:
+        # Create temp file for original image
+        suffix = Path(file.filename).suffix if file.filename else '.png'
+        temp_original = tempfile.NamedTemporaryFile(suffix=suffix, delete=False)
+        temp_original.write(content)
+        temp_original.close()
+
+        # Create temp file path for styled output
+        temp_styled = tempfile.NamedTemporaryFile(suffix='.png', delete=False)
+        temp_styled.close()
+
         ai_service = AIGenerationService(api_token=replicate_token)
 
         _, transformation_metadata = await ai_service.transform_and_download(
-            image_path=str(original_path),
-            save_path=str(styled_path),
+            image_path=temp_original.name,
+            save_path=temp_styled.name,
             style=style,
             model=model,
             prompt_strength=prompt_strength,
             optimize_for_beads=True
         )
 
-        output_path, colors_used, pattern_data = convert_image_to_pattern_from_file(
-            str(styled_path),
-            str(pattern_path),
+        # Load styled image and process in memory
+        styled_image = Image.open(temp_styled.name)
+        if styled_image.mode != 'RGB':
+            styled_image = styled_image.convert('RGB')
+
+        # Convert styled image to base64 before processing
+        styled_image_base64 = image_to_base64(styled_image)
+
+        # Convert to pattern in memory
+        pattern_image_base64, colors_used, pattern_data = convert_image_to_pattern_in_memory(
+            styled_image,
             boards_width=boards_width,
             boards_height=boards_height,
             use_perle_colors=True,
@@ -261,16 +268,13 @@ async def upload_image_with_style(
         )
 
         grid_size = pattern_data["width"]
-
-        # Create timestamp since we're not saving to DB yet
         created_at = datetime.utcnow()
 
-        # Prepare pattern data with styling info
+        # Prepare pattern data with styling info (no file paths stored)
         full_pattern_data = {
             **pattern_data,
             "styled": True,
             "style": style,
-            "styled_image_path": str(styled_path),
             "ai_transformation": {
                 "model": transformation_metadata["model"],
                 "prompt": transformation_metadata["prompt"],
@@ -278,19 +282,9 @@ async def upload_image_with_style(
             }
         }
 
-        # Read pattern image and encode as base64
-        with open(pattern_path, "rb") as f:
-            pattern_image_base64 = base64.b64encode(f.read()).decode('utf-8')
-
-        # Read styled image and encode as base64
-        styled_image_base64 = None
-        if styled_path.exists():
-            with open(styled_path, "rb") as f:
-                styled_image_base64 = base64.b64encode(f.read()).decode('utf-8')
-
         return PatternResponse(
             uuid=file_uuid,
-            pattern_image_url=f"/api/patterns/{file_uuid}/image",
+            pattern_image_url="",  # No file-based URL anymore
             grid_size=grid_size,
             colors_used=colors_used,
             created_at=created_at,
@@ -303,6 +297,13 @@ async def upload_image_with_style(
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing image with style: {str(e)}")
+
+    finally:
+        # Clean up temporary files
+        if temp_original and Path(temp_original.name).exists():
+            Path(temp_original.name).unlink()
+        if temp_styled and Path(temp_styled.name).exists():
+            Path(temp_styled.name).unlink()
 
 @router.get("/patterns/{pattern_id}/pdf")
 def download_pattern_pdf(pattern_id: str, db: Session = Depends(get_db)):
@@ -339,32 +340,32 @@ def download_pattern_pdf(pattern_id: str, db: Session = Depends(get_db)):
 @router.get("/patterns/{pattern_id}/image")
 def get_pattern_image(pattern_id: str, db: Session = Depends(get_db)):
     """
-    Serve the pattern image file from the uploads directory.
+    Serve the pattern image rendered from grid data.
+    For database patterns, renders the image on-demand from the stored grid.
     """
-    pattern_path = UPLOAD_DIR / f"{pattern_id}_pattern.png"
+    # Try to get pattern from database
+    pattern = db.query(Pattern).filter(Pattern.id == pattern_id).first()
 
-    if not pattern_path.exists():
-        raise HTTPException(status_code=404, detail="Pattern image file not found")
+    if pattern and pattern.pattern_data and "grid" in pattern.pattern_data:
+        # Render from grid data
+        image = render_grid_to_image(pattern.pattern_data["grid"], bead_size=20)
+        buffer = io.BytesIO()
+        image.save(buffer, format='PNG')
+        buffer.seek(0)
+        return Response(content=buffer.getvalue(), media_type="image/png")
 
-    with open(pattern_path, "rb") as f:
-        image_data = f.read()
-
-    return Response(content=image_data, media_type="image/png")
+    raise HTTPException(status_code=404, detail="Pattern image not found")
 
 @router.get("/patterns/{pattern_id}/styled-image")
-def get_styled_image(pattern_uuid: str, db: Session = Depends(get_db)):
+def get_styled_image(pattern_id: str, db: Session = Depends(get_db)):
     """
-    Serve the styled image file from the uploads directory.
+    Styled images are no longer stored on disk.
+    Use the styled_image_base64 from the pattern response instead.
     """
-    styled_path = UPLOAD_DIR / f"{pattern_uuid}_styled.png"
-
-    if not styled_path.exists():
-        raise HTTPException(status_code=404, detail="Styled image file not found")
-
-    with open(styled_path, "rb") as f:
-        image_data = f.read()
-
-    return Response(content=image_data, media_type="image/png")
+    raise HTTPException(
+        status_code=410,
+        detail="Styled images are no longer served from files. Use styled_image_base64 from the pattern response."
+    )
 
 @router.delete("/patterns/{pattern_id}")
 def delete_pattern(
@@ -426,8 +427,15 @@ def update_pattern_grid(
     if not pattern.pattern_data:
         raise HTTPException(status_code=400, detail="Pattern has no pattern data")
 
+    # Auto-detect storage version from grid content
+    # If grid contains # characters, it's v1 hex format
+    # Otherwise assume v2 code format
+    sample_value = update_request.grid[0][0] if update_request.grid and update_request.grid[0] else ""
+    storage_version = 1 if sample_value.startswith("#") else 2
+
     # Update the grid in pattern_data
     pattern.pattern_data["grid"] = update_request.grid
+    pattern.pattern_data["storage_version"] = storage_version
 
     # Update colors_used if provided
     if update_request.colors_used is not None:
@@ -468,13 +476,20 @@ def render_pattern_grid(pattern_id: str, bead_size: int = 10, db: Session = Depe
 
     try:
         grid = pattern.pattern_data["grid"]
-        base64_image = render_grid_to_base64(grid, bead_size=bead_size)
+        storage_version = pattern.pattern_data.get("storage_version", 1)
+
+        base64_image = render_grid_to_base64(
+            grid,
+            bead_size=bead_size,
+            storage_version=storage_version
+        )
 
         return {
             "pattern_image_base64": base64_image,
             "width": len(grid[0]) if grid else 0,
             "height": len(grid),
-            "bead_size": bead_size
+            "bead_size": bead_size,
+            "storage_version": storage_version
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error rendering grid: {str(e)}")
@@ -495,3 +510,22 @@ def get_perle_colors():
         return colors
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error reading perle colors: {str(e)}")
+
+
+@router.post("/admin/refresh-color-cache")
+def refresh_color_cache(admin: AdminUser = Depends(get_current_admin)):
+    """
+    Admin endpoint to refresh the color cache.
+    Use this after updating perle-colors.json to load new hex values.
+    """
+    try:
+        clear_color_cache()
+        from app.services.color_service import get_perle_colors as load_colors
+        colors = load_colors(force_reload=True)
+        return {
+            "success": True,
+            "message": "Color cache refreshed successfully",
+            "colors_loaded": len(colors)
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error refreshing color cache: {str(e)}")

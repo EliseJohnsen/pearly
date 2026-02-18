@@ -48,6 +48,8 @@ from .pattern_generator import (
     create_pattern_image,
     convert_image_to_pattern,
     convert_image_to_pattern_from_file,
+    convert_image_to_pattern_in_memory,
+    image_to_base64,
 )
 
 # Backwards compatibility alias

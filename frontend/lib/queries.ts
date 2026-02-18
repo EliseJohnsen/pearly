@@ -118,6 +118,10 @@ export const productQuery = groq`*[_type == "products" && slug.current == $slug]
   productType,
   status,
   difficulty,
+  patternBeadWidth,
+  patternBeadHeight,
+  totalBeads,
+  colors,
   category->{
     _id,
     name,

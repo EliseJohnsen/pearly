@@ -33,6 +33,7 @@ export default defineType({
         list: [
           {title: 'Perlekit', value: 'kit'},
           {title: 'Verktøy', value: 'tools'},
+          {title: 'Eget motiv', value: 'custom_kit'},
         ],
       },
       validation: (Rule) => Rule.required(),
@@ -65,7 +66,6 @@ export default defineType({
               name: 'alt',
               type: 'string',
               title: 'Alternativ tekst',
-              validation: (Rule) => Rule.required(),
             },
             {
               name: 'isPrimary',
@@ -77,7 +77,6 @@ export default defineType({
           ],
         },
       ],
-      validation: (Rule) => Rule.required().min(1),
     }),
     defineField({
       name: 'category',
@@ -185,6 +184,26 @@ export default defineType({
       options: {
         layout: 'tags',
       },
+    }),
+    defineField({
+      name: 'colors',
+      title: 'Antall farger',
+      type: 'number'
+    }),
+    defineField({
+      name: 'patternBeadWdth',
+      title: 'Antall perler i bredden',
+      type: 'number'
+    }),
+    defineField({
+      name: 'patternBeadHeight',
+      title: 'Antall perler i høyden',
+      type: 'number'
+    }),
+    defineField({
+      name: 'totalBeads',
+      title: 'Totalt antall perler',
+      type: 'number'
     }),
     defineField({
       name: 'seo',

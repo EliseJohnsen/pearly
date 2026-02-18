@@ -9,12 +9,18 @@ import Link from "next/link";
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, clearCart, totalPrice } = useCart();
+  const shipping = 99;
 
   const formatPrice = (price: number, currency: string = "NOK") => {
     return new Intl.NumberFormat("nb-NO", {
       style: "currency",
       currency: currency,
     }).format(price);
+  };
+
+  const formatTotal = (price: number, currency: string = "NOK") => {
+    let sum = price + shipping;
+    return formatPrice(sum, currency)
   };
 
   const currency = items.length > 0 ? items[0].currency : "NOK";
@@ -36,7 +42,7 @@ export default function CartPage() {
 
         {items.length === 0 ? (
           <div className="bg-white shadow-md rounded-lg p-8 text-center">
-            <ShoppingBagIcon className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+            <ShoppingBagIcon className="w-16 h-16 mx-auto text-primary mb-4" />
             <p className="mb-6">Handlekurven din er tom</p>
             <Link
               href="/perlepakker"
@@ -83,7 +89,7 @@ export default function CartPage() {
                         </div>
                         <button
                           onClick={() => removeItem(item.productId)}
-                          className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                          className="text-gray-500 hover:text-red-500 transition-colors p-1"
                           aria-label="Fjern produkt"
                         >
                           <TrashIcon className="w-5 h-5" />
@@ -157,7 +163,7 @@ export default function CartPage() {
                         </span>
                         <button
                           onClick={() => removeItem(item.productId)}
-                          className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                          className="text-gray-500 hover:text-red-500 transition-colors p-1"
                           aria-label="Fjern produkt"
                         >
                           <TrashIcon className="w-5 h-5" />
@@ -180,11 +186,11 @@ export default function CartPage() {
                 </div>
                 <div className="flex justify-between">
                   <span>Frakt</span>
-                  <span>Gratis</span>
+                  <span>{formatPrice(shipping, currency)}</span>
                 </div>
                 <div className="border-t border-gray-200 pt-3 flex justify-between text-lg font-bold">
                   <span>Totalt</span>
-                  <span>{formatPrice(totalPrice, currency)}</span>
+                  <span>{formatTotal(totalPrice, currency)}</span>
                 </div>
               </div>
 

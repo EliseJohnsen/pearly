@@ -14,7 +14,7 @@ from typing import List, Dict, Tuple
 import io
 import base64
 
-from .color_service import get_perle_colors, find_closest_color, hex_to_rgb
+from .color_service import get_perle_colors, find_closest_color, hex_to_rgb, hex_to_code, code_to_hex
 from .image_preprocessor import enhanced_preprocess_image, basic_preprocess_image
 from .board_calculator import calculate_dimensions_maintaining_aspect_ratio, BOARD_SIZE
 
@@ -126,13 +126,14 @@ def filter_rare_colors(
     return pattern_data, color_counts
 
 
-def create_pattern_image(pattern_data: List[List[str]], scale: int = 20) -> Image.Image:
+def create_pattern_image(pattern_data: List[List[str]], scale: int = 20, storage_version: int = 1) -> Image.Image:
     """
     Creates a visual pattern image from pattern data.
 
     Args:
-        pattern_data: 2D list of hex colors
+        pattern_data: 2D list of color values (hex codes for v1, color codes for v2)
         scale: Pixel size for each bead (default 20x20 pixels per bead)
+        storage_version: 1 (hex) or 2 (codes) - determines how to interpret pattern_data
 
     Returns:
         PIL Image of the pattern
@@ -143,7 +144,15 @@ def create_pattern_image(pattern_data: List[List[str]], scale: int = 20) -> Imag
     pattern_img = Image.new('RGB', (width * scale, height * scale), 'white')
 
     for y, row in enumerate(pattern_data):
-        for x, hex_color in enumerate(row):
+        for x, color_value in enumerate(row):
+            # Convert to hex for rendering
+            if storage_version == 2:
+                hex_color = code_to_hex(color_value)
+                if not hex_color:
+                    hex_color = "#FFFFFF"  # Fallback to white for unknown codes
+            else:
+                hex_color = color_value  # Already hex
+
             rgb = hex_to_rgb(hex_color)
             for py in range(scale):
                 for px in range(scale):
@@ -262,18 +271,38 @@ def convert_image_to_pattern(
     print("Color matching complete.")
 
     # Filter out rare colors
-    pattern_data, color_counts = filter_rare_colors(
+    pattern_data_hex, color_counts = filter_rare_colors(
         pattern_data,
         color_counts,
         bead_colors,
         min_percentage=0.005
     )
 
-    pattern_img = create_pattern_image(pattern_data, scale=20)
+    # Convert hex grid to code grid for v2 storage
+    print("Converting hex grid to code grid...")
+    pattern_data_codes = []
+    unknown_colors = {}
+
+    for row in pattern_data_hex:
+        code_row = []
+        for hex_color in row:
+            code = hex_to_code(hex_color)
+            if code:
+                code_row.append(code)
+            else:
+                # Unknown color - use fallback code "99"
+                if hex_color not in unknown_colors:
+                    fallback_code = "99"
+                    unknown_colors[hex_color] = fallback_code
+                    print(f"Warning: Unknown color {hex_color}, using fallback code {fallback_code}")
+                code_row.append(unknown_colors[hex_color])
+        pattern_data_codes.append(code_row)
+
+    pattern_img = create_pattern_image(pattern_data_hex, scale=20)
     pattern_img.save(output_path)
     print(f"Pattern image saved to: {output_path}")
 
-    # Build colors_used list
+    # Build colors_used list (without hex - can be looked up from code)
     colors_used = []
     bead_color_lookup = {bc["hex"]: bc for bc in bead_colors}
 
@@ -281,7 +310,6 @@ def convert_image_to_pattern(
         bead = bead_color_lookup.get(hex_color)
         if bead:
             colors_used.append({
-                "hex": hex_color,
                 "name": bead["name"],
                 "code": bead.get("code", ""),
                 "count": count
@@ -289,7 +317,6 @@ def convert_image_to_pattern(
         else:
             print(f"Warning: Hex color {hex_color} found in pattern but not in bead colors.")
             colors_used.append({
-                "hex": hex_color,
                 "name": "Unknown Color",
                 "code": "",
                 "count": count
@@ -297,14 +324,23 @@ def convert_image_to_pattern(
 
     print(f"Unique colors used: {len(colors_used)}")
 
-    return output_path, colors_used, {
-        "grid": pattern_data,
+    # Build pattern_data dict with v2 format
+    pattern_data_dict = {
+        "grid": pattern_data_codes,        # NEW: Default to codes (v2)
+        "grid_hex": pattern_data_hex,      # LEGACY: Keep for transition
+        "storage_version": 2,              # NEW: Version marker
         "width": new_width,
         "height": new_height,
         "boards_width": boards_width,
         "boards_height": boards_height,
         "board_size": BOARD_SIZE
     }
+
+    # Add custom colors map if there are unknown colors
+    if unknown_colors:
+        pattern_data_dict["custom_colors"] = unknown_colors
+
+    return output_path, colors_used, pattern_data_dict
 
 
 def convert_image_to_pattern_from_file(
@@ -375,13 +411,215 @@ def convert_image_to_pattern_from_file(
     )
 
 
-def render_grid_to_image(grid: List[List[str]], bead_size: int = 10) -> Image.Image:
+def convert_image_to_pattern_in_memory(
+    image: Image.Image,
+    boards_width: int = 1,
+    boards_height: int = 1,
+    use_perle_colors: bool = True,
+    use_quantization: bool = True,
+    use_dithering: bool = False,
+    enhance_contrast: float = 1.2,
+    use_advanced_preprocessing: bool = False,
+    remove_bg: bool = False,
+    enhance_colors: bool = True,
+    color_boost: float = 1.5,
+    contrast_boost: float = 1.3,
+    brightness_boost: float = 1.0,
+    simplify_details: bool = True,
+    simplification_method: str = "bilateral",
+    simplification_strength: str = "medium",
+    use_nearest_neighbor: bool = False
+) -> Tuple[str, List[Dict], Dict]:
     """
-    Renders a grid of color codes to a PIL Image with circular beads.
+    Converts an image to a bead pattern entirely in memory.
+    Returns base64 encoded image instead of saving to file.
 
     Args:
-        grid: 2D list of hex color codes
+        image: PIL Image object
+        boards_width: Number of 29x29 boards in width
+        boards_height: Number of 29x29 boards in height
+        use_perle_colors: If True, use perle colors (legacy parameter, always True)
+        use_quantization: If True, use color quantization for better results
+        use_dithering: If True, use Floyd-Steinberg dithering
+        enhance_contrast: Contrast enhancement factor (1.0 = no change, 1.2 = slight boost) - LEGACY
+        use_advanced_preprocessing: If True, use enhanced preprocessing pipeline
+        remove_bg: Whether to remove background (requires use_advanced_preprocessing)
+        enhance_colors: Whether to enhance colors (requires use_advanced_preprocessing)
+        color_boost: Color saturation multiplier (1.0 = no change, 1.5 = 50% more)
+        contrast_boost: Contrast multiplier (1.0 = no change, 1.3 = 30% more)
+        brightness_boost: Brightness multiplier (1.0 = no change)
+        simplify_details: Whether to simplify details (requires use_advanced_preprocessing)
+        simplification_method: "bilateral", "mean_shift", or "gaussian"
+        simplification_strength: "light", "medium", or "strong"
+        use_nearest_neighbor: Whether to use nearest neighbor resampling
+
+    Returns:
+        Tuple of (pattern_image_base64, colors_used, pattern_data)
+    """
+    bead_colors = get_perle_colors()
+
+    if not bead_colors:
+        raise HTTPException(status_code=500, detail="Perle color data is not available for processing.")
+
+    print("Pre-processing image...")
+    if use_advanced_preprocessing:
+        image = enhanced_preprocess_image(
+            image,
+            remove_bg=remove_bg,
+            enhance_colors=enhance_colors,
+            color_boost=color_boost,
+            contrast_boost=contrast_boost,
+            brightness_boost=brightness_boost,
+            simplify_details=simplify_details,
+            simplification_method=simplification_method,
+            simplification_strength=simplification_strength
+        )
+    else:
+        image = basic_preprocess_image(image, enhance_contrast=enhance_contrast)
+
+    max_width = boards_width * BOARD_SIZE
+    max_height = boards_height * BOARD_SIZE
+
+    new_width, new_height = calculate_dimensions_maintaining_aspect_ratio(
+        image.width,
+        image.height,
+        max_width,
+        max_height
+    )
+
+    resampling_method = Image.Resampling.NEAREST if use_nearest_neighbor else Image.Resampling.LANCZOS
+    img_resized = image.resize((new_width, new_height), resampling_method)
+    print(f"Image resized to: {img_resized.size} using {resampling_method} (aspect ratio maintained)")
+
+    if use_quantization:
+        print("Applying color quantization...")
+        img_resized = quantize_to_perle_colors(
+            img_resized,
+            bead_colors,
+            use_dithering=use_dithering
+        )
+
+    pattern_data = []
+    color_counts = {}
+
+    print("Starting pixel-by-pixel color matching...")
+    for y in range(new_height):
+        row = []
+        for x in range(new_width):
+            pixel_rgb = img_resized.getpixel((x, y))
+            closest_bead = find_closest_color(pixel_rgb, bead_colors)
+            row.append(closest_bead["hex"])
+
+            color_key = closest_bead["hex"]
+            color_counts[color_key] = color_counts.get(color_key, 0) + 1
+
+        pattern_data.append(row)
+
+    print("Color matching complete.")
+
+    # Filter out rare colors
+    pattern_data_hex, color_counts = filter_rare_colors(
+        pattern_data,
+        color_counts,
+        bead_colors,
+        min_percentage=0.005
+    )
+
+    # Convert hex grid to code grid for v2 storage
+    print("Converting hex grid to code grid...")
+    pattern_data_codes = []
+    unknown_colors = {}
+
+    for row in pattern_data_hex:
+        code_row = []
+        for hex_color in row:
+            code = hex_to_code(hex_color)
+            if code:
+                code_row.append(code)
+            else:
+                # Unknown color - use fallback code "99"
+                if hex_color not in unknown_colors:
+                    fallback_code = "99"
+                    unknown_colors[hex_color] = fallback_code
+                    print(f"Warning: Unknown color {hex_color}, using fallback code {fallback_code}")
+                code_row.append(unknown_colors[hex_color])
+        pattern_data_codes.append(code_row)
+
+    # Create pattern image using hex grid for rendering
+    pattern_img = create_pattern_image(pattern_data_hex, scale=20)
+
+    # Convert to base64
+    buffer = io.BytesIO()
+    pattern_img.save(buffer, format='PNG')
+    buffer.seek(0)
+    pattern_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+
+    # Build colors_used list (without hex - can be looked up from code)
+    colors_used = []
+    bead_color_lookup = {bc["hex"]: bc for bc in bead_colors}
+
+    for hex_color, count in color_counts.items():
+        bead = bead_color_lookup.get(hex_color)
+        if bead:
+            colors_used.append({
+                "name": bead["name"],
+                "code": bead.get("code", ""),
+                "count": count
+            })
+        else:
+            print(f"Warning: Hex color {hex_color} found in pattern but not in bead colors.")
+            colors_used.append({
+                "name": "Unknown Color",
+                "code": "",
+                "count": count
+            })
+
+    print(f"Unique colors used: {len(colors_used)}")
+
+    # Build pattern_data dict with v2 format
+    pattern_data_dict = {
+        "grid": pattern_data_codes,        # NEW: Default to codes (v2)
+        "grid_hex": pattern_data_hex,      # LEGACY: Keep for transition
+        "storage_version": 2,              # NEW: Version marker
+        "width": new_width,
+        "height": new_height,
+        "boards_width": boards_width,
+        "boards_height": boards_height,
+        "board_size": BOARD_SIZE
+    }
+
+    # Add custom colors map if there are unknown colors
+    if unknown_colors:
+        pattern_data_dict["custom_colors"] = unknown_colors
+
+    return pattern_base64, colors_used, pattern_data_dict
+
+
+def image_to_base64(image: Image.Image, format: str = 'PNG') -> str:
+    """
+    Convert a PIL Image to base64 string.
+
+    Args:
+        image: PIL Image object
+        format: Image format (default: PNG)
+
+    Returns:
+        Base64 encoded image string
+    """
+    buffer = io.BytesIO()
+    image.save(buffer, format=format)
+    buffer.seek(0)
+    return base64.b64encode(buffer.getvalue()).decode('utf-8')
+
+
+def render_grid_to_image(grid: List[List[str]], bead_size: int = 10, storage_version: int = 1) -> Image.Image:
+    """
+    Renders a grid of color values to a PIL Image with rectangular beads.
+
+    Args:
+        grid: 2D list of color values (hex codes for v1, color codes for v2)
         bead_size: Size of each bead in pixels (default: 10)
+        storage_version: 1 (hex) or 2 (codes) - determines how to interpret grid
 
     Returns:
         PIL Image object
@@ -398,14 +636,22 @@ def render_grid_to_image(grid: List[List[str]], bead_size: int = 10) -> Image.Im
     image = Image.new('RGB', (img_width, img_height), 'white')
     draw = ImageDraw.Draw(image)
 
-    # Draw each bead as a circle
+    # Draw each bead as a rectangle
     for row_idx, row in enumerate(grid):
-        for col_idx, hex_color in enumerate(row):
+        for col_idx, color_value in enumerate(row):
+            # Convert to hex for rendering
+            if storage_version == 2:
+                hex_color = code_to_hex(color_value)
+                if not hex_color:
+                    hex_color = "#FFFFFF"  # Fallback to white for unknown codes
+            else:
+                hex_color = color_value  # Already hex
+
             # Calculate bead position
             x = col_idx * bead_size
             y = row_idx * bead_size
 
-            # Draw circular bead
+            # Draw rectangular bead
             draw.rectangle(
                 [x, y, x + bead_size, y + bead_size],
                 fill=hex_color,
@@ -415,18 +661,19 @@ def render_grid_to_image(grid: List[List[str]], bead_size: int = 10) -> Image.Im
     return image
 
 
-def render_grid_to_base64(grid: List[List[str]], bead_size: int = 10) -> str:
+def render_grid_to_base64(grid: List[List[str]], bead_size: int = 10, storage_version: int = 1) -> str:
     """
     Renders a grid to a PNG image and returns it as base64 string.
 
     Args:
-        grid: 2D list of hex color codes
+        grid: 2D list of color values (hex codes for v1, color codes for v2)
         bead_size: Size of each bead in pixels (default: 10)
+        storage_version: 1 (hex) or 2 (codes) - determines how to interpret grid
 
     Returns:
         Base64 encoded PNG image string
     """
-    image = render_grid_to_image(grid, bead_size)
+    image = render_grid_to_image(grid, bead_size, storage_version)
 
     # Convert to base64
     buffer = io.BytesIO()

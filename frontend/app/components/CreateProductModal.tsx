@@ -55,7 +55,6 @@ export default function CreateProductModal({
 
   const [productName, setProductName] = useState("");
   const [description, setDescription] = useState("");
-  const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium");
 
   const [price, setPrice] = useState<number>(299);
   const [originalPrice, setOriginalPrice] = useState<number | null>(null);
@@ -152,7 +151,6 @@ export default function CreateProductModal({
         long_description: description,
         status: "coming_soon",
         slug: generateSlug(productName),
-        difficulty_level: difficulty,
         currency: "NOK",
         vat_rate: 25.0,
         tags: ["perlemønster"],
@@ -198,7 +196,7 @@ export default function CreateProductModal({
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-500 hover:text-gray-600 transition-colors"
           >
             <XMarkIcon className="w-6 h-6" />
           </button>
@@ -241,21 +239,6 @@ export default function CreateProductModal({
                 placeholder="Beskriv produktet..."
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
               />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Vanskelighetsgrad
-              </label>
-              <select
-                value={difficulty}
-                onChange={(e) => setDifficulty(e.target.value as "easy" | "medium" | "hard")}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-              >
-                <option value="easy">Lett</option>
-                <option value="medium">Medium</option>
-                <option value="hard">Vanskelig</option>
-              </select>
             </div>
           </div>
 

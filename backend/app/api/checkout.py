@@ -136,7 +136,6 @@ async def get_checkout_status(
     """
     order = db.query(Order).filter(Order.order_number == reference).first()
 
-    customer = db.query(Customer).filter(Customer.id == order.customer_id).first()
 
     if not order:
         raise HTTPException(status_code=404, detail="Ordre ikke funnet")
@@ -147,6 +146,6 @@ async def get_checkout_status(
         status=order.status,
         payment_status=order.payment_status or "pending",
         total_amount=order.total_amount,
+        shipping_amount=order.shipping_amount,
         currency=order.currency,
-        customer_email=customer.email,
     )

@@ -11,6 +11,7 @@ from app.models.order import Order
 from app.models.order_log import OrderLog
 from app.models.address import Address
 from app.models.customer import Customer
+from app.services.email_service import email_service
 
 logger = logging.getLogger(__name__)
 
@@ -157,6 +158,23 @@ async def vipps_webhook(
             )
             db.add(log)
             logger.info(f"Payment successful for order {reference}")
+
+            # Send order confirmation email
+            if email:
+                await email_service.send_email(
+                    to=email,
+                    template_id="order-confirmation",
+                    variables={
+                        "order_number": order.order_number,
+                        "customer_name": name or "kunde",
+                    }
+                )
+                emailLogEntry = OrderLog(
+                    order_id=order.id,
+                    created_by_type="system",
+                    message=f"Ordrebekreftelse sendt på epost til {email}"
+                )
+                db.add(emailLogEntry)
 
         elif session_state == "PaymentTerminated":
             order.status = "cancelled"

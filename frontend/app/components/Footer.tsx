@@ -20,7 +20,7 @@ export default function Footer({ data, footerPages }: FooterProps = {}) {
     };
 
     return (
-        <footer className="bg-purple shadow-lg p-8">
+        <footer className="bg-dark-purple shadow-lg p-8">
             {footer && footer.companyInfo && (
                 <div>
                     <h2 className="text-xl font-bold text-white text-center">

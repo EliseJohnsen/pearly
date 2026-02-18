@@ -142,6 +142,8 @@ export default defineType({
         {type: 'banner'},
         {type: 'howItWorks'},
         {type: 'content'},
+        {type: 'imageCarousel'},
+        {type: 'collapsableCards'},
         {
           type: 'object',
           name: 'productsSection',

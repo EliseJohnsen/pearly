@@ -26,6 +26,10 @@ class Settings(BaseSettings):
     VIPPS_CALLBACK_PREFIX: str = ""  # Backend URL for Vipps callbacks
     FRONTEND_URL: str = "http://localhost:3000"  # Frontend URL for redirects
 
+    # Email settings (Resend)
+    RESEND_API_KEY: str = ""
+    RESEND_FROM_EMAIL: str = "hei@kontakt.feelpearly.no"
+
     class Config:
         env_file = ".env"
         case_sensitive = True

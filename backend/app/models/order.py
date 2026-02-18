@@ -24,6 +24,8 @@ class Order(Base):
     currency = Column(String, default="NOK")
     shipping_method_id = Column(String, nullable=True)  # ID of selected shipping option
     shipping_amount = Column(Integer, nullable=True)  # Shipping cost in øre
+    shipping_tracking_number = Column(String, nullable=True)  # Tracking number set by admin
+    shipping_tracking_url = Column(String, nullable=True)  # Tracking url set by admin
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 

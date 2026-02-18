@@ -18,6 +18,10 @@ export default function OrderDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [logMessage, setLogMessage] = useState("");
   const [isSubmittingLog, setIsSubmittingLog] = useState(false);
+  const [shippingTrackingNumber, setShippingTrackingNumber] = useState("");
+  const [shippingTrackingUrl, setShippingTrackingUrl] = useState("");
+  const [isEditingTracking, setIsEditingTracking] = useState(false);
+  const [isUpdatingTracking, setIsUpdatingTracking] = useState(false);
 
   const router = useRouter();
   const params = useParams();
@@ -35,6 +39,8 @@ export default function OrderDetailPage() {
 
         const data = await response.json();
         setOrder(data);
+        setShippingTrackingNumber(data.shipping_tracking_number || "");
+        setShippingTrackingUrl(data.shipping_tracking_url || "");
       } catch (err) {
         setError(err instanceof Error ? err.message : "En feil oppstod");
       } finally {
@@ -108,6 +114,45 @@ export default function OrderDetailPage() {
   const handleOrderLineRowClick = (productId: string) => {
     const patternId = getProductPatternId(productId)
     router.push(`/admin/patterns/${patternId}`);
+  };
+
+  const handleUpdateTracking = async () => {
+    setIsUpdatingTracking(true);
+
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const response = await authenticatedFetch(`${apiUrl}/api/orders/${orderId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          shipping_tracking_number: shippingTrackingNumber || null,
+          shipping_tracking_url: shippingTrackingUrl || null
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Kunne ikke oppdatere sporingsinformasjon");
+      }
+
+      const updatedOrder = await response.json();
+      setOrder(updatedOrder);
+      setShippingTrackingNumber(updatedOrder.shipping_tracking_number || "");
+      setShippingTrackingUrl(updatedOrder.shipping_tracking_url || "");
+      setIsEditingTracking(false);
+    } catch (err) {
+      console.error("Error updating tracking:", err);
+      alert(err instanceof Error ? err.message : "En feil oppstod");
+    } finally {
+      setIsUpdatingTracking(false);
+    }
+  };
+
+  const handleCancelTrackingEdit = () => {
+    setShippingTrackingNumber(order?.shipping_tracking_number || "");
+    setShippingTrackingUrl(order?.shipping_tracking_url || "");
+    setIsEditingTracking(false);
   };
 
   const handleSubmitLog = async (e: React.FormEvent) => {
@@ -212,14 +257,97 @@ export default function OrderDetailPage() {
           </div>
         </div>
 
+        {/* Tracking information section */}
+        <div className="bg-white shadow-md rounded-lg p-6 mb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <h2 className="text-xl font-bold mb-2">Sporingsinformasjon</h2>
+              {!isEditingTracking ? (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3">
+                    <div className="w-32 font-medium">Sporingsnummer:</div>
+                    <div className="text-lg">
+                      {order.shipping_tracking_number || "Ikke satt"}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-32 font-medium">Sporings-URL:</div>
+                    <div className="text-lg">
+                      {order.shipping_tracking_url ? (
+                        <a
+                          href={order.shipping_tracking_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-purple hover:underline"
+                        >
+                          {order.shipping_tracking_url}
+                        </a>
+                      ) : (
+                        "Ikke satt"
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setIsEditingTracking(true)}
+                    className="mt-2 px-4 py-2 bg-purple text-white rounded-md hover:bg-purple/90 font-medium"
+                  >
+                    {order.shipping_tracking_number || order.shipping_tracking_url ? "Endre" : "Legg til"}
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <label className="w-32 font-medium">Sporingsnummer:</label>
+                    <input
+                      type="text"
+                      value={shippingTrackingNumber}
+                      onChange={(e) => setShippingTrackingNumber(e.target.value)}
+                      placeholder="f.eks. 70701234567890123456"
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple focus:border-transparent"
+                      disabled={isUpdatingTracking}
+                    />
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <label className="w-32 font-medium">Sporings-URL:</label>
+                    <input
+                      type="url"
+                      value={shippingTrackingUrl}
+                      onChange={(e) => setShippingTrackingUrl(e.target.value)}
+                      placeholder="https://sporing.posten.no/..."
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple focus:border-transparent"
+                      disabled={isUpdatingTracking}
+                    />
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleUpdateTracking}
+                      disabled={isUpdatingTracking}
+                      className="px-6 py-2 bg-purple text-white rounded-md hover:bg-purple/90 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium"
+                    >
+                      {isUpdatingTracking ? "Lagrer..." : "Lagre"}
+                    </button>
+                    <button
+                      onClick={handleCancelTrackingEdit}
+                      disabled={isUpdatingTracking}
+                      className="px-6 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 disabled:cursor-not-allowed font-medium"
+                    >
+                      Avbryt
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* Customer info */}
           <div className="space-y-4 grid grid-cols-2 bg-white shadow-md rounded-lg p-6">
-            {order.customer && (
-              <div>
-                <h2 className="text-xl font-bold mb-4">
-                  Kundeinformasjon
-                </h2>
+            <div>
+              <h2 className="text-xl font-bold mb-4">
+                Kundeinformasjon
+              </h2>
+              {order.customer && (
                 <div className="space-y-3">
                   <div>
                     <div className="">Navn</div>
@@ -240,8 +368,8 @@ export default function OrderDetailPage() {
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           {/* Addresses */}

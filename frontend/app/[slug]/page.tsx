@@ -12,6 +12,8 @@ import CTA from "../components/CTA";
 import Content from "../components/Content";
 import ProductSection from "../components/ProductSection";
 import LoadingSpinner from "../components/LoadingSpinner";
+import ImageCarousel from "../components/ImageCarousel";
+import CollapsableCardsSection from "../components/CollapsableCardsSection";
 
 // Define the page query
 const pageQuery = groq`*[_type == "page" && slug.current == $slug][0]{
@@ -79,6 +81,29 @@ const pageQuery = groq`*[_type == "page" && slug.current == $slug][0]{
         difficulty
       },
       showFeaturedOnly
+    },
+    _type == "imageCarousel" => {
+      heading,
+      description,
+      images[]{
+        asset->{_id, url, metadata{lqip, dimensions{width, height}}},
+        alt
+      },
+      autoRotate,
+      rotationInterval,
+      ctaButton{text, href},
+      isActive
+    },
+    _type == "collapsableCards" => {
+      sectionTitle,
+      cards[]{
+        header,
+        icon,
+        content,
+        defaultExpanded,
+        order
+      },
+      isActive
     }
   },
 }`;
@@ -135,6 +160,10 @@ export default function DynamicPage({
               return <Content key={index} data={section} />;
             case "productsSection":
               return <ProductSection key={index} data={section} />;
+            case "imageCarousel":
+              return <ImageCarousel key={index} data={section} />;
+            case "collapsableCards":
+              return <CollapsableCardsSection key={index} data={section} />;
             default:
               return null;
           }
