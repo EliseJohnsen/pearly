@@ -141,3 +141,9 @@ class OrderUpdate(BaseModel):
 # Order Log Schemas
 class OrderLogCreate(BaseModel):
     message: str
+
+
+# Order Email Schemas
+class OrderEmailSend(BaseModel):
+    """Schema for sending email to customer"""
+    template_id: str
