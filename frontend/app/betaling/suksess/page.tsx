@@ -15,6 +15,7 @@ interface OrderStatus {
   status: string;
   payment_status: string;
   total_amount: number | null;
+  shipping_amount: number | null;
   currency: string | null;
   customer_email: string | null;
 }
@@ -132,7 +133,10 @@ function PaymentSuccessContent() {
                   <div className="flex justify-between">
                     <span>Totalt:</span>
                     <span className="font-bold">
-                      {formatPrice(orderStatus.total_amount, orderStatus.currency)}
+                      {formatPrice(
+                        (orderStatus.total_amount || 0) + (orderStatus.shipping_amount || 0),
+                        orderStatus.currency
+                      )}
                     </span>
                   </div>
                 </div>

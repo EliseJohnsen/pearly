@@ -146,5 +146,6 @@ async def get_checkout_status(
         status=order.status,
         payment_status=order.payment_status or "pending",
         total_amount=order.total_amount,
+        shipping_amount=order.shipping_amount,
         currency=order.currency,
     )
