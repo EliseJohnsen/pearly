@@ -9,12 +9,18 @@ import Link from "next/link";
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, clearCart, totalPrice } = useCart();
+  const shipping = 99;
 
   const formatPrice = (price: number, currency: string = "NOK") => {
     return new Intl.NumberFormat("nb-NO", {
       style: "currency",
       currency: currency,
     }).format(price);
+  };
+
+  const formatTotal = (price: number, currency: string = "NOK") => {
+    let sum = price + shipping;
+    return formatPrice(sum, currency)
   };
 
   const currency = items.length > 0 ? items[0].currency : "NOK";
@@ -180,11 +186,11 @@ export default function CartPage() {
                 </div>
                 <div className="flex justify-between">
                   <span>Frakt</span>
-                  <span>Gratis</span>
+                  <span>{formatPrice(shipping, currency)}</span>
                 </div>
                 <div className="border-t border-gray-200 pt-3 flex justify-between text-lg font-bold">
                   <span>Totalt</span>
-                  <span>{formatPrice(totalPrice, currency)}</span>
+                  <span>{formatTotal(totalPrice, currency)}</span>
                 </div>
               </div>
 

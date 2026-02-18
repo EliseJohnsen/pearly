@@ -205,6 +205,9 @@ class SanityService:
         pattern_id: Optional[str] = None,
         price: Optional[int] = None,
         original_price: Optional[int] = None,
+        patternBeadWdth: Optional[int] = None,
+        patternBeadHeight: Optional[int] = None,
+        totalBeads: Optional[int] = None,
     ) -> Dict[str, Any]:
         """
         Create a unified product document in Sanity CMS.
@@ -233,6 +236,9 @@ class SanityService:
             display_order: Display order (lower first)
             seo: SEO metadata dict
             pattern_id: Database pattern ID (optional)
+            patternBeadWdth: Pattern width in beads (optional)
+            patternBeadHeight: Pattern height in beads (optional)
+            totalBeads: Total number of beads (optional)
 
         Returns:
             Dict with created document information including _id
@@ -292,6 +298,12 @@ class SanityService:
             product_doc["width"] = width
         if height is not None:
             product_doc["height"] = height
+        if patternBeadWdth is not None:
+            product_doc["patternBeadWdth"] = patternBeadWdth
+        if patternBeadHeight is not None:
+            product_doc["patternBeadHeight"] = patternBeadHeight
+        if totalBeads is not None:
+            product_doc["totalBeads"] = totalBeads
 
         # Add variants if provided
         if variants:

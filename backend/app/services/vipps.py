@@ -137,22 +137,23 @@ class VippsClient:
                             "value": 9900,
                             "currency": currency,
                         },
+                        "type": "PICKUP_POINT",
                         "id": "postenservicepakke1",
                         "priority": 1,
                         "isDefault": True,
-                        "description": "Vi sender pakken hjem til døra di"
+                        "description": "Pakken sendes til ditt nærmeste hentested"
                     },
                     {
-                        "brand": "POSTEN",
+                        "brand": "POSTNORD",
                         "amount": {
-                            "value": 19900,
+                            "value": 9900,
                             "currency": currency,
                         },
                         "type": "PICKUP_POINT",
-                        "id": "postenservicepakke2",
+                        "id": "postnord1",
                         "priority": 2,
                         "isDefault": False,
-                        "description": "Pakken sendes til ditt nærmeste hentested"
+                        "description": "Pakken sendes til ditt nærmeste PostNord hentested"
                     }
                 ],
             }
