@@ -1,7 +1,8 @@
 import httpx
 import resend
 import logging
-from typing import Optional, Dict, Any
+import re
+from typing import Optional, Dict, Any, Set
 
 from app.core.config import settings
 
@@ -101,6 +102,64 @@ class EmailService:
                     html_parts.append(f"<p>{content}</p>")
 
         return "\n".join(html_parts)
+
+    def extract_template_variables(self, text: str) -> Set[str]:
+        """
+        Extract all template variables from text.
+
+        Args:
+            text: Text containing {{variable}} placeholders
+
+        Returns:
+            Set of variable names found in text
+        """
+        if not text:
+            return set()
+        # Match {{variable_name}} patterns
+        pattern = r'\{\{(\w+)\}\}'
+        return set(re.findall(pattern, text))
+
+    def validate_variables(self, template: Dict[str, Any], variables: Dict[str, Any]) -> None:
+        """
+        Validate that all required template variables are provided.
+
+        Args:
+            template: Email template from Sanity
+            variables: Variables provided for substitution
+
+        Raises:
+            ValueError: If any required variables are missing
+        """
+        all_variables = set()
+
+        # Extract variables from subject
+        if template.get("subject"):
+            all_variables.update(self.extract_template_variables(template["subject"]))
+
+        # Extract variables from heading
+        if template.get("heading"):
+            all_variables.update(self.extract_template_variables(template["heading"]))
+
+        # Extract variables from body (Portable Text)
+        if template.get("body"):
+            body_html = self.render_portable_text(template["body"])
+            all_variables.update(self.extract_template_variables(body_html))
+
+        # Extract variables from footer
+        if template.get("footerText"):
+            all_variables.update(self.extract_template_variables(template["footerText"]))
+
+        # Extract variables from CTA URL
+        if template.get("ctaUrl"):
+            all_variables.update(self.extract_template_variables(template["ctaUrl"]))
+
+        # Check for missing variables
+        missing = all_variables - set(variables.keys())
+        if missing:
+            raise ValueError(
+                f"Missing required template variables: {', '.join(sorted(missing))}. "
+                f"Template requires: {', '.join(sorted(all_variables))}"
+            )
 
     def substitute_variables(self, text: str, variables: Dict[str, Any]) -> str:
         """
@@ -202,6 +261,14 @@ class EmailService:
             logger.error(f"Email template '{template_id}' not found in Sanity")
             return False
         print(f"=== EMAIL SERVICE: Template found: {template.get('subject')} ===")
+
+        # Validate all required variables are provided
+        try:
+            self.validate_variables(template, variables)
+        except ValueError as e:
+            print(f"=== EMAIL SERVICE ERROR: {str(e)} ===")
+            logger.error(f"Template variable validation failed for '{template_id}': {e}")
+            raise
 
         subject = self.substitute_variables(template.get("subject") or "", variables)
         html = self.build_email_html(template, variables)
