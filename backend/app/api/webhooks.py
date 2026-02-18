@@ -4,6 +4,7 @@ from typing import Optional
 import logging
 import hmac
 import hashlib
+import asyncio
 
 from app.core.database import get_db
 from app.core.config import settings
@@ -92,6 +93,11 @@ async def vipps_webhook(
 
         # Handle different session states
         if session_state == "PaymentSuccessful":
+            # Idempotency check: don't process if already paid
+            if order.status == "paid" and order.payment_status == "paid":
+                logger.info(f"Order {reference} already processed - skipping duplicate webhook")
+                return {"status": "ok", "message": "already_processed"}
+
             order.status = "paid"
             order.payment_status = "paid"
 
@@ -148,8 +154,6 @@ async def vipps_webhook(
                     db.flush()
                     order.customer_id = new_customer.id
 
-
-
             # Add log entry
             log = OrderLog(
                 order_id=order.id,
@@ -157,24 +161,43 @@ async def vipps_webhook(
                 message="Betaling fullført via Vipps"
             )
             db.add(log)
-            logger.info(f"Payment successful for order {reference}")
 
-            # Send order confirmation email
+            # Commit database changes BEFORE sending emails
+            db.commit()
+            logger.info(f"Payment successful for order {reference} - database updated")
+
+            # Send emails asynchronously in background (don't await)
+            # This allows the webhook to return 200 OK immediately
+            # Email service will log to order history after sending
             if email:
-                await email_service.send_email(
-                    to=email,
-                    template_id="order-confirmation",
+                asyncio.create_task(
+                    email_service.send_email(
+                        to=email,
+                        template_id="order-confirmation",
+                        variables={
+                            "order_number": order.order_number,
+                            "customer_name": name or "kunde",
+                        },
+                        order_id=order.id
+                    )
+                )
+                logger.info(f"Queued order confirmation email to {email}")
+
+            # Send admin notification email in background (no order log needed)
+            asyncio.create_task(
+                email_service.send_email(
+                    to=settings.FEEL_PEARLY_EMAIL,
+                    template_id="we-got-an-order",
                     variables={
                         "order_number": order.order_number,
                         "customer_name": name or "kunde",
                     }
                 )
-                emailLogEntry = OrderLog(
-                    order_id=order.id,
-                    created_by_type="system",
-                    message=f"Ordrebekreftelse sendt på epost til {email}"
-                )
-                db.add(emailLogEntry)
+            )
+            logger.info(f"Queued admin notification email")
+
+            # Return immediately - emails will be sent in background
+            return {"status": "ok"}
 
         elif session_state == "PaymentTerminated":
             order.status = "cancelled"

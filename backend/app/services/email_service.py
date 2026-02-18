@@ -5,6 +5,7 @@ import re
 from typing import Optional, Dict, Any, Set
 
 from app.core.config import settings
+from app.core.database import SessionLocal
 
 logger = logging.getLogger(__name__)
 
@@ -233,7 +234,8 @@ class EmailService:
         self,
         to: str,
         template_id: str,
-        variables: Optional[Dict[str, Any]] = None
+        variables: Optional[Dict[str, Any]] = None,
+        order_id: Optional[int] = None
     ) -> bool:
         """
         Send an email using a Sanity template.
@@ -242,6 +244,7 @@ class EmailService:
             to: Recipient email address
             template_id: Sanity email template ID (e.g., 'order-confirmation')
             variables: Variables to substitute in template (e.g., {'order_number': 'PRL-A3X9'})
+            order_id: Optional order ID to log email sending to order history
 
         Returns:
             True if email was sent successfully, False otherwise
@@ -285,10 +288,49 @@ class EmailService:
             })
             print(f"=== EMAIL SERVICE: Resend response: {response} ===")
             logger.info(f"Email sent successfully to {to} (template: {template_id})")
+
+            # Log to order history if order_id provided
+            if order_id:
+                try:
+                    from app.models.order_log import OrderLog
+                    db = SessionLocal()
+                    try:
+                        log_entry = OrderLog(
+                            order_id=order_id,
+                            created_by_type="system",
+                            message=f"Epost {subject} sendt til {to}"
+                        )
+                        db.add(log_entry)
+                        db.commit()
+                        logger.info(f"Logged email send to order {order_id}")
+                    finally:
+                        db.close()
+                except Exception as log_error:
+                    logger.error(f"Failed to log email send to order {order_id}: {log_error}")
+
             return True
         except Exception as e:
             print(f"=== EMAIL SERVICE ERROR: Failed to send via Resend: {type(e).__name__}: {str(e)} ===")
             logger.error(f"Failed to send email to {to}: {e}")
+
+            # Log failure to order history if order_id provided
+            if order_id:
+                try:
+                    from app.models.order_log import OrderLog
+                    db = SessionLocal()
+                    try:
+                        log_entry = OrderLog(
+                            order_id=order_id,
+                            created_by_type="system",
+                            message=f"Feil ved sending av epost til {to}: {str(e)}"
+                        )
+                        db.add(log_entry)
+                        db.commit()
+                    finally:
+                        db.close()
+                except Exception as log_error:
+                    logger.error(f"Failed to log email error to order {order_id}: {log_error}")
+
             return False
 
 
