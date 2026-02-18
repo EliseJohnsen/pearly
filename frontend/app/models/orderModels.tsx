@@ -62,3 +62,10 @@ export interface Product {
   slug: { current: string };
   patternId: string;
 }
+
+export interface EmailTemplate {
+  _id: string;
+  templateId: string;
+  subject: string;
+  heading: string;
+}

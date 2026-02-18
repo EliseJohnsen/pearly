@@ -113,6 +113,8 @@ class EmailService:
         Returns:
             Text with variables substituted
         """
+        if text is None:
+            return ""
         result = text
         for key, value in variables.items():
             result = result.replace(f"{{{{{key}}}}}", str(value))
@@ -133,12 +135,12 @@ class EmailService:
         Returns:
             Complete HTML email string
         """
-        heading = self.substitute_variables(template.get("heading", ""), variables)
-        body_html = self.render_portable_text(template.get("body", []))
+        heading = self.substitute_variables(template.get("heading") or "", variables)
+        body_html = self.render_portable_text(template.get("body") or [])
         body_html = self.substitute_variables(body_html, variables)
-        footer = self.substitute_variables(template.get("footerText", ""), variables)
+        footer = self.substitute_variables(template.get("footerText") or "", variables)
         cta_text = template.get("ctaText")
-        cta_url = self.substitute_variables(template.get("ctaUrl", ""), variables) if template.get("ctaUrl") else None
+        cta_url = self.substitute_variables(template.get("ctaUrl") or "", variables) if template.get("ctaUrl") else None
 
         cta_html = ""
         if cta_text and cta_url:
@@ -185,19 +187,27 @@ class EmailService:
         Returns:
             True if email was sent successfully, False otherwise
         """
+        print(f"=== EMAIL SERVICE: Checking RESEND_API_KEY... ===")
         if not settings.RESEND_API_KEY:
+            print(f"=== EMAIL SERVICE ERROR: RESEND_API_KEY not configured ===")
             logger.warning(f"Skipping email to {to} - RESEND_API_KEY not configured")
             return False
 
         variables = variables or {}
 
+        print(f"=== EMAIL SERVICE: Fetching template '{template_id}' from Sanity... ===")
         template = await self.fetch_email_template(template_id)
         if not template:
+            print(f"=== EMAIL SERVICE ERROR: Template '{template_id}' not found in Sanity ===")
             logger.error(f"Email template '{template_id}' not found in Sanity")
             return False
+        print(f"=== EMAIL SERVICE: Template found: {template.get('subject')} ===")
 
-        subject = self.substitute_variables(template.get("subject", ""), variables)
+        subject = self.substitute_variables(template.get("subject") or "", variables)
         html = self.build_email_html(template, variables)
+
+        print(f"=== EMAIL SERVICE: Sending via Resend from {settings.RESEND_FROM_EMAIL} to {to} ===")
+        print(f"=== EMAIL SERVICE: Subject: {subject} ===")
 
         try:
             response = resend.Emails.send({
@@ -206,9 +216,11 @@ class EmailService:
                 "subject": subject,
                 "html": html,
             })
+            print(f"=== EMAIL SERVICE: Resend response: {response} ===")
             logger.info(f"Email sent successfully to {to} (template: {template_id})")
             return True
         except Exception as e:
+            print(f"=== EMAIL SERVICE ERROR: Failed to send via Resend: {type(e).__name__}: {str(e)} ===")
             logger.error(f"Failed to send email to {to}: {e}")
             return False
 
