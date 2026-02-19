@@ -19,8 +19,10 @@ from app.schemas.order import (
     AddressResponse,
     OrderCreate,
     OrderUpdate,
+    OrderEmailSend,
 )
 from sqlalchemy import func
+from app.services.email_service import email_service
 
 router = APIRouter()
 
@@ -240,6 +242,90 @@ def create_order_log(
         message=log.message,
         created_at=log.created_at,
     )
+
+@router.post("/orders/{order_id}/send-email")
+async def send_order_email(
+    order_id: int,
+    email_data: OrderEmailSend,
+    db: Session = Depends(get_db),
+    admin: AdminUser = Depends(get_current_admin)
+):
+    """Send an email to the customer using a Sanity template"""
+
+    import logging
+
+    logger = logging.getLogger(__name__)
+
+    print(f"=== EMAIL ENDPOINT CALLED: order_id={order_id}, template_id={email_data.template_id} ===")
+    logger.info(f"Email endpoint called for order {order_id} with template {email_data.template_id}")
+
+    try:
+        # Fetch order with all relationships
+        order = (
+            db.query(Order)
+            .options(
+                joinedload(Order.customer),
+                joinedload(Order.order_lines),
+                joinedload(Order.addresses)
+            )
+            .filter(Order.id == order_id)
+            .first()
+        )
+
+        if not order:
+            raise HTTPException(status_code=404, detail="Order not found")
+
+        if not order.customer or not order.customer.email:
+            raise HTTPException(status_code=400, detail="Order has no customer email")
+
+        # Build variables for email template
+        variables = {
+            "order_number": order.order_number,
+            "shipping_tracking_number": order.shipping_tracking_number or "Ikke satt",
+            "shipping_tracking_url": order.shipping_tracking_url or "Ikke satt",
+            "customer_name": order.customer.name,
+            "customer_email": order.customer.email,
+            "order_total": f"{order.total_amount / 100:.2f} {order.currency}" if order.total_amount else "0.00 NOK",
+            "order_status": order.status,
+            "created_at": order.created_at.strftime("%d.%m.%Y %H:%M"),
+            "updated_at": order.updated_at.strftime("%d.%m.%Y %H:%M"),
+        }
+
+        # Send email
+        try:
+            print(f"=== SENDING EMAIL to {order.customer.email} with template {email_data.template_id} ===")
+            success = await email_service.send_email(
+                to=order.customer.email,
+                template_id=email_data.template_id,
+                variables=variables
+            )
+            print(f"=== EMAIL SEND RESULT: {success} ===")
+        except Exception as e:
+            print(f"=== EMAIL ERROR: {type(e).__name__}: {str(e)} ===")
+            logger.error(f"Error sending email: {e}", exc_info=True)
+            raise HTTPException(status_code=500, detail=f"Failed to send email: {str(e)}")
+
+        if not success:
+            raise HTTPException(status_code=500, detail="Failed to send email - check logs for details")
+
+        # Log the email sending
+        log = OrderLog(
+            order_id=order_id,
+            created_by_type="admin",
+            created_by_admin_id=admin.id,
+            message=f"E-post sendt til kunde: {email_data.template_id}"
+        )
+        db.add(log)
+        db.commit()
+
+        return {"success": True, "message": "Email sent successfully"}
+
+    except HTTPException:
+        # Re-raise HTTP exceptions as-is
+        raise
+    except Exception as e:
+        logger.error(f"Unexpected error in send_order_email: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 def _map_to_order_response(
     order: Order
