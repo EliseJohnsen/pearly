@@ -16,6 +16,7 @@ from app.services.image_processing import (
 from app.services.ai_generation import AIGenerationService
 from app.services.pdf_generator import generate_pattern_pdf
 from app.services.pattern_generator import render_grid_to_base64, render_grid_to_image
+from app.services.color_service import clear_color_cache
 from app.core.config import settings
 from pathlib import Path
 from PIL import Image
@@ -426,8 +427,15 @@ def update_pattern_grid(
     if not pattern.pattern_data:
         raise HTTPException(status_code=400, detail="Pattern has no pattern data")
 
+    # Auto-detect storage version from grid content
+    # If grid contains # characters, it's v1 hex format
+    # Otherwise assume v2 code format
+    sample_value = update_request.grid[0][0] if update_request.grid and update_request.grid[0] else ""
+    storage_version = 1 if sample_value.startswith("#") else 2
+
     # Update the grid in pattern_data
     pattern.pattern_data["grid"] = update_request.grid
+    pattern.pattern_data["storage_version"] = storage_version
 
     # Update colors_used if provided
     if update_request.colors_used is not None:
@@ -468,13 +476,20 @@ def render_pattern_grid(pattern_id: str, bead_size: int = 10, db: Session = Depe
 
     try:
         grid = pattern.pattern_data["grid"]
-        base64_image = render_grid_to_base64(grid, bead_size=bead_size)
+        storage_version = pattern.pattern_data.get("storage_version", 1)
+
+        base64_image = render_grid_to_base64(
+            grid,
+            bead_size=bead_size,
+            storage_version=storage_version
+        )
 
         return {
             "pattern_image_base64": base64_image,
             "width": len(grid[0]) if grid else 0,
             "height": len(grid),
-            "bead_size": bead_size
+            "bead_size": bead_size,
+            "storage_version": storage_version
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error rendering grid: {str(e)}")
@@ -495,3 +510,22 @@ def get_perle_colors():
         return colors
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error reading perle colors: {str(e)}")
+
+
+@router.post("/admin/refresh-color-cache")
+def refresh_color_cache(admin: AdminUser = Depends(get_current_admin)):
+    """
+    Admin endpoint to refresh the color cache.
+    Use this after updating perle-colors.json to load new hex values.
+    """
+    try:
+        clear_color_cache()
+        from app.services.color_service import get_perle_colors as load_colors
+        colors = load_colors(force_reload=True)
+        return {
+            "success": True,
+            "message": "Color cache refreshed successfully",
+            "colors_loaded": len(colors)
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error refreshing color cache: {str(e)}")

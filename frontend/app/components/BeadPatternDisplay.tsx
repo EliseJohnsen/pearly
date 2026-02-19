@@ -24,6 +24,7 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
 }) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
   const imageUrl = `${apiUrl}${pattern.pattern_image_url}`;
+  const storageVersion = pattern.pattern_data?.storage_version || 1;
   const [patternGrid, setPatternGrid] = useState<string[][] | null>(
     pattern.pattern_data?.grid || null
   );
@@ -172,10 +173,10 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
     return Array.from(colorCounts.entries()).map(([colorCode, count]) => {
       const colorInfo = colorInfoMap[colorCode];
       return {
-        hex: colorInfo?.hex || colorCode,
+        // Don't include hex - it can be looked up from code
         name: colorInfo?.name || "Unknown",
         count,
-        code: colorInfo?.code
+        code: colorInfo?.code || colorCode
       };
     });
   };
@@ -183,10 +184,15 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
   const handleColorSelect = (newHex: string) => {
     if (!selectedBead || !patternGrid) return;
 
+    // Convert hex to code if storage version is 2
+    const newValue = storageVersion === 2
+      ? (perleColors.find(c => c.hex === newHex)?.code || "99")
+      : newHex;
+
     const newGrid = patternGrid.map((row, rowIndex) =>
       row.map((color, colIndex) => {
         if (rowIndex === selectedBead.row && colIndex === selectedBead.col) {
-          return newHex;
+          return newValue;
         }
         return color;
       })

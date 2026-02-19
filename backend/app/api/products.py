@@ -140,7 +140,7 @@ async def create_product_from_pattern_data(
     try:
         boards_w = product_data.pattern_data.get("boards_width", 1)
         boards_h = product_data.pattern_data.get("boards_height", 1)
-        grid_size_desc = f"{boards_w}x{boards_h} boards"
+        grid_size_desc = f"{boards_w} x {boards_h}"
 
         beads_width = product_data.pattern_data.get("width", 29)
         beads_height = product_data.pattern_data.get("height", 29)
@@ -176,7 +176,10 @@ async def create_product_from_pattern_data(
             category=None,
             pattern_id=str(db_pattern.id),
             price=product_data.price,
-            original_price=product_data.original_price
+            original_price=product_data.original_price,
+            patternBeadWdth = beads_width,
+            patternBeadHeight = beads_height,
+            totalBeads = total_beads,
         )
 
         # Store Sanity document ID in pattern data

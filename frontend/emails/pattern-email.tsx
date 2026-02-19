@@ -21,9 +21,10 @@ interface PatternEmailProps {
     boards_width?: number;
     boards_height?: number;
     colors_used?: Array<{
-      hex: string;
+      hex?: string;  // Optional - can be looked up from code
       name: string;
       count: number;
+      code?: string;
     }>;
   };
 }
@@ -91,7 +92,7 @@ export default function PatternEmail({
                             <div
                               style={{
                                 ...colorSwatch,
-                                backgroundColor: color.hex,
+                                backgroundColor: color.hex || '#CCCCCC',  // Fallback to gray
                               }}
                             />
                           </td>

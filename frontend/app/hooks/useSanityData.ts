@@ -102,6 +102,29 @@ export function useUIString(key: string): string {
   return data.value || key
 }
 
+// UI String with variable replacement
+export function useUIStringWithVars(
+  key: string,
+  vars?: Record<string, string | number>
+): string {
+  const {data, loading} = useSanityQuery<{value: string} | null>(
+    uiStringByKeyQuery(key)
+  )
+
+  if (loading || !data) return key
+
+  let result = data.value || key
+
+  // Replace variables in format {variableName}
+  if (vars) {
+    Object.entries(vars).forEach(([varKey, varValue]) => {
+      result = result.replace(new RegExp(`\\{${varKey}\\}`, 'g'), String(varValue))
+    })
+  }
+
+  return result
+}
+
 // Page Settings hook
 export function usePageSettings(page: string = 'home') {
   return useSanityQuery<PageSettings>(pageSettingsQuery(page))

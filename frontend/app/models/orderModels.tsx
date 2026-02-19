@@ -46,6 +46,8 @@ export interface Order {
   currency: string | null;
   shipping_method_id: string | null;
   shipping_amount: number | null;
+  shipping_tracking_number: string | null;
+  shipping_tracking_url: string | null;
   created_at: string;
   updated_at: string;
   customer: Customer | null;
