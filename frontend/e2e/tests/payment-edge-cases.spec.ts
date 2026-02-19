@@ -169,6 +169,9 @@ test.describe('Payment Flow - Edge Cases', () => {
     // User hits back button
     await page.goBack();
 
+    // Wait for navigation to complete
+    await page.waitForURL('**/handlekurv');
+
     // Should be on cart page
     const currentUrl = page.url();
     expect(currentUrl).toContain('/handlekurv');
@@ -211,6 +214,10 @@ test.describe('Payment Flow - Edge Cases', () => {
 
     // This tests UI resilience with edge case data
     const longName = 'A'.repeat(500);
+
+    // Navigate to a page first to enable localStorage access
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
 
     // Manually set cart with long name
     await page.evaluate((name) => {

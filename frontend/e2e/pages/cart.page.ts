@@ -32,6 +32,11 @@ export class CartPage {
   async goto() {
     await this.page.goto('/handlekurv');
     await this.page.waitForLoadState('networkidle');
+    // Wait for React to hydrate - either items will appear OR empty message will show
+    await Promise.race([
+      this.cartItems.first().waitFor({ state: 'visible', timeout: 5000 }).catch(() => {}),
+      this.emptyCartMessage.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {})
+    ]);
   }
 
   /**
@@ -74,7 +79,7 @@ export class CartPage {
    * Verify cart contains specific product
    */
   async verifyProductInCart(productName: string) {
-    await expect(this.page.getByText(productName)).toBeVisible();
+    await expect(this.page.getByRole('link', { name: productName })).toBeVisible();
   }
 
   /**

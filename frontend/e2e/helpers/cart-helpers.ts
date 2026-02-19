@@ -26,6 +26,13 @@ export class CartHelpers {
       currency?: string;
     }
   ): Promise<void> {
+    // Ensure we're on a page before accessing localStorage
+    const currentUrl = this.page.url();
+    if (!currentUrl || currentUrl === 'about:blank') {
+      await this.page.goto('/');
+      await this.page.waitForLoadState('networkidle');
+    }
+
     const cartItem = {
       productId,
       title,
@@ -60,7 +67,10 @@ export class CartHelpers {
       localStorage.setItem('perle-cart', JSON.stringify(cart));
     }, existingCart);
 
+    // Verify cart was saved (for debugging)
+    const savedCart = await this.getCartItems();
     console.log(`🛒 Added to cart: ${title} (${quantity}x ${price} ${cartItem.currency})`);
+    console.log(`   Cart now has ${savedCart.length} item(s)`);
   }
 
   /**

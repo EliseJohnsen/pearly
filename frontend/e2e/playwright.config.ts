@@ -45,14 +45,14 @@ export default defineConfig({
     // Base URL for page.goto()
     baseURL: process.env.TEST_BASE_URL || 'http://localhost:3000',
 
-    // Collect trace when retrying the failed test
-    trace: 'retain-on-failure',
+    // Disable trace (reduces output size)
+    trace: 'off',
 
-    // Screenshot on failure
+    // Screenshot on failure (kept for debugging)
     screenshot: 'only-on-failure',
 
-    // Video on failure
-    video: 'retain-on-failure',
+    // Disable video (reduces output size significantly)
+    video: 'off',
 
     // Maximum time for actions like click, fill, etc.
     actionTimeout: 10 * 1000,
