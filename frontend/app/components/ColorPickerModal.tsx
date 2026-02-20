@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 
 interface Color {
@@ -9,11 +9,17 @@ interface Color {
   hex: string;
 }
 
+interface ColorChange {
+  row: number;
+  col: number;
+  hex: string;
+}
+
 interface ColorPickerModalProps {
   colors: Color[];
   currentColor: string;
   surroundingColors?: (string | null)[][];
-  onSelectColor: (hex: string) => void;
+  onSelectColor: (changes: ColorChange[]) => void;
   onClose: () => void;
   position: { row: number; col: number };
 }
@@ -26,6 +32,62 @@ const ColorPickerModal: React.FC<ColorPickerModalProps> = ({
   onClose,
   position,
 }) => {
+  // Track which bead in the 3x3 grid is selected for editing (starts with center)
+  const [selectedGridPos, setSelectedGridPos] = useState<{ gridRow: number; gridCol: number }>({
+    gridRow: 1,
+    gridCol: 1
+  });
+
+  // Track pending color changes
+  const [pendingChanges, setPendingChanges] = useState<Map<string, string>>(new Map());
+
+  // Get the current color for the selected bead (considering pending changes)
+  const getDisplayColor = (gridRow: number, gridCol: number): string | null => {
+    const key = `${gridRow}-${gridCol}`;
+    if (pendingChanges.has(key)) {
+      return pendingChanges.get(key)!;
+    }
+    return surroundingColors[gridRow]?.[gridCol] || null;
+  };
+
+  // Convert grid position to actual pattern position
+  const gridToPatternPosition = (gridRow: number, gridCol: number) => {
+    return {
+      row: position.row + (gridRow - 1),
+      col: position.col + (gridCol - 1)
+    };
+  };
+
+  const handleBeadClick = (gridRow: number, gridCol: number) => {
+    // Check if this position is within the pattern bounds
+    const color = surroundingColors[gridRow]?.[gridCol];
+    if (color !== undefined) {
+      setSelectedGridPos({ gridRow, gridCol });
+    }
+  };
+
+  const handleColorSelect = (hex: string) => {
+    const key = `${selectedGridPos.gridRow}-${selectedGridPos.gridCol}`;
+    setPendingChanges(new Map(pendingChanges.set(key, hex)));
+  };
+
+  const handleSaveChanges = () => {
+    const changes: ColorChange[] = [];
+
+    pendingChanges.forEach((hex, key) => {
+      const [gridRow, gridCol] = key.split('-').map(Number);
+      const patternPos = gridToPatternPosition(gridRow, gridCol);
+      changes.push({
+        row: patternPos.row,
+        col: patternPos.col,
+        hex
+      });
+    });
+
+    onSelectColor(changes);
+  };
+
+  const selectedColor = getDisplayColor(selectedGridPos.gridRow, selectedGridPos.gridCol);
   return (
     <div
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
@@ -49,27 +111,54 @@ const ColorPickerModal: React.FC<ColorPickerModalProps> = ({
 
         <div className="mb-4 p-3 border border-gray-300 rounded-lg">
           {surroundingColors && surroundingColors.length > 0 ? (
-            <div className="grid grid-cols-3 gap-1 w-fit mx-auto">
-              {surroundingColors.map((row, rowIndex) =>
-                row.map((color, colIndex) => {
-                  const isCenter = rowIndex === 1 && colIndex === 1;
-                  return (
-                    <div
-                      key={`${rowIndex}-${colIndex}`}
-                      className={`w-10 h-10 rounded-full border-2 shadow-sm ${
-                        isCenter
-                          ? "border-purple ring-2 ring-purple/30"
-                          : color
-                          ? "border-gray-300"
-                          : "border-dashed border-gray-200 bg-gray-50"
-                      }`}
-                      style={{ backgroundColor: color || "transparent" }}
-                      title={color || "Ingen farge (utenfor mønster)"}
-                    />
-                  );
-                })
+            <>
+              <p className="text-sm text-gray-600 mb-2 text-center">
+                Klikk på en perle for å endre fargen
+              </p>
+              <div className="grid grid-cols-3 gap-1 w-fit mx-auto">
+                {surroundingColors.map((row, rowIndex) =>
+                  row.map((color, colIndex) => {
+                    const isCenter = rowIndex === 1 && colIndex === 1;
+                    const isSelected = selectedGridPos.gridRow === rowIndex && selectedGridPos.gridCol === colIndex;
+                    const displayColor = getDisplayColor(rowIndex, colIndex);
+                    const hasPendingChange = pendingChanges.has(`${rowIndex}-${colIndex}`);
+                    const isClickable = color !== undefined;
+
+                    return (
+                      <button
+                        key={`${rowIndex}-${colIndex}`}
+                        onClick={() => isClickable && handleBeadClick(rowIndex, colIndex)}
+                        disabled={!isClickable}
+                        className={`w-10 h-10 rounded-full border-2 shadow-sm transition-all ${
+                          isSelected
+                            ? "border-purple ring-4 ring-purple/40 scale-110"
+                            : hasPendingChange
+                            ? "border-amber-500 ring-2 ring-amber-300"
+                            : isCenter
+                            ? "border-purple ring-2 ring-purple/30"
+                            : color
+                            ? "border-gray-300 hover:border-purple/50 hover:scale-105"
+                            : "border-dashed border-gray-200 bg-gray-50 cursor-not-allowed"
+                        }`}
+                        style={{ backgroundColor: displayColor || "transparent" }}
+                        title={
+                          !isClickable
+                            ? "Utenfor mønster"
+                            : hasPendingChange
+                            ? "Endret (ikke lagret)"
+                            : displayColor || "Ingen farge"
+                        }
+                      />
+                    );
+                  })
+                )}
+              </div>
+              {pendingChanges.size > 0 && (
+                <p className="text-xs text-amber-600 mt-2 text-center">
+                  ⚠️ {pendingChanges.size} endring(er) - trykk "Lagre endringer"
+                </p>
               )}
-            </div>
+            </>
           ) : (
             <p className="text-sm text-gray-700 mb-2">
               <strong>Nåværende farge:</strong>{" "}
@@ -81,15 +170,15 @@ const ColorPickerModal: React.FC<ColorPickerModalProps> = ({
           )}
         </div>
 
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 mb-6">
           {colors.map((color) => (
             <button
               key={color.code}
-              onClick={() => onSelectColor(color.hex)}
+              onClick={() => handleColorSelect(color.hex)}
               className={`
                 flex flex-col items-center p-3 rounded-lg border-2 transition-all
                 ${
-                  color.hex === currentColor
+                  color.hex === selectedColor
                     ? "border-purple bg-purple/10"
                     : "border-gray-200 hover:border-purple/50 hover:bg-gray-50"
                 }
@@ -105,6 +194,22 @@ const ColorPickerModal: React.FC<ColorPickerModalProps> = ({
               <span className="text-xs text-gray-500">{color.code}</span>
             </button>
           ))}
+        </div>
+
+        <div className="flex gap-3 pt-4 border-t border-gray-200">
+          <button
+            onClick={onClose}
+            className="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
+          >
+            Avbryt
+          </button>
+          <button
+            onClick={handleSaveChanges}
+            disabled={pendingChanges.size === 0}
+            className="flex-1 px-4 py-2 bg-purple text-white rounded-lg font-semibold hover:bg-purple/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Lagre endringer {pendingChanges.size > 0 && `(${pendingChanges.size})`}
+          </button>
         </div>
       </div>
     </div>
