@@ -65,7 +65,7 @@ export default function CartPage() {
 
               <div className="divide-y divide-gray-200">
                 {items.map((item) => (
-                  <div key={item.productId} className="p-4">
+                  <div key={item.productId} className="p-4" data-testid="cart-item">
                     {/* Mobile layout */}
                     <div className="md:hidden space-y-3">
                       <div className="flex gap-4">
