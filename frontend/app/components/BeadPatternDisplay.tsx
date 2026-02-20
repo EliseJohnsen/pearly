@@ -153,7 +153,13 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
       }
     }
 
-    return grid;
+    // Convert color codes to hex values for display
+    return grid.map(row =>
+      row.map(colorCode => {
+        if (!colorCode) return null;
+        return colorInfoMap[colorCode]?.hex || colorCode;
+      })
+    );
   };
 
   const handleBeadClick = (row: number, col: number) => {
@@ -173,28 +179,32 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
     return Array.from(colorCounts.entries()).map(([colorCode, count]) => {
       const colorInfo = colorInfoMap[colorCode];
       return {
-        // Don't include hex - it can be looked up from code
         name: colorInfo?.name || "Unknown",
+        hex: colorInfo?.hex || "#FFFFFF",
         count,
         code: colorInfo?.code || colorCode
       };
     });
   };
 
-  const handleColorSelect = (newHex: string) => {
-    if (!selectedBead || !patternGrid) return;
+  const handleColorSelect = (changes: Array<{ row: number; col: number; hex: string }>) => {
+    if (!patternGrid || changes.length === 0) return;
 
-    // Convert hex to code if storage version is 2
-    const newValue = storageVersion === 2
-      ? (perleColors.find(c => c.hex === newHex)?.code || "99")
-      : newHex;
+    // Create a map of changes for quick lookup
+    const changeMap = new Map(
+      changes.map(change => [
+        `${change.row}-${change.col}`,
+        storageVersion === 2
+          ? (perleColors.find(c => c.hex === change.hex)?.code || "99")
+          : change.hex
+      ])
+    );
 
+    // Apply all changes at once
     const newGrid = patternGrid.map((row, rowIndex) =>
       row.map((color, colIndex) => {
-        if (rowIndex === selectedBead.row && colIndex === selectedBead.col) {
-          return newValue;
-        }
-        return color;
+        const key = `${rowIndex}-${colIndex}`;
+        return changeMap.get(key) || color;
       })
     );
 
@@ -260,7 +270,7 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
       {showColorPicker && selectedBead && patternGrid && (
         <ColorPickerModal
           colors={perleColors}
-          currentColor={patternGrid[selectedBead.row][selectedBead.col]}
+          currentColor={colorInfoMap[patternGrid[selectedBead.row][selectedBead.col]]?.hex || patternGrid[selectedBead.row][selectedBead.col]}
           surroundingColors={getSurroundingColors(selectedBead.row, selectedBead.col)}
           onSelectColor={handleColorSelect}
           onClose={() => {
