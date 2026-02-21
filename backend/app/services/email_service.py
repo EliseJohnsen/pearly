@@ -281,7 +281,7 @@ class EmailService:
 
         try:
             response = resend.Emails.send({
-                "from": settings.RESEND_FROM_EMAIL,
+                "from": f"Feel Pearly <{settings.RESEND_FROM_EMAIL}>",
                 "to": [to],
                 "subject": subject,
                 "html": html,

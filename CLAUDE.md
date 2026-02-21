@@ -60,6 +60,23 @@ alembic upgrade head             # Run migrations
 alembic revision -m "message"    # Create new migration (manual)
 ```
 
+### Webhook Testing with ngrok (Windows)
+
+For testing Vipps/Sanity webhooks locally:
+
+```bash
+# 1. Start backend server (in one terminal)
+cd backend
+venv\Scripts\activate
+uvicorn app.main:app --reload
+
+# 2. Start ngrok (in another terminal)
+ngrok http 8000
+
+```
+
+**Note:** ngrok URLs change on each restart unless you have a paid account with static domains.
+
 ## Backend Structure
 
 ```
