@@ -192,7 +192,9 @@ export default function PatternDetailPage() {
         </CollapsableCard>
 
 
-        <CollapsableCard header="Mønster">
+        <CollapsableCard 
+          header="Mønster" 
+          defaultExpanded={true}>
 
           <BeadPatternDisplay
             pattern={pattern!}

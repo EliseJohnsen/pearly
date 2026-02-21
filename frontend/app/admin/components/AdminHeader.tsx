@@ -10,6 +10,7 @@ export default function AdminHeader() {
     { href: '/admin/create-product', label: 'Opprett mønster / produkt' },
     { href: '/admin/patterns', label: 'Mønster' },
     { href: '/admin/orders', label: 'Bestillinger' },
+    { href: '/admin/settings', label: 'Innstillinger' },
   ]
 
   return (
