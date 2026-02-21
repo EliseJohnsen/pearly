@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect } from "react";
 import {useUIString} from '@/app/hooks/useSanityData'
-import { ShoppingBagIcon, ArrowDownTrayIcon } from "@heroicons/react/24/outline";
+import { ShoppingBagIcon, ArrowDownTrayIcon, ArrowsRightLeftIcon } from "@heroicons/react/24/outline";
 import CreateProductModal from "./CreateProductModal";
 import ColorPickerModal from "./ColorPickerModal";
+import ColorSwapModal from "./ColorSwapModal";
 import { Pattern } from "../models/patternModels";
 
 interface BeadPatternDisplayProps {
@@ -34,6 +35,7 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
   const [productId, setProductId] = useState<number | null>(null);
   const [downloadingPDF, setDownloadingPDF] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
+  const [showColorSwap, setShowColorSwap] = useState(false);
   const [selectedBead, setSelectedBead] = useState<{ row: number; col: number } | null>(null);
   const [perleColors, setPerleColors] = useState<Array<{ name: string; code: string; hex: string }>>([]);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -257,6 +259,19 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
     }
   };
 
+  const handleColorSwap = (sourceColor: string, targetColor: string) => {
+    if (!patternGrid) return;
+
+    // Perform the swap: replace all occurrences of sourceColor with targetColor
+    const newGrid = patternGrid.map(row =>
+      row.map(colorCode => colorCode === sourceColor ? targetColor : colorCode)
+    );
+
+    setPatternGrid(newGrid);
+    setHasUnsavedChanges(true);
+    setShowColorSwap(false);
+  };
+
   return (
     <>
       {showProductModal && (
@@ -278,6 +293,16 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
             setSelectedBead(null);
           }}
           position={selectedBead}
+        />
+      )}
+
+      {showColorSwap && patternGrid && (
+        <ColorSwapModal
+          colors={perleColors}
+          currentGrid={patternGrid}
+          colorInfoMap={colorInfoMap}
+          onSwapColors={handleColorSwap}
+          onClose={() => setShowColorSwap(false)}
         />
       )}
 
@@ -306,6 +331,14 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
               <span>{downloadingPDF ? "Genererer PDF..." : "Last ned PDF"}</span>
             </button>
           )}
+
+            <button
+              onClick={() => setShowColorSwap(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-dark-purple text-white hover:bg-purple rounded-lg font-semibold transition-colors"
+            >
+              <ArrowsRightLeftIcon className="w-5 h-5" />
+              <span>Bytt farger</span>
+            </button>
 
             <button
               onClick={() => setShowProductModal(true)}
