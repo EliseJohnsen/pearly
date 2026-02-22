@@ -27,6 +27,7 @@ export default function PatternDetailPage() {
     if (!patternId || isNaN(patternId)) return;
 
     try {
+      setLoading(true);
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
       const response = await fetch(`${apiUrl}/api/patterns/${patternId}`);
 
@@ -73,8 +74,6 @@ export default function PatternDetailPage() {
         setProducts(data);
       } catch (error) {
         console.error("Error fetching product:", error);
-      } finally {
-        setLoading(false);
       }
     }
 
@@ -192,7 +191,9 @@ export default function PatternDetailPage() {
         </CollapsableCard>
 
 
-        <CollapsableCard header="Mønster">
+        <CollapsableCard 
+          header="Mønster" 
+          defaultExpanded={true}>
 
           <BeadPatternDisplay
             pattern={pattern!}

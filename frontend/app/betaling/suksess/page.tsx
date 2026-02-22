@@ -70,13 +70,6 @@ function PaymentSuccessContent() {
     }).format(amountInKroner);
   };
 
-  const formatTotal = (amount: number | null, currency: string | null) => {
-    if (amount === null) return "—";
-    const shipping = orderStatus?.shipping_amount ? orderStatus?.shipping_amount : 0;
-    const total = amount + shipping;
-    return formatPrice(total, currency)
-  };
-
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
@@ -140,7 +133,10 @@ function PaymentSuccessContent() {
                   <div className="flex justify-between">
                     <span>Totalt:</span>
                     <span className="font-bold">
-                      {formatTotal(orderStatus.total_amount, orderStatus.currency)}
+                      {formatPrice(
+                        (orderStatus.total_amount || 0) + (orderStatus.shipping_amount || 0),
+                        orderStatus.currency
+                      )}
                     </span>
                   </div>
                 </div>

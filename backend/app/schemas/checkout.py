@@ -27,4 +27,5 @@ class CheckoutStatusResponse(BaseModel):
     status: str
     payment_status: str
     total_amount: Optional[int]
+    shipping_amount: Optional[int]
     currency: Optional[str]
