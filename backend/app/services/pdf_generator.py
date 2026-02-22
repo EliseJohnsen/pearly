@@ -9,6 +9,9 @@ import io
 import os
 
 from .color_service import code_to_hex
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 # Register custom fonts
@@ -167,7 +170,52 @@ def generate_pattern_pdf(
     board_size = pattern_data.get('board_size', 29)
     storage_version = pattern_data.get('storage_version', 1)  # Default to v1 for legacy patterns
 
-    color_info = {c['hex']: c for c in colors_used}
+    # Calculate dimensions from grid if not in pattern_data
+    if pattern_width == 0 and grid:
+        pattern_height = len(grid)
+        pattern_width = len(grid[0]) if grid else 0
+
+    # Recalculate board dimensions based on actual grid size
+    if grid and pattern_width > 0 and pattern_height > 0:
+        calculated_boards_width = (pattern_width + board_size - 1) // board_size  # Ceiling division
+        calculated_boards_height = (pattern_height + board_size - 1) // board_size
+
+        # If calculated boards differ from stored boards, use calculated ones
+        if calculated_boards_width != boards_width or calculated_boards_height != boards_height:
+            boards_width = calculated_boards_width
+            boards_height = calculated_boards_height
+
+    # Build color lookup based on storage version
+    if storage_version == 2:
+        print("PDF Generation - Building color_info for v2 (codes)")
+        # For v2, colors_used has codes but not hex - build lookup by code
+        # and populate hex values for each color
+        color_info_by_code = {}
+        for c in colors_used:
+            code = c.get('code')
+            if code:
+                # Populate hex from code for rendering
+                hex_value = code_to_hex(code)
+                if hex_value:
+                    c['hex'] = hex_value  # Add hex for later use
+                    color_info_by_code[code] = c
+                else:
+                    print(f"PDF Generation - Could not find hex for code {code}")
+        color_info = color_info_by_code
+    else:
+        # For v1, colors_used should have hex values (populated by API)
+        try:
+            color_info = {}
+            for c in colors_used:
+                hex_val = c.get('hex')
+                if hex_val:
+                    color_info[hex_val] = c
+                else:
+                    print(f"PDF Generation - Color missing hex: {c}")
+            print(f"PDF Generation - Built color_info with {len(color_info)} colors for v1")
+        except KeyError as e:
+            print(f"PDF Generation - KeyError building color_info for v1: {e}")
+            raise
 
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)
@@ -211,6 +259,7 @@ def generate_pattern_pdf(
             c.setFont(_get_font('bold'), font_size)
 
             # Draw the beads
+            logged_colors = set()  # Track which colors we've logged to avoid spam
             for row_idx in range(start_y, end_y):
                 for col_idx in range(start_x, end_x):
                     if row_idx < len(grid) and col_idx < len(grid[row_idx]):
@@ -223,10 +272,23 @@ def generate_pattern_pdf(
                             hex_color = code_to_hex(color_value)
                             if not hex_color:
                                 hex_color = "#FFFFFF"  # Fallback to white for unknown codes
+                                if color_value not in logged_colors:
+                                    print(f"PDF Generation - Unknown color code in grid: {color_value}")
+                                    logged_colors.add(color_value)
+                            elif color_value not in logged_colors:
+                                logger.debug(f"PDF Generation v2 - Code {color_code} -> Hex {hex_color}")
+                                logged_colors.add(color_value)
                         else:
                             # Grid contains hex, extract code from color_info
                             hex_color = color_value
-                            color_code = color_info.get(hex_color, {}).get('code', '?')
+                            color_info_entry = color_info.get(hex_color, {})
+                            color_code = color_info_entry.get('code', '?')
+
+                            if hex_color not in logged_colors:
+                                if not color_info_entry:
+                                    print(f"PDF Generation v1 - Hex {hex_color} not found in color_info")
+                                    print(f"PDF Generation v1 - Available keys: {list(color_info.keys())[:5]}")
+                                logged_colors.add(hex_color)
 
                         # Note: PDF coordinates start from bottom-left
                         # We need to flip the y-coordinate
