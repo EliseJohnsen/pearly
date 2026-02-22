@@ -27,6 +27,27 @@ const ColorSwapModal: React.FC<ColorSwapModalProps> = ({
   const [sourceColor, setSourceColor] = useState<string | null>(null);
   const [targetColor, setTargetColor] = useState<string | null>(null);
 
+  // Get all colors that actually exist in the pattern
+  const colorsInPattern = useMemo(() => {
+    const colorSet = new Set<string>();
+    currentGrid.forEach(row => {
+      row.forEach(colorCode => {
+        colorSet.add(colorCode);
+      });
+    });
+    return colorSet;
+  }, [currentGrid]);
+
+  // Filter colors to only show those that exist in the pattern for source selection
+  const availableSourceColors = useMemo(() => {
+    return colors.filter(color => {
+      // Check both code and hex to support both storage versions
+      const colorCode = colorInfoMap[color.code]?.code || color.code;
+      const colorHex = colorInfoMap[color.code]?.hex || color.hex;
+      return colorsInPattern.has(colorCode) || colorsInPattern.has(colorHex);
+    });
+  }, [colors, colorInfoMap, colorsInPattern]);
+
   // Calculate how many beads will be affected by the swap
   const affectedBeadsCount = useMemo(() => {
     if (!sourceColor) return 0;
@@ -103,29 +124,36 @@ const ColorSwapModal: React.FC<ColorSwapModalProps> = ({
               </div>
             )}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[300px] overflow-y-auto">
-              {colors.map((color) => (
-                <button
-                  key={`source-${color.code}`}
-                  onClick={() => setSourceColor(colorInfoMap[color.code]?.code || color.hex)}
-                  className={`
-                    flex flex-col items-center p-2 rounded-lg border-2 transition-all
-                    ${
-                      (colorInfoMap[color.code]?.code || color.hex) === sourceColor
-                        ? "border-purple bg-purple/10"
-                        : "border-gray-200 hover:border-purple/50 hover:bg-gray-50"
-                    }
-                  `}
-                >
-                  <div
-                    className="w-10 h-10 rounded-full border-2 border-gray-300 shadow-sm mb-1"
-                    style={{ backgroundColor: color.hex }}
-                  />
-                  <span className="text-xs font-semibold text-gray-700 text-center line-clamp-1">
-                    {color.name}
-                  </span>
-                  <span className="text-xs text-gray-500">{color.code}</span>
-                </button>
-              ))}
+              {availableSourceColors.map((color) => {
+                // Use whichever format exists in the pattern (code or hex)
+                const colorCode = colorInfoMap[color.code]?.code || color.code;
+                const colorHex = colorInfoMap[color.code]?.hex || color.hex;
+                const colorValue = colorsInPattern.has(colorCode) ? colorCode : colorHex;
+
+                return (
+                  <button
+                    key={`source-${color.code}`}
+                    onClick={() => setSourceColor(colorValue)}
+                    className={`
+                      flex flex-col items-center p-2 rounded-lg border-2 transition-all
+                      ${
+                        colorValue === sourceColor
+                          ? "border-purple bg-purple/10"
+                          : "border-gray-200 hover:border-purple/50 hover:bg-gray-50"
+                      }
+                    `}
+                  >
+                    <div
+                      className="w-10 h-10 rounded-full border-2 border-gray-300 shadow-sm mb-1"
+                      style={{ backgroundColor: color.hex }}
+                    />
+                    <span className="text-xs font-semibold text-gray-700 text-center line-clamp-1">
+                      {color.name}
+                    </span>
+                    <span className="text-xs text-gray-500">{color.code}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -149,29 +177,43 @@ const ColorSwapModal: React.FC<ColorSwapModalProps> = ({
               </div>
             )}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[300px] overflow-y-auto">
-              {colors.map((color) => (
-                <button
-                  key={`target-${color.code}`}
-                  onClick={() => setTargetColor(colorInfoMap[color.code]?.code || color.hex)}
-                  className={`
-                    flex flex-col items-center p-2 rounded-lg border-2 transition-all
-                    ${
-                      (colorInfoMap[color.code]?.code || color.hex) === targetColor
-                        ? "border-purple bg-purple/10"
-                        : "border-gray-200 hover:border-purple/50 hover:bg-gray-50"
-                    }
-                  `}
-                >
-                  <div
-                    className="w-10 h-10 rounded-full border-2 border-gray-300 shadow-sm mb-1"
-                    style={{ backgroundColor: color.hex }}
-                  />
-                  <span className="text-xs font-semibold text-gray-700 text-center line-clamp-1">
-                    {color.name}
-                  </span>
-                  <span className="text-xs text-gray-500">{color.code}</span>
-                </button>
-              ))}
+              {colors.map((color) => {
+                // Determine which format to use based on what's in the pattern
+                // If pattern uses codes, use codes; if it uses hex, use hex
+                const colorCode = colorInfoMap[color.code]?.code || color.code;
+                const colorHex = colorInfoMap[color.code]?.hex || color.hex;
+
+                // Check if any color in the pattern uses code format (has DMC- prefix or similar)
+                const patternUsesCodeFormat = Array.from(colorsInPattern).some(c =>
+                  typeof c === 'string' && (c.startsWith('DMC-') || c.startsWith('P-'))
+                );
+
+                const colorValue = patternUsesCodeFormat ? colorCode : colorHex;
+
+                return (
+                  <button
+                    key={`target-${color.code}`}
+                    onClick={() => setTargetColor(colorValue)}
+                    className={`
+                      flex flex-col items-center p-2 rounded-lg border-2 transition-all
+                      ${
+                        colorValue === targetColor
+                          ? "border-purple bg-purple/10"
+                          : "border-gray-200 hover:border-purple/50 hover:bg-gray-50"
+                      }
+                    `}
+                  >
+                    <div
+                      className="w-10 h-10 rounded-full border-2 border-gray-300 shadow-sm mb-1"
+                      style={{ backgroundColor: color.hex }}
+                    />
+                    <span className="text-xs font-semibold text-gray-700 text-center line-clamp-1">
+                      {color.name}
+                    </span>
+                    <span className="text-xs text-gray-500">{color.code}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -180,18 +222,10 @@ const ColorSwapModal: React.FC<ColorSwapModalProps> = ({
         {sourceColor && (
           <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <p className="text-sm text-gray-700">
-              {affectedBeadsCount > 0 ? (
-                <>
-                  <strong>📊 Forhåndsvisning:</strong> Dette vil endre{" "}
-                  <span className="font-bold text-blue-600">{affectedBeadsCount}</span>{" "}
-                  {affectedBeadsCount === 1 ? "perle" : "perler"}
-                  {targetColor && " i mønsteret"}
-                </>
-              ) : (
-                <>
-                  <strong>⚠️</strong> Denne fargen finnes ikke i mønsteret
-                </>
-              )}
+              <strong>📊 Forhåndsvisning:</strong> Dette vil endre{" "}
+              <span className="font-bold text-blue-600">{affectedBeadsCount}</span>{" "}
+              {affectedBeadsCount === 1 ? "perle" : "perler"}
+              {targetColor && " i mønsteret"}
             </p>
           </div>
         )}

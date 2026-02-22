@@ -229,17 +229,35 @@ export default function CreateProductModal({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Beskrivelse *
+                Beskrivelse
               </label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                required
                 rows={3}
                 placeholder="Beskriv produktet..."
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
               />
             </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-3 border-t border-gray-200 pt-6">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={loading}
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+            >
+              Avbryt
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex-1 px-4 py-2 bg-primary text-white rounded-lg font-semibold hover:bg-primary-dark-pink transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? "Oppretter..." : "Opprett produkt"}
+            </button>
           </div>
 
           {/* Variant Information */}
