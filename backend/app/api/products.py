@@ -10,6 +10,7 @@ from app.schemas.pattern import PatternResponse
 from app.services.sanity_service import SanityService
 from app.services.room_template_service import RoomTemplateService
 from app.services.mockup_generator import MockupGenerator
+from app.services.color_service import code_to_hex
 import base64
 import logging
 import uuid as uuid_lib
@@ -17,6 +18,28 @@ import uuid as uuid_lib
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+
+def ensure_colors_have_hex(colors_used: list) -> list:
+    """
+    Ensures all colors in colors_used have hex values populated.
+    Both v1 and v2 store colors_used without hex (only codes), so we populate from codes.
+    """
+    result = []
+    for color in colors_used:
+        color_copy = color.copy()
+        if 'hex' not in color_copy or not color_copy['hex']:
+            code = color_copy.get('code')
+            if code:
+                hex_value = code_to_hex(code)
+                if hex_value:
+                    color_copy['hex'] = hex_value
+                else:
+                    color_copy['hex'] = '#CCCCCC'
+            else:
+                color_copy['hex'] = '#CCCCCC'
+        result.append(color_copy)
+    return result
 
 
 @router.post("/products/create-from-pattern-data", response_model=PatternResponse)
@@ -205,12 +228,15 @@ async def create_product_from_pattern_data(
 
     logger.info(f"Successfully created pattern {db_pattern.id} with Sanity product")
 
+    # Ensure colors_used has hex values populated (works for both v1 and v2)
+    colors_used_with_hex = ensure_colors_have_hex(db_pattern.colors_used or [])
+
     return PatternResponse(
         id=db_pattern.id,
         uuid=db_pattern.uuid,
         pattern_image_url=pattern_upload_result['url'],
         grid_size=db_pattern.grid_size,
-        colors_used=db_pattern.colors_used,
+        colors_used=colors_used_with_hex,
         created_at=db_pattern.created_at,
         boards_width=boards_w,
         boards_height=boards_h,
