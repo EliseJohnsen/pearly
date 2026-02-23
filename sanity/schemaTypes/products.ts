@@ -34,10 +34,11 @@ export default defineType({
           {title: 'Perlekit', value: 'kit'},
           {title: 'Verktøy', value: 'tools'},
           {title: 'Eget motiv', value: 'custom_kit'},
+          {title: 'Strukturprodukt', value: 'structure'},
         ],
       },
       validation: (Rule) => Rule.required(),
-      initialValue: 'pattern',
+      initialValue: 'kit',
     }),
     defineField({
       name: 'status',
@@ -124,6 +125,69 @@ export default defineType({
       type: 'string',
       initialValue: 'NOK',
       readOnly: true,
+    }),
+    defineField({
+      name: 'requiresParent',
+      title: 'Krever tilknyttet produkt',
+      type: 'boolean',
+      description: 'Kan dette produktet kun kjøpes sammen med et annet produkt?',
+      initialValue: false,
+      hidden: ({document}) => document?.productType !== 'structure',
+    }),
+    defineField({
+      name: 'allowedParents',
+      title: 'Tillatte foreldreprodukter',
+      type: 'array',
+      of: [{type: 'string'}],
+      options: {
+        list: [
+          {title: 'Perlekit', value: 'kit'},
+          {title: 'Eget motiv', value: 'custom_kit'},
+          {title: 'Verktøy', value: 'tools'},
+        ],
+      },
+      description: 'Hvilke produkttyper kan dette strukturproduktet knyttes til?',
+      hidden: ({document}) => document?.productType !== 'structure' || !document?.requiresParent,
+      validation: (Rule) =>
+        Rule.custom((value, context) => {
+          const requiresParent = (context.document as any)?.requiresParent
+          if (requiresParent && (!value || value.length === 0)) {
+            return 'Du må velge minst én tillatt produkttype'
+          }
+          return true
+        }),
+    }),
+    defineField({
+      name: 'requiredBoards',
+      title: 'Antall perlebrett påkrevd',
+      type: 'number',
+      description: 'Hvor mange perlebrett trengs for dette kittet? (brukes for anbefaling)',
+      hidden: ({document}) =>
+        document?.productType !== 'kit' && document?.productType !== 'custom_kit',
+      validation: (Rule) =>
+        Rule.custom((value, context) => {
+          const productType = (context.document as any)?.productType
+          if ((productType === 'kit' || productType === 'custom_kit') && value && value <= 0) {
+            return 'Antall perlebrett må være større enn 0'
+          }
+          return true
+        }),
+    }),
+    defineField({
+      name: 'recommendedAddOns',
+      title: 'Anbefalte tilleggsvarer',
+      type: 'array',
+      of: [
+        {
+          type: 'reference',
+          to: [{type: 'products'}],
+          options: {
+            filter: 'productType == "structure"',
+          },
+        },
+      ],
+      description: 'Strukturprodukter som anbefales sammen med dette produktet',
+      hidden: ({document}) => document?.productType === 'structure',
     }),
     defineField({
       name: 'gridSize',
@@ -255,6 +319,8 @@ export default defineType({
       const typeMap: Record<string, string> = {
         kit: 'Perlekit',
         tools: 'Verktøy',
+        custom_kit: 'Eget motiv',
+        structure: 'Strukturprodukt',
       }
       return {
         title,
