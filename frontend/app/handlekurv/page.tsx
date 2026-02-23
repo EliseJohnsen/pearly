@@ -3,9 +3,165 @@
 import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
 import VippsCheckoutButton, { OrderLine } from "@/app/components/VippsCheckoutButton";
-import { useCart } from "@/app/contexts/CartContext";
+import { useCart, CartItem } from "@/app/contexts/CartContext";
 import { TrashIcon, MinusIcon, PlusIcon, ShoppingBagIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
+
+// Transform cart items to order lines (recursive)
+function transformCartItemsToOrderLines(items: CartItem[]): OrderLine[] {
+  return items.map((item) => ({
+    product_id: item.productId,
+    name: item.title,
+    unit_price: Math.round(item.price * 100), // Convert to øre
+    quantity: item.quantity,
+    product_type: item.productType,
+    children: item.children ? transformCartItemsToOrderLines(item.children) : undefined,
+  }));
+}
+
+// Recursive cart item row component
+function CartItemRow({
+  item,
+  level = 0,
+  onRemove,
+  onUpdateQuantity,
+  formatPrice,
+}: {
+  item: CartItem;
+  level?: number;
+  onRemove: (lineId: string) => void;
+  onUpdateQuantity: (lineId: string, qty: number) => void;
+  formatPrice: (price: number, currency?: string) => string;
+}) {
+  const isChild = level > 0;
+
+  return (
+    <>
+      <div className={`px-4 ${isChild ? "py-2" : "py-4"}`} data-testid="cart-item">
+        {/* Mobile layout */}
+        <div className="md:hidden space-y-3">
+          <div className="flex gap-4">
+            {item.imageUrl && !isChild && (
+              <img
+                src={item.imageUrl}
+                alt={item.title}
+                className="w-20 h-20 object-cover rounded-lg"
+              />
+            )}
+            <div className="flex-1">
+              <Link
+                href={`/produkter/${item.slug}`}
+                className={`font-semibold hover:text-primary transition-colors ${
+                  isChild ? "text-sm" : ""
+                }`}
+              >
+                {item.title}
+              </Link>
+              <p className={`mt-1 ${isChild ? "text-sm" : ""}`}>
+                {formatPrice(item.price, item.currency)}
+              </p>
+            </div>
+            <button
+              onClick={() => onRemove(item.lineId)}
+              className="text-gray-500 hover:text-red-500 transition-colors p-1"
+              aria-label="Fjern produkt"
+            >
+              <TrashIcon className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => onUpdateQuantity(item.lineId, item.quantity - 1)}
+                className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 hover:bg-gray-100 transition-colors"
+                aria-label="Reduser antall"
+              >
+                <MinusIcon className="w-4 h-4" />
+              </button>
+              <span className="w-8 text-center font-medium">{item.quantity}</span>
+              <button
+                onClick={() => onUpdateQuantity(item.lineId, item.quantity + 1)}
+                className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 hover:bg-gray-100 transition-colors"
+                aria-label="Øk antall"
+              >
+                <PlusIcon className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="font-semibold">
+              {formatPrice(item.price * item.quantity, item.currency)}
+            </p>
+          </div>
+        </div>
+
+        {/* Desktop layout */}
+        <div className="hidden md:grid md:grid-cols-12 gap-4 items-center">
+          <div className={`col-span-6 flex items-center gap-4`}>
+            {item.imageUrl && !isChild && (
+              <img
+                src={item.imageUrl}
+                alt={item.title}
+                className="w-16 h-16 object-cover rounded-lg"
+              />
+            )}
+            <Link
+              href={`/produkter/${item.slug}`}
+              className={`font-semibold hover:text-primary transition-colors ${
+                isChild ? "text-sm pl-10" : ""
+              }`}
+            >
+              {item.title}
+            </Link>
+          </div>
+          <div className="col-span-2 text-center">
+            {formatPrice(item.price, item.currency)}
+          </div>
+          <div className="col-span-2 flex items-center justify-center gap-2">
+            <button
+              onClick={() => onUpdateQuantity(item.lineId, item.quantity - 1)}
+              className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 hover:bg-gray-100 transition-colors"
+              aria-label="Reduser antall"
+            >
+              <MinusIcon className="w-4 h-4" />
+            </button>
+            <span className="w-8 text-center font-medium">{item.quantity}</span>
+            <button
+              onClick={() => onUpdateQuantity(item.lineId, item.quantity + 1)}
+              className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 hover:bg-gray-100 transition-colors"
+              aria-label="Øk antall"
+            >
+              <PlusIcon className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="col-span-2 flex items-center justify-end gap-4">
+            <span className="font-semibold">
+              {formatPrice(item.price * item.quantity, item.currency)}
+            </span>
+            <button
+              onClick={() => onRemove(item.lineId)}
+              className="text-gray-500 hover:text-red-500 transition-colors p-1"
+              aria-label="Fjern produkt"
+            >
+              <TrashIcon className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Render children recursively */}
+      {item.children?.map((child) => (
+        <CartItemRow
+          key={child.lineId}
+          item={child}
+          level={level + 1}
+          onRemove={onRemove}
+          onUpdateQuantity={onUpdateQuantity}
+          formatPrice={formatPrice}
+        />
+      ))}
+    </>
+  );
+}
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, clearCart, totalPrice } = useCart();
@@ -20,18 +176,13 @@ export default function CartPage() {
 
   const formatTotal = (price: number, currency: string = "NOK") => {
     let sum = price + shipping;
-    return formatPrice(sum, currency)
+    return formatPrice(sum, currency);
   };
 
   const currency = items.length > 0 ? items[0].currency : "NOK";
 
-  // Prepare order lines for checkout - convert price to øre
-  const orderLines: OrderLine[] = items.map((item) => ({
-    product_id: item.productId,
-    name: item.title,
-    unit_price: Math.round(item.price * 100), // Convert to øre
-    quantity: item.quantity,
-  }));
+  // Prepare order lines for checkout - convert to nested structure with prices in øre
+  const orderLines: OrderLine[] = transformCartItemsToOrderLines(items);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -65,112 +216,13 @@ export default function CartPage() {
 
               <div className="divide-y divide-gray-200">
                 {items.map((item) => (
-                  <div key={item.productId} className="p-4" data-testid="cart-item">
-                    {/* Mobile layout */}
-                    <div className="md:hidden space-y-3">
-                      <div className="flex gap-4">
-                        {item.imageUrl && (
-                          <img
-                            src={item.imageUrl}
-                            alt={item.title}
-                            className="w-20 h-20 object-cover rounded-lg"
-                          />
-                        )}
-                        <div className="flex-1">
-                          <Link
-                            href={`/produkter/${item.slug}`}
-                            className="font-semibold hover:text-primary transition-colors"
-                          >
-                            {item.title}
-                          </Link>
-                          <p className="mt-1">
-                            {formatPrice(item.price, item.currency)}
-                          </p>
-                        </div>
-                        <button
-                          onClick={() => removeItem(item.productId)}
-                          className="text-gray-500 hover:text-red-500 transition-colors p-1"
-                          aria-label="Fjern produkt"
-                        >
-                          <TrashIcon className="w-5 h-5" />
-                        </button>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => updateQuantity(item.productId, item.quantity - 1)}
-                            className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 hover:bg-gray-100 transition-colors"
-                            aria-label="Reduser antall"
-                          >
-                            <MinusIcon className="w-4 h-4" />
-                          </button>
-                          <span className="w-8 text-center font-medium">{item.quantity}</span>
-                          <button
-                            onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                            className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 hover:bg-gray-100 transition-colors"
-                            aria-label="Øk antall"
-                          >
-                            <PlusIcon className="w-4 h-4" />
-                          </button>
-                        </div>
-                        <p className="font-semibold">
-                          {formatPrice(item.price * item.quantity, item.currency)}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Desktop layout */}
-                    <div className="hidden md:grid md:grid-cols-12 gap-4 items-center">
-                      <div className="col-span-6 flex items-center gap-4">
-                        {item.imageUrl && (
-                          <img
-                            src={item.imageUrl}
-                            alt={item.title}
-                            className="w-16 h-16 object-cover rounded-lg"
-                          />
-                        )}
-                        <Link
-                          href={`/produkter/${item.slug}`}
-                          className="font-semibold hover:text-primary transition-colors"
-                        >
-                          {item.title}
-                        </Link>
-                      </div>
-                      <div className="col-span-2 text-center">
-                        {formatPrice(item.price, item.currency)}
-                      </div>
-                      <div className="col-span-2 flex items-center justify-center gap-2">
-                        <button
-                          onClick={() => updateQuantity(item.productId, item.quantity - 1)}
-                          className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 hover:bg-gray-100 transition-colors"
-                          aria-label="Reduser antall"
-                        >
-                          <MinusIcon className="w-4 h-4" />
-                        </button>
-                        <span className="w-8 text-center font-medium">{item.quantity}</span>
-                        <button
-                          onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                          className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 hover:bg-gray-100 transition-colors"
-                          aria-label="Øk antall"
-                        >
-                          <PlusIcon className="w-4 h-4" />
-                        </button>
-                      </div>
-                      <div className="col-span-2 flex items-center justify-end gap-4">
-                        <span className="font-semibold">
-                          {formatPrice(item.price * item.quantity, item.currency)}
-                        </span>
-                        <button
-                          onClick={() => removeItem(item.productId)}
-                          className="text-gray-500 hover:text-red-500 transition-colors p-1"
-                          aria-label="Fjern produkt"
-                        >
-                          <TrashIcon className="w-5 h-5" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                  <CartItemRow
+                    key={item.lineId}
+                    item={item}
+                    onRemove={removeItem}
+                    onUpdateQuantity={updateQuantity}
+                    formatPrice={formatPrice}
+                  />
                 ))}
               </div>
             </div>

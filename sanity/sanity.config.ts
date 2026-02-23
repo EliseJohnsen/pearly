@@ -3,6 +3,7 @@ import {structureTool} from 'sanity/structure'
 import {visionTool} from '@sanity/vision'
 import {presentationTool} from 'sanity/presentation'
 import {schemaTypes} from './schemaTypes'
+import {structure} from './structure'
 
 const projectId = 'qpdup7gv'
 
@@ -16,7 +17,7 @@ export default defineConfig([
     dataset: 'production',
 
     plugins: [
-      structureTool(),
+      structureTool({structure}),
       visionTool(),
       presentationTool({
         previewUrl: {
@@ -62,7 +63,7 @@ export default defineConfig([
     dataset: 'test',
 
     plugins: [
-      structureTool(),
+      structureTool({structure}),
       visionTool(),
       presentationTool({
         previewUrl: {
