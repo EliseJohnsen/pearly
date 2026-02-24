@@ -6,6 +6,8 @@ import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
 import PatternFlowStepper from "@/app/components/PatternFlowStepper";
 import LoadingSpinner from "../components/LoadingSpinner";
+import ProductCard from "../components/ProductCard";
+import { useUIString } from "../hooks/useSanityData";
 
 const STORAGE_KEY = "pearly_pattern_flow";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -28,6 +30,18 @@ interface PatternSize {
   beadCount: number;
 }
 
+interface CustomKit {
+  _id: string;
+  title: string;
+  slug: string;
+  productType: string;
+  productSize: number;
+  sizeName: string;
+  status: string;
+  price: number;
+  description: string;
+}
+
 export default function VelgStorrelsePage() {
   const router = useRouter();
   const [flowData, setFlowData] = useState<PatternFlowData>({
@@ -38,10 +52,27 @@ export default function VelgStorrelsePage() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [patterns, setPatterns] = useState<PatternSize[]>([]);
+  const [customKits, setCustomKits] = useState<CustomKit[]>([]);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loadingMockups, setLoadingMockups] = useState<Set<string>>(new Set());
   const [hoveredPattern, setHoveredPattern] = useState<string | null>(null);
+  const chooseSizeHeader = useUIString("velg_størrelse_header");
+  const chooseSizeText = useUIString("velg_størrelse_tekst");
+
+  const fetchCustomKits = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/products/custom-kits`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch custom kits");
+      }
+      const result = await response.json();
+      setCustomKits(result.kits);
+    } catch (err) {
+      console.error("Error fetching custom kits:", err);
+      // Don't show error to user - prices will just not display
+    }
+  };
 
   // Load data from localStorage and generate patterns
   useEffect(() => {
@@ -55,6 +86,7 @@ export default function VelgStorrelsePage() {
         }
         setFlowData(data);
         generatePatterns(data);
+        fetchCustomKits();
       } catch (e) {
         console.error("Failed to parse stored flow data", e);
         router.push("/last-opp-bilde");
@@ -145,19 +177,49 @@ export default function VelgStorrelsePage() {
     setSelectedSize(size);
   };
 
-  const handleContinue = () => {
-    if (selectedSize) {
-      const selectedPattern = patterns.find((p) => p.size === selectedSize);
-      if (selectedPattern) {
-        // TODO: Navigate to product page or create product
-        // For now, just save to localStorage
-        const updatedData = { ...flowData, size: selectedSize };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
-        localStorage.setItem("selected_pattern", JSON.stringify(selectedPattern));
+  const handleContinue = async () => {
+    if (!selectedSize) return;
 
-        // Navigate to product page (placeholder)
-        alert("Pattern selected! Navigate to product page next.");
+    const selectedPattern = patterns.find((p) => p.size === selectedSize);
+    if (!selectedPattern) return;
+
+    try {
+      // Save pattern to localStorage
+      const updatedData = { ...flowData, size: selectedSize };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
+      localStorage.setItem("custom_pattern", JSON.stringify(selectedPattern));
+
+      // Find the custom kit from the cached list
+      const customKit = customKits.find((kit) => kit.sizeName === selectedSize);
+
+      if (!customKit) {
+        // Fallback: fetch from API if not found in cached list
+        const sizeMap: Record<string, number> = { small: 1, medium: 2, large: 3 };
+        const productSize = sizeMap[selectedSize];
+        const response = await fetch(
+          `${API_URL}/api/products/custom-kit-by-size?product_size=${productSize}`
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch custom kit product");
+        }
+
+        const fetchedKit = await response.json();
+
+        // Store the custom kit info for the product page
+        localStorage.setItem("custom_kit", JSON.stringify(fetchedKit));
+
+        router.push(`/produkter/${fetchedKit.slug}?custom=true`);
+      } else {
+        // Store the custom kit info for the product page
+        localStorage.setItem("custom_kit", JSON.stringify(customKit));
+
+        // Navigate to product page with custom flag
+        router.push(`/produkter/${customKit.slug}?custom=true`);
       }
+    } catch (err) {
+      console.error("Error navigating to product:", err);
+      setError("Kunne ikke hente produktinformasjon. Vennligst prøv igjen.");
     }
   };
 
@@ -167,7 +229,7 @@ export default function VelgStorrelsePage() {
       medium: "Medium",
       large: "Stor",
     };
-    return `${labels[size] || size} (${boardsW}x${boardsH} perlebrett)`;
+    return `${labels[size] || size} (ca ${boardsW * 15}x${boardsH * 15} cm)`;
   };
 
   if (!flowData.imageFile) {
@@ -184,8 +246,8 @@ export default function VelgStorrelsePage() {
 
           {isLoading && (
             <div className="flex flex-col items-center justify-center py-16">
-              <LoadingSpinner 
-                loadingMessage="Genererer ditt perlemønster..."
+              <LoadingSpinner
+                loadingMessage="Genererer dine perlemønster..."
                 description="Dette tar ca. 10-15 sekunder"></LoadingSpinner>
             </div>
           )}
@@ -200,10 +262,10 @@ export default function VelgStorrelsePage() {
             <>
               <div className="text-center mb-8">
                 <h1 className="text-3xl font-bold text-[#6B4E71] mb-3">
-                  Velg størrelse
+                  {chooseSizeHeader}
                 </h1>
                 <p className="text-[#6B4E71] text-base">
-                  Vi har generert tre størrelser for deg. Velg den som passer best.
+                  {chooseSizeText}
                 </p>
               </div>
               <div className="flex flex-col-reverse md:grid md:grid-cols-3 gap-6 mb-8">
@@ -211,56 +273,42 @@ export default function VelgStorrelsePage() {
                   const isHovered = hoveredPattern === pattern.size;
                   const showMockup = isHovered && pattern.mockupBase64;
                   const isLoadingMockup = loadingMockups.has(pattern.size);
+                  const customKit = customKits.find((kit) => kit.sizeName === pattern.size);
+                  const priceInKr = customKit ? customKit.price.toFixed(0) : null;
 
                   return (
-                    <button
+                    <ProductCard
                       key={pattern.size}
+                      title={getSizeLabel(pattern.size, pattern.boardsWidth, pattern.boardsHeight)}
+                      imageUrl={showMockup ? pattern.mockupBase64! : pattern.patternBase64}
+                      imageAlt={`${pattern.size} ${showMockup ? "mockup" : "pattern"}`}
+                      imageOverlay={
+                        isLoadingMockup && isHovered ? (
+                          <div className="absolute inset-0 bg-primary-pink bg-opacity-30 flex items-center justify-center rounded-lg">
+                            <LoadingSpinner loadingMessage="Henter interiørbilder" />
+                          </div>
+                        ) : null
+                      }
+                      isSelected={selectedSize === pattern.size}
                       onClick={() => handleSizeSelect(pattern.size)}
                       onMouseEnter={() => {
                         setHoveredPattern(pattern.size);
                         loadMockup(pattern);
                       }}
                       onMouseLeave={() => setHoveredPattern(null)}
-                      className={`relative rounded-2xl transition-all text-left hover:z-10 ${
-                        selectedSize === pattern.size
-                          ? "border-[#6B4E71] bg-[#F5F0F6] shadow-lg"
-                          : "border-[#C4B5C7] bg-white hover:border-[#6B4E71]"
-                      }`}
+                      className="h-full"
                     >
-                      <div className="aspect-square rounded-lg overflow-hidden mb-4 bg-gray-100 relative">
-                        <img
-                          src={showMockup ? pattern.mockupBase64! : pattern.patternBase64}
-                          alt={`${pattern.size} ${showMockup ? "mockup" : "pattern"}`}
-                          className={`w-full h-full transition-opacity duration-300 ${
-                            showMockup ? "object-cover" : "object-contain"
-                          }`}
-                        />
-                        {isLoadingMockup && isHovered && (
-                          <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-                          </div>
-                        )}
-                      </div>
-                      <div className="px-4 py-6">
-                        <h3 className="text-lg font-bold text-[#6B4E71] mb-1">
-                          {getSizeLabel(pattern.size, pattern.boardsWidth, pattern.boardsHeight)}
-                        </h3>
-                        <p className="text-sm text-[#6B4E71]">
-                          {pattern.patternData.width} x {pattern.patternData.height} perler
+                      {priceInKr && (
+                        <p className="text-lg font-bold text-[#6B4E71] mt-2">
+                          {priceInKr} kr
                         </p>
-                        <p className="text-sm text-[#6B4E71]">
-                          {pattern.colorsUsed.length} farger
+                      )}
+                      {isHovered && !pattern.mockupBase64 && !isLoadingMockup && (
+                        <p className="text-xs text-[#6B4E71] opacity-60 mt-1">
+                          Hold musepekeren for interiørbilde
                         </p>
-                        <p className="text-sm text-[#6B4E71]">
-                          {pattern.beadCount} farger
-                        </p>
-                        {isHovered && !pattern.mockupBase64 && !isLoadingMockup && (
-                          <p className="text-xs text-[#6B4E71] opacity-60 mt-1">
-                            Hold musepekeren for interiørbilde
-                          </p>
-                        )}
-                      </div>
-                    </button>
+                      )}
+                    </ProductCard>
                   );
                 })}
               </div>

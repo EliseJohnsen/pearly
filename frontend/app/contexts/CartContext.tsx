@@ -15,6 +15,7 @@ export interface CartItem {
   requiresParent?: boolean;    // NEW: Whether this is a strukturprodukt
   requiredBoards?: number;     // NEW: How many boards recommended for kits
   children?: CartItem[];       // NEW: Nested add-ons
+  customPattern?: any;         // NEW: Custom pattern data for custom_kit products
 }
 
 interface CartContextType {
