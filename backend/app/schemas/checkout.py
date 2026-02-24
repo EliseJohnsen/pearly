@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from typing import List, Optional
 
 
@@ -7,6 +7,19 @@ class CheckoutOrderLineCreate(BaseModel):
     name: str
     unit_price: int  # Price in øre
     quantity: int
+    product_type: Optional[str] = None
+    children: Optional[List['CheckoutOrderLineCreate']] = None
+
+    @field_validator('quantity')
+    @classmethod
+    def quantity_must_be_non_negative(cls, v):
+        if v < 0:
+            raise ValueError('Quantity must be 0 or greater')
+        return v
+
+
+# Enable forward references for recursive model
+CheckoutOrderLineCreate.model_rebuild()
 
 
 class CheckoutCreate(BaseModel):
@@ -27,4 +40,5 @@ class CheckoutStatusResponse(BaseModel):
     status: str
     payment_status: str
     total_amount: Optional[int]
+    shipping_amount: Optional[int]
     currency: Optional[str]

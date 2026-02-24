@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  # PostgreSQL test database
+  postgres-test:
+    image: postgres:15
+    container_name: pearly-test-db
+    environment:
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+      POSTGRES_DB: pearly_test
+      POSTGRES_INITDB_ARGS: "-E UTF8"
+    ports:
+      - "5433:5432"  # Use port 5433 to avoid conflict with dev database
+    volumes:
+      # Use tmpfs for faster performance (in-memory database)
+      - type: tmpfs
+        target: /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test_user -d pearly_test"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - test-network
+
+networks:
+  test-network:
+    driver: bridge
+
+# Usage:
+#
+# Start test database:
+#   docker-compose -f docker-compose.test.yml up -d
+#
+# Stop test database:
+#   docker-compose -f docker-compose.test.yml down
+#
+# View logs:
+#   docker-compose -f docker-compose.test.yml logs -f
+#
+# Restart (clean slate):
+#   docker-compose -f docker-compose.test.yml down -v
+#   docker-compose -f docker-compose.test.yml up -d
+#
+# After starting, run migrations:
+#   cd backend
+#   DATABASE_URL=postgresql://test_user:test_password@localhost:5433/pearly_test alembic upgrade head

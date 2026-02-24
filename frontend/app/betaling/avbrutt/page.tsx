@@ -83,7 +83,7 @@ function PaymentCancelledContent() {
           icon: <XCircleIcon className="w-20 h-20 text-gray-500 mx-auto mb-6" />,
           title: "Betaling avbrutt",
           message: "Betalingen ble avbrutt. Ingen penger er trukket fra kontoen din.",
-          subtitle: "Handlekurven din er fortsatt lagret hvis du ønsker å prøve igjen.",
+          subtitle: "",
         };
     }
   };
@@ -154,12 +154,6 @@ function PaymentCancelledContent() {
                      orderStatus.payment_status === "failed" ? "Feilet" :
                      orderStatus.payment_status === "pending" ? "Venter" :
                      orderStatus.payment_status}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Beløp:</span>
-                  <span className="font-bold">
-                    {formatPrice(orderStatus.total_amount, orderStatus.currency)}
                   </span>
                 </div>
               </div>

@@ -1,10 +1,21 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
 from contextlib import asynccontextmanager
 from app.core.config import settings
 from app.core.database import engine, Base
-from app.api import patterns, products, auth, orders, checkout, webhooks
+from app.api import patterns, products, auth, orders, checkout, webhooks, colors
 import logging
+
+# Configure logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler()  # Output to console
+    ]
+)
 
 logger = logging.getLogger(__name__)
 
@@ -75,11 +86,30 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Global exception handlers to ensure CORS headers are always present
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """Handle all uncaught exceptions and ensure CORS headers are present"""
+    logger.error(f"Unhandled exception: {exc}", exc_info=True)
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={"detail": f"Internal server error: {str(exc)}"},
+    )
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """Handle validation errors with proper CORS headers"""
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={"detail": exc.errors()},
+    )
+
 app.include_router(patterns.router, prefix="/api", tags=["patterns"])
 app.include_router(products.router, prefix="/api", tags=["products"])
 app.include_router(orders.router, prefix="/api", tags=["orders"])
 app.include_router(checkout.router, prefix="/api", tags=["checkout"])
 app.include_router(webhooks.router, prefix="/api", tags=["webhooks"])
+app.include_router(colors.router, prefix="/api", tags=["colors"])
 app.include_router(auth.router)
 
 @app.get("/")

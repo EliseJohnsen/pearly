@@ -1,5 +1,7 @@
 'use client'
 
+import ProductCard from './ProductCard';
+
 interface ProductSectionProps {
   data?: any
 }
@@ -20,30 +22,7 @@ export default function ProductSection({ data }: ProductSectionProps = {}) {
         )}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                 {data.products?.map((product: any) => (
-                <a
-                    key={product._id}
-                    href={`/produkter/${product.slug.current}`}
-                    className="rounded-lg p-4 hover:shadow-lg transition block"
-                >
-                    {product.images && product.images.length > 0 && (() => {
-                      const primaryImage = product.images.find((img: any) => img.isPrimary) || product.images[0]
-                      return (
-                        <img
-                          src={primaryImage.asset.url}
-                          alt={primaryImage.alt || product.title}
-                          className="aspect-3/4 object-cover rounded mb-4"
-                        />
-                      )
-                    })()}
-                    <h3 className="font-semibold text-lg mb-2">
-                    {product.title}
-                    </h3>
-                    {product.description && (
-                    <p className="text-gray-600 text-sm">
-                        {product.description}
-                    </p>
-                    )}
-                </a>
+                  <ProductCard key={product._id} product={product} />
                 ))}
             </div>
         </div>

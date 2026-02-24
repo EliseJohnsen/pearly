@@ -1,7 +1,7 @@
 import httpx
 import base64
 import json
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 from pathlib import Path
 import io
 from PIL import Image
@@ -339,4 +339,97 @@ class SanityService:
                 raise Exception(f"Sanity product creation failed: {e.response.text}")
             except Exception as e:
                 logger.error(f"Error creating product document in Sanity: {str(e)}")
+                raise
+
+    async def get_product_by_id(self, product_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Fetch product data from Sanity by product ID.
+
+        Args:
+            product_id: Sanity product _id
+
+        Returns:
+            Dict with product data or None if not found
+        """
+        url = f"https://{self.project_id}.api.sanity.io/v{self.api_version}/data/query/{self.dataset}"
+
+        # GROQ query to fetch product with specific fields
+        query = f'''*[_type == "products" && _id == "{product_id}"][0]{{
+            _id,
+            title,
+            productType,
+            requiresParent,
+            allowedParents,
+            requiredBoards,
+            status,
+            price
+        }}'''
+
+        params = {"query": query}
+
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            try:
+                response = await client.get(url, params=params)
+                response.raise_for_status()
+                result = response.json()
+                product = result.get("result")
+
+                if product:
+                    logger.info(f"Successfully fetched product from Sanity: {product_id}")
+                else:
+                    logger.warning(f"Product not found in Sanity: {product_id}")
+
+                return product
+            except httpx.HTTPStatusError as e:
+                logger.error(f"Failed to fetch product from Sanity: {e.response.text}")
+                raise Exception(f"Sanity query failed: {e.response.text}")
+            except Exception as e:
+                logger.error(f"Error fetching product from Sanity: {str(e)}")
+                raise
+
+    async def get_products_by_ids(self, product_ids: List[str]) -> List[Dict[str, Any]]:
+        """
+        Fetch multiple products from Sanity by IDs.
+
+        Args:
+            product_ids: List of Sanity product _ids
+
+        Returns:
+            List of product dicts
+        """
+        if not product_ids:
+            return []
+
+        url = f"https://{self.project_id}.api.sanity.io/v{self.api_version}/data/query/{self.dataset}"
+
+        # Build array filter for multiple IDs
+        ids_str = ', '.join([f'"{pid}"' for pid in product_ids])
+        query = f'''*[_type == "products" && _id in [{ids_str}]]{{
+            _id,
+            title,
+            productType,
+            requiresParent,
+            allowedParents,
+            requiredBoards,
+            status,
+            price
+        }}'''
+
+        params = {"query": query}
+
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            try:
+                response = await client.get(url, params=params)
+                response.raise_for_status()
+                result = response.json()
+                products = result.get("result", [])
+
+                logger.info(f"Successfully fetched {len(products)} products from Sanity")
+
+                return products
+            except httpx.HTTPStatusError as e:
+                logger.error(f"Failed to fetch products from Sanity: {e.response.text}")
+                raise Exception(f"Sanity query failed: {e.response.text}")
+            except Exception as e:
+                logger.error(f"Error fetching products from Sanity: {str(e)}")
                 raise

@@ -16,9 +16,9 @@ from app.services.image_processing import (
 from app.services.ai_generation import AIGenerationService
 from app.services.pdf_generator import generate_pattern_pdf
 from app.services.pattern_generator import render_grid_to_base64, render_grid_to_image
-from app.services.color_service import clear_color_cache
 from app.services.room_template_service import RoomTemplateService
 from app.services.mockup_generator import MockupGenerator
+from app.services.color_service import clear_color_cache, code_to_hex
 from app.core.config import settings
 from pathlib import Path
 from PIL import Image
@@ -254,6 +254,34 @@ async def generate_mockup(request: GenerateMockupRequest):
     except Exception as e:
         logger.error(f"Error generating mockup: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error generating mockup: {str(e)}")
+def ensure_colors_have_hex(colors_used: List[Dict]) -> List[Dict]:
+    """
+    Ensures all colors in colors_used have hex values populated.
+    Both v1 and v2 store colors_used without hex (only codes), so we populate from codes.
+
+    Args:
+        colors_used: List of color dictionaries with 'code' field
+
+    Returns:
+        List of color dictionaries with 'hex' values populated
+    """
+    # Both v1 and v2 need hex values populated from codes
+    result = []
+    for color in colors_used:
+        color_copy = color.copy()
+        if 'hex' not in color_copy or not color_copy['hex']:
+            code = color_copy.get('code')
+            if code:
+                hex_value = code_to_hex(code)
+                if hex_value:
+                    color_copy['hex'] = hex_value
+                else:
+                    color_copy['hex'] = '#CCCCCC'  # Fallback gray
+            else:
+                color_copy['hex'] = '#CCCCCC'  # Fallback if no code
+        result.append(color_copy)
+    return result
+
 
 @router.post("/patterns/suggest-boards")
 async def suggest_boards(file: UploadFile = File(...)):
@@ -366,7 +394,7 @@ def get_all_patterns(
             uuid=pattern.uuid,
             pattern_image_url=pattern.pattern_data.get("sanity_pattern_image_url", "") if pattern.pattern_data else "",
             grid_size=pattern.grid_size,
-            colors_used=pattern.colors_used,
+            colors_used=ensure_colors_have_hex(pattern.colors_used or []),
             created_at=pattern.created_at,
             boards_width=pattern.pattern_data.get("boards_width") if pattern.pattern_data else None,
             boards_height=pattern.pattern_data.get("boards_height") if pattern.pattern_data else None,
@@ -382,12 +410,15 @@ def get_pattern(pattern_id: str, db: Session = Depends(get_db)):
     if not pattern:
         raise HTTPException(status_code=404, detail="Pattern not found")
 
+    # Ensure colors_used has hex values populated (works for both v1 and v2)
+    colors_used = ensure_colors_have_hex(pattern.colors_used or [])
+
     return PatternResponse(
         id=pattern.id,
         uuid=pattern.uuid,
         pattern_image_url=pattern.pattern_data.get("sanity_pattern_image_url", "") if pattern.pattern_data else "",
         grid_size=pattern.grid_size,
-        colors_used=pattern.colors_used,
+        colors_used=colors_used,
         created_at=pattern.created_at,
         boards_width=pattern.pattern_data.get("boards_width") if pattern.pattern_data else None,
         boards_height=pattern.pattern_data.get("boards_height") if pattern.pattern_data else None,

@@ -132,6 +132,7 @@ export const productQuery = groq`*[_type == "products" && slug.current == $slug]
   tags,
   currency,
   vatRate,
+  requiredBoards,
   "images": images[]{
     asset->{_id, url, metadata{lqip, dimensions{width, height}}},
     alt,
@@ -140,6 +141,23 @@ export const productQuery = groq`*[_type == "products" && slug.current == $slug]
   image{asset->{_id,url,metadata{lqip,dimensions{width,height}}},alt},
   price,
   originalPrice,
+  "recommendedAddOns": recommendedAddOns[]->{
+    _id,
+    title,
+    slug,
+    description,
+    price,
+    originalPrice,
+    currency,
+    productType,
+    status,
+    requiresParent,
+    "images": images[]{
+      asset->{_id, url, metadata{lqip, dimensions{width, height}}},
+      alt,
+      isPrimary
+    }
+  },
   seo{
     metaTitle,
     metaDescription,
@@ -163,4 +181,23 @@ export const productsByPatternIdQuery = groq`*[_type == "products" && patternId 
     alt,
     isPrimary
   },
+}`;
+
+// Query for fetching strukturprodukter by parent productType
+export const strukturprodukterByParentTypeQuery = (parentType: string) => groq`*[_type == "products" && productType == "structure" && requiresParent == true && "${parentType}" in allowedParents]{
+  _id,
+  title,
+  slug,
+  description,
+  price,
+  originalPrice,
+  currency,
+  productType,
+  status,
+  requiresParent,
+  "images": images[]{
+    asset->{_id, url, metadata{lqip, dimensions{width, height}}},
+    alt,
+    isPrimary
+  }
 }`;
