@@ -40,6 +40,13 @@ export default defineType({
       validation: (Rule) => Rule.required(),
       initialValue: 'kit',
     }),
+    {
+      name: 'productSize',
+      title: 'Produktstørrelse',
+      type: 'number',
+      hidden: ({document}) => document?.productType !== 'custom_kit',
+      validation: (Rule) => Rule.integer().min(1).max(3)
+    },
     defineField({
       name: 'status',
       title: 'Status',

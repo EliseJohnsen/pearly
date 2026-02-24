@@ -42,6 +42,68 @@ def ensure_colors_have_hex(colors_used: list) -> list:
     return result
 
 
+@router.get("/products/custom-kits")
+async def get_all_custom_kits():
+    """
+    Get all custom kit products from Sanity (all sizes).
+
+    Returns:
+        List of custom kit products with size mapping (small, medium, large)
+    """
+    try:
+        sanity_service = SanityService()
+        kits = []
+
+        # Map size numbers to size names
+        size_map = {1: "small", 2: "medium", 3: "large"}
+
+        for size_num, size_name in size_map.items():
+            product = await sanity_service.get_custom_kit_by_size(size_num)
+            if product:
+                # Add size name to product data
+                product["sizeName"] = size_name
+                kits.append(product)
+            else:
+                logger.warning(f"No custom kit found for size {size_num} ({size_name})")
+
+        return {"kits": kits}
+    except Exception as e:
+        logger.error(f"Error fetching custom kits: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Error fetching custom kits: {str(e)}")
+
+
+@router.get("/products/custom-kit-by-size")
+async def get_custom_kit_by_size(product_size: int):
+    """
+    Get custom kit product from Sanity by size.
+
+    Args:
+        product_size: Product size (1=small/2 boards, 2=medium/4 boards, 3=large/6 boards)
+
+    Returns:
+        Sanity product data for custom kit with matching size
+    """
+    if product_size not in [1, 2, 3]:
+        raise HTTPException(status_code=400, detail="product_size must be 1, 2, or 3")
+
+    try:
+        sanity_service = SanityService()
+        product = await sanity_service.get_custom_kit_by_size(product_size)
+
+        if not product:
+            raise HTTPException(
+                status_code=404,
+                detail=f"No custom kit product found for size {product_size}. Please create one in Sanity with productType='custom_kit' and productSize={product_size}"
+            )
+
+        return product
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching custom kit: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Error fetching custom kit: {str(e)}")
+
+
 @router.post("/products/create-from-pattern-data", response_model=PatternResponse)
 async def create_product_from_pattern_data(
     product_data: ProductCreateFromPatternData,

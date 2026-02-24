@@ -48,6 +48,7 @@ class PatternSizeResult(BaseModel):
     mockupBase64: Optional[str] = None
     colorsUsed: List[Dict[str, Any]]
     patternData: Dict[str, Any]
+    beadCount: int
 
 class GenerateThreeSizesResponse(BaseModel):
     patterns: List[PatternSizeResult]
@@ -179,6 +180,9 @@ async def generate_three_sizes(request: GenerateThreeSizesRequest):
             # Mockup generation moved to separate endpoint for better UX
             # Frontend can load mockups progressively via /patterns/generate-mockup
 
+            # Calculate total bead count from pattern dimensions
+            bead_count = pattern_data.get("width", 0) * pattern_data.get("height", 0)
+
             return PatternSizeResult(
                 size=size_config["name"],
                 boardsWidth=boards_w,
@@ -186,7 +190,8 @@ async def generate_three_sizes(request: GenerateThreeSizesRequest):
                 patternBase64=pattern_base64,
                 mockupBase64=None,  # Load separately via /patterns/generate-mockup
                 colorsUsed=colors_used,
-                patternData=pattern_data
+                patternData=pattern_data,
+                beadCount=bead_count
             )
 
         # Run all generations in parallel
