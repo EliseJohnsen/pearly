@@ -13,6 +13,7 @@ import { CheckIcon, InformationCircleIcon, MinusIcon, PlusIcon, TrashIcon } from
 import VippsCheckoutButton, { OrderLine } from "@/app/components/VippsCheckoutButton";
 import CollapsableCard from "@/app/components/CollapsableCard";
 import { useUIString, useUIStringWithVars } from "@/app/hooks/useSanityData";
+import ProductCard from "@/app/components/ProductCard";
 
 interface ProductVariant {
   sku: string;
@@ -436,6 +437,20 @@ export default function ProductDetailPage({
             </CollapsableCard>
           </div>
         </div>
+
+        {/* Recommended Add-ons Section */}
+        {product.recommendedAddOns && product.recommendedAddOns.length > 0 && (
+          <div className="mt-16">
+            <h2 className="text-2xl font-bold mb-4 text-dark-purple">
+              Har du sjekket ut disse?
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+              {product.recommendedAddOns.map((addon) => (
+                <ProductCard key={addon._id} product={addon} />
+              ))}
+            </div>
+          </div>
+        )}
       </main>
       <Footer />
     </div>
