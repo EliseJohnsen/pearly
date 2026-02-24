@@ -67,21 +67,21 @@ export default function ImageCarousel({ data }: ImageCarouselProps) {
   if (data.isActive === false) return null;
 
   return (
-    <section className="container mx-auto px-4 py-6 md:py-10">
+    <section className="container max-w-4xl mx-auto px-4 py-6 md:py-10">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl md:text-3xl font-bold text-dark-purple mb-4">
           {data.heading}
         </h1>
         {data.description && (
-          <p className="text-lg md:text-xl text-gray-700 max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl text-gray-900">
             {data.description}
           </p>
         )}
       </div>
 
       {/* Carousel */}
-      <div className="relative max-w-4xl mx-auto">
+      <div className="relative mx-auto">
         {/* Main Image */}
         <div className="relative aspect-[4/3] bg-pink-100 rounded-md overflow-hidden">
           {data.images.map((image, index) => (
