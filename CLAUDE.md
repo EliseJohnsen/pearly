@@ -35,7 +35,10 @@ perle/
 
 ### CMS (`sanity/`)
 - **Sanity v3** for content management
-- Products, pages, navigation managed in Sanity
+- **Document internationalization** for multi-language support
+- Products, pages, navigation, and room templates managed in Sanity
+- Real-time updates via webhooks to backend
+- Visual editing with live preview
 
 ## Common Commands
 
@@ -43,21 +46,58 @@ perle/
 ```bash
 cd frontend
 npm install
-npm run dev          # Start dev server on :3000
-npm run build        # Production build
-npm run lint         # Run ESLint
+npm run dev                  # Start dev server on :3000
+npm run build                # Production build
+npm run lint                 # Run ESLint
+
+# E2E Testing (Playwright)
+npm run test:e2e             # Run all e2e tests
+npm run test:e2e:ui          # Run with Playwright UI
+npm run test:e2e:headed      # Run in headed mode (visible browser)
+npm run test:e2e:report      # View latest test report
+
+# Run specific test suites
+npm run test:e2e:payment     # Payment flow tests only
+npm run test:e2e:patterns    # Pattern-related tests only
+npm run test:e2e:patterns:edit    # Pattern editing tests
+npm run test:e2e:patterns:list    # Pattern list tests
+npm run test:e2e:patterns:detail  # Pattern detail tests
 ```
 
 ### Backend
 ```bash
 cd backend
-source venv/bin/activate
+source venv/bin/activate     # Unix/Mac
+venv\Scripts\activate        # Windows
 pip install -r requirements.txt
+
+# Development mode
 uvicorn app.main:app --reload    # Start dev server on :8000
+
+# Test mode (for E2E tests)
+python start_test.py             # Start with test database (port 5433)
+python check_database.py         # Verify which database backend is using
 
 # Database migrations
 alembic upgrade head             # Run migrations
 alembic revision -m "message"    # Create new migration (manual)
+
+# Testing
+pytest                           # Run all tests
+pytest tests/test_webhooks.py -v  # Run specific test file
+pytest tests/test_webhooks.py::test_payment_successful -v  # Run single test
+
+# Manual webhook testing (requires backend running)
+python3 tests/test_webhooks.py PRL-XXXX  # Replace PRL-XXXX with order number
+```
+
+### Sanity CMS
+```bash
+cd sanity
+npm install
+npm run dev          # Start Sanity Studio on :3333
+npm run build        # Build Sanity Studio
+npm run deploy       # Deploy Studio to Sanity hosting
 ```
 
 ### Webhook Testing with ngrok (Windows)
@@ -116,6 +156,70 @@ frontend/app/
 └── api/              # Next.js API routes
 ```
 
+## Testing
+
+### Backend Tests (pytest)
+
+- Unit tests in `backend/tests/`
+- Uses in-memory SQLite for testing
+- Mock email service for webhook tests
+- Run specific test: `pytest tests/test_webhooks.py::test_payment_successful -v`
+
+**Quick webhook test:**
+
+```bash
+# Start backend first, then run:
+python3 tests/test_webhooks.py PRL-ORDER123
+```
+
+### Frontend E2E Tests (Playwright)
+
+- E2E tests in `frontend/e2e/`
+- Page Object Model architecture
+- Mock Vipps API (no real payment calls)
+- Simulate webhooks via `webhook-simulator.ts`
+- Database helpers for test data setup
+- CI/CD: Tests run automatically on PRs and can be triggered manually via GitHub Actions
+
+**Test structure:**
+
+```
+frontend/e2e/
+├── fixtures/       # Test data (orders, products, mock responses)
+├── helpers/        # Utilities (VippsMocker, WebhookSimulator, DatabaseHelpers)
+├── pages/          # Page Object Models
+└── tests/          # Test specs (payment flow, cancellation, timeouts, pattern tests)
+```
+
+**Running tests locally:**
+
+1. **Start backend in test mode:**
+
+   ```bash
+   cd backend
+   python start_test.py  # Loads .env.test and connects to test database
+   ```
+
+2. **Start frontend:**
+
+   ```bash
+   cd frontend
+   npm run dev
+   ```
+
+3. **Run tests:**
+
+   ```bash
+   cd frontend
+   npm run test:e2e:patterns
+   ```
+
+**Test database setup:**
+
+- Backend test database: `postgresql://test_user:test_password@localhost:5433/pearly_test`
+- Frontend `.env.test` and backend `.env.test` both configured with test database
+- Admin user auto-created on first test run via `setup-test-admin.mts`
+
 ## Database Migrations
 
 Migrations are in `backend/alembic/versions/`. Naming convention: `NNN_description.py`
@@ -145,6 +249,7 @@ When adding new model fields:
 ## Environment Variables
 
 ### Backend (`.env`)
+
 - `DATABASE_URL` - PostgreSQL connection string
 - `VIPPS_*` - Vipps Checkout credentials
 - `SANITY_*` - Sanity CMS credentials
@@ -152,5 +257,29 @@ When adding new model fields:
 - `SECRET_KEY` - JWT signing and webhook auth
 
 ### Frontend (`.env.local`)
+
 - `NEXT_PUBLIC_API_URL` - Backend API URL
 - `NEXT_PUBLIC_SANITY_*` - Sanity project config
+
+## Deployment
+
+### Backend (Railway)
+
+- Deployed from `backend/` directory
+- PostgreSQL database hosted on Railway
+- Environment variables configured in Railway dashboard
+- Automatic deployments from `main` branch
+- API docs available at `/docs` endpoint
+
+### Frontend (Vercel)
+
+- Deployed from `frontend/` directory
+- Automatic deployments from `main` branch
+- Environment variables configured in Vercel dashboard
+- Preview deployments for all PRs
+
+### Sanity Studio
+
+- Deployed via `npm run deploy` in `sanity/` directory
+- Hosted on Sanity's infrastructure
+- Accessible at custom subdomain

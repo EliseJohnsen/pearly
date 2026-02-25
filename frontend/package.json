@@ -13,7 +13,14 @@
     "test:e2e": "playwright test --config=e2e/playwright.config.ts",
     "test:e2e:ui": "playwright test --config=e2e/playwright.config.ts --ui",
     "test:e2e:headed": "playwright test --config=e2e/playwright.config.ts --headed",
-    "test:e2e:report": "playwright show-report"
+    "test:e2e:report": "playwright show-report",
+    "test:e2e:patterns": "playwright test --config=e2e/playwright.config.ts pattern",
+    "test:e2e:patterns:edit": "playwright test --config=e2e/playwright.config.ts pattern-edit.spec.ts",
+    "test:e2e:patterns:list": "playwright test --config=e2e/playwright.config.ts patterns-list.spec.ts",
+    "test:e2e:patterns:detail": "playwright test --config=e2e/playwright.config.ts pattern-detail.spec.ts",
+    "test:e2e:patterns:edge": "playwright test --config=e2e/playwright.config.ts pattern-edge-cases.spec.ts",
+    "test:e2e:payment": "playwright test --config=e2e/playwright.config.ts payment",
+    "test:setup-admin": "npx ts-node --esm e2e/setup-test-admin.mts"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.9",

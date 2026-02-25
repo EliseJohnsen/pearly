@@ -11,9 +11,16 @@ import { Pool, PoolClient } from 'pg';
 export class DatabaseHelpers {
   private pool: Pool;
 
-  constructor(databaseUrl: string) {
+  constructor(databaseUrl?: string) {
+    // Use provided URL or fall back to environment variable
+    const dbUrl = databaseUrl || process.env.TEST_DB_URL || process.env.TEST_DATABASE_URL;
+
+    if (!dbUrl) {
+      throw new Error('Database URL is required. Set TEST_DB_URL or TEST_DATABASE_URL environment variable.');
+    }
+
     this.pool = new Pool({
-      connectionString: databaseUrl,
+      connectionString: dbUrl,
       max: 10, // Maximum number of clients in the pool
       idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
       connectionTimeoutMillis: 2000, // Timeout after 2 seconds

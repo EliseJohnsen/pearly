@@ -1,4 +1,5 @@
 import { chromium, FullConfig } from '@playwright/test';
+import { setupTestAdmin } from './setup-test-admin.mjs';
 
 /**
  * Global setup runs once before all tests
@@ -9,6 +10,16 @@ import { chromium, FullConfig } from '@playwright/test';
  */
 async function globalSetup(config: FullConfig) {
   console.log('🚀 Starting E2E test setup...');
+
+  // Setup test admin user in database
+  try {
+    const apiKey = await setupTestAdmin();
+    // Store API key in process.env for tests to use
+    process.env.TEST_ADMIN_API_KEY = apiKey;
+  } catch (error) {
+    console.error('⚠️  Failed to setup test admin (tests may fail if admin auth is required)');
+    console.error('Error:', error instanceof Error ? error.message : error);
+  }
 
   // Get base URL from config
   const baseURL = config.projects[0].use.baseURL || 'http://localhost:3000';

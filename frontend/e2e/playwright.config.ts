@@ -40,6 +40,9 @@ export default defineConfig({
     ['list'], // Console output
   ],
 
+  // Global setup runs once before all tests
+  globalSetup: require.resolve('./global-setup.ts'),
+
   // Shared settings for all projects
   use: {
     // Base URL for page.goto()
