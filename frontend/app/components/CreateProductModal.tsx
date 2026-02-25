@@ -100,7 +100,8 @@ export default function CreateProductModal({
     }
 
     const data = await response.json();
-    return data.pattern_image_base64;
+    const base64String = data.pattern_image_base64;
+    return base64String.includes(',') ? base64String.split(',')[1] : base64String;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
