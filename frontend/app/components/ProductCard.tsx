@@ -1,6 +1,7 @@
 'use client'
 
 import { ReactNode } from 'react';
+import { formatPrice } from '../utils/priceFormatter';
 
 interface ProductImage {
   asset: {
@@ -18,6 +19,7 @@ interface ProductCardProps {
     description?: string;
     images?: ProductImage[];
     image?: ProductImage;
+    price?: number;
   };
   // Pattern-specific props
   title?: string;
@@ -89,9 +91,9 @@ export default function ProductCard({
               {cardTitle}
             </h3>
           )}
-          {isProductCard && product.description && (
-            <p className="text-gray-600 text-sm">
-              {product.description}
+          {isProductCard && product.price && (
+            <p className="text-sm">
+              {formatPrice(product.price, "NOK")}
             </p>
           )}
           {children}

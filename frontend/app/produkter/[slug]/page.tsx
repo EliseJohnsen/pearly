@@ -14,6 +14,7 @@ import VippsCheckoutButton, { OrderLine } from "@/app/components/VippsCheckoutBu
 import CollapsableCard from "@/app/components/CollapsableCard";
 import { useUIString, useUIStringWithVars } from "@/app/hooks/useSanityData";
 import ProductCard from "@/app/components/ProductCard";
+import { formatPrice } from "@/app/utils/priceFormatter";
 
 interface ProductVariant {
   sku: string;
@@ -224,13 +225,6 @@ export default function ProductDetailPage({
     : [];
 
   const selectedImage = productImages[selectedImageIndex];
-
-  const formatPrice = (price: number, currency: string) => {
-    return new Intl.NumberFormat("nb-NO", {
-      style: "currency",
-      currency: currency || "NOK",
-    }).format(price);
-  };
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -516,7 +510,7 @@ export default function ProductDetailPage({
             <h2 className="text-2xl font-bold mb-4 text-dark-purple">
               Har du sjekket ut disse?
             </h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {product.recommendedAddOns.map((addon) => (
                 <ProductCard key={addon._id} product={addon} />
               ))}

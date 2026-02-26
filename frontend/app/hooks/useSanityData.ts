@@ -131,7 +131,7 @@ export function usePageSettings(page: string = 'home') {
 }
 
 export function useFooterPages() {
-  return useSanityQuery<{slub: string}>(footerPagesQuery)
+  return useSanityQuery<Array<{_id: string; title: string; slug: {current: string}; footerOrder: number}>>(footerPagesQuery)
 }
 
 export function useFooter() {
