@@ -300,7 +300,7 @@ export default function VelgStorrelsePage() {
                     >
                       {priceInKr && (
                         <p className="text-lg font-bold text-[#6B4E71] mt-2">
-                          {priceInKr} kr
+                          {priceInKr}
                         </p>
                       )}
                       {isHovered && !pattern.mockupBase64 && !isLoadingMockup && (

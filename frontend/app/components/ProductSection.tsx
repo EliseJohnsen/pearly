@@ -20,7 +20,7 @@ export default function ProductSection({ data }: ProductSectionProps = {}) {
             {data.sectionSubtitle}
             </p>
         )}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {data.products?.map((product: any) => (
                   <ProductCard key={product._id} product={product} />
                 ))}
