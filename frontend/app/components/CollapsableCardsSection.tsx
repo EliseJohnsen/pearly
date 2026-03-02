@@ -67,7 +67,7 @@ export default function CollapsableCardsSection({
                   <div className="flex-shrink-0">
                     <IconComponent className="w-6 h-6 text-dark-purple" />
                   </div>
-                  <h3 className="text-xl font-medium">
+                  <h3 className="text-left text-xl font-medium">
                     {card.header}
                   </h3>
                 </div>
@@ -75,7 +75,7 @@ export default function CollapsableCardsSection({
               defaultExpanded={card.defaultExpanded}
               className={borderClass}
             >
-              <div className="prose prose-sm md:prose-base max-w-none">
+              <div className="prose md:prose-base max-w-none">
                 <PortableText
                   value={card.content}
                   components={portableTextComponents}
