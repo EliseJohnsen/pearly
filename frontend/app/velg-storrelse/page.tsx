@@ -15,6 +15,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 interface PatternFlowData {
   imagePreview: string | null;
   imageFile: string | null;
+  aspectRatio: "3:4" | "4:3" | "1:1" | null;
   style: "realistic" | "ai-style" | null;
   size: "small" | "medium" | "large" | null;
 }
@@ -47,6 +48,7 @@ export default function VelgStorrelsePage() {
   const [flowData, setFlowData] = useState<PatternFlowData>({
     imagePreview: null,
     imageFile: null,
+    aspectRatio: null,
     style: null,
     size: null,
   });

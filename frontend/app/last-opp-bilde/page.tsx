@@ -12,6 +12,7 @@ const STORAGE_KEY = "pearly_pattern_flow";
 interface PatternFlowData {
   imagePreview: string | null;
   imageFile: string | null; // base64
+  aspectRatio: "3:4" | "4:3" | "1:1" | null;
   style: "realistic" | "ai-style" | null;
   size: "small" | "medium" | "large" | null;
 }
@@ -22,6 +23,7 @@ export default function LastOppBildePage() {
   const [flowData, setFlowData] = useState<PatternFlowData>({
     imagePreview: null,
     imageFile: null,
+    aspectRatio: null,
     style: null,
     size: null,
   });
@@ -42,13 +44,14 @@ export default function LastOppBildePage() {
     }
   }, []);
 
-  const handleImageSelected = (file: File, preview: string) => {
+  const handleImageSelected = (file: File, preview: string, aspectRatio: "3:4" | "4:3" | "1:1") => {
     const reader = new FileReader();
     reader.onloadend = () => {
       const base64 = reader.result as string;
       const newFlowData: PatternFlowData = {
         imagePreview: preview,
         imageFile: base64,
+        aspectRatio: aspectRatio,
         style: null,
         size: null,
       };
