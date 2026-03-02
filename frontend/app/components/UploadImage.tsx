@@ -196,8 +196,13 @@ export default function UploadImage({ onImageSelected, initialPreview }: UploadI
     e.preventDefault();
     setIsDragging(false);
     const file = e.dataTransfer.files?.[0];
-    if (file && file.type.startsWith("image/")) {
-      handleFileChange(file);
+    if (file) {
+      // Accept if MIME type starts with "image/" or if file has HEIC/HEIF extension
+      const isImage = file.type.startsWith("image/");
+      const isHeic = /\.(heic|heif)$/i.test(file.name);
+      if (isImage || isHeic) {
+        handleFileChange(file);
+      }
     }
   };
 
@@ -248,7 +253,7 @@ export default function UploadImage({ onImageSelected, initialPreview }: UploadI
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
+            accept="image/*,.heic,.heif"
             onChange={handleInputChange}
             className="hidden"
           />
