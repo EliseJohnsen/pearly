@@ -11,6 +11,7 @@ const STORAGE_KEY = "pearly_pattern_flow";
 interface PatternFlowData {
   imagePreview: string | null;
   imageFile: string | null;
+  aspectRatio: "3:4" | "4:3" | "1:1" | null;
   style: "realistic" | "ai-style" | null;
   size: "small" | "medium" | "large" | null;
 }
@@ -20,6 +21,7 @@ export default function VelgStilPage() {
   const [flowData, setFlowData] = useState<PatternFlowData>({
     imagePreview: null,
     imageFile: null,
+    aspectRatio: null,
     style: null,
     size: null,
   });
@@ -53,15 +55,11 @@ export default function VelgStilPage() {
 
   const handleStyleSelect = (style: "realistic" | "ai-style") => {
     setSelectedStyle(style);
-  };
-
-  const handleContinue = () => {
-    if (selectedStyle) {
-      const updatedData = { ...flowData, style: selectedStyle };
-      setFlowData(updatedData);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
-      router.push("/velg-storrelse");
-    }
+    // Automatically continue when style is selected
+    const updatedData = { ...flowData, style };
+    setFlowData(updatedData);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
+    router.push("/velg-storrelse");
   };
 
   if (!flowData.imagePreview) {
@@ -150,17 +148,6 @@ export default function VelgStilPage() {
                   Les mer om vår AI-policy her
                 </a>
               </p>
-            </button>
-          </div>
-
-          {/* Continue Button */}
-          <div className="mt-8">
-            <button
-              onClick={handleContinue}
-              disabled={!selectedStyle}
-              className="w-full bg-dark-purple hover:bg-[#5A3E5F] disabled:bg-[#C4B5C7] disabled:cursor-not-allowed text-white font-semibold py-4 px-6 rounded-full transition-colors text-lg"
-            >
-              Generer perlemønster
             </button>
           </div>
         </div>

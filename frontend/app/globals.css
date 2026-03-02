@@ -13,7 +13,7 @@
   --foreground: #111827;
 
   /* Primærfarger */
-  --primary: #FA5A05;
+  --primary: #F05A41;
   --primary-hover: #1d4ed8;
   --primary-light: #EECED5;
   --primary-dark: #1e3a8a;
@@ -23,6 +23,7 @@
   --primary-red: #AC0D2E;
   --primary-neon-green: #DEF46B;
   
+  --lavender-pink: #F9D1EE;
   --purple: #BA7EB9;
   --dark-purple: #673154;
 
@@ -32,7 +33,7 @@
 
   /* Tekstfarger */
   --text-primary: #111827;
-  --text-primary-light: var(--primary-pink)
+  --text-primary-light: var(--primary-pink);
   --text-secondary: #4b5563;
   --text-muted: #6b7280;
 
@@ -83,6 +84,7 @@
 
   --color-purple: var(--purple);
   --color-dark-purple: var(--dark-purple);
+  --color-lavender-pink: var(--lavender-pink);
 
   /* Sekundærfarger - bruk som bg-success, hover:bg-success-hover */
   --color-success: var(--success);

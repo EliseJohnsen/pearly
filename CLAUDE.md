@@ -116,6 +116,44 @@ frontend/app/
 └── api/              # Next.js API routes
 ```
 
+## Frontend Development Guidelines
+
+### Color System
+
+**IMPORTANT:** Always use the color variables defined in `frontend/app/globals.css` when creating frontend HTML/components.
+
+Available Tailwind classes (defined via CSS custom properties):
+
+**Backgrounds:**
+- `bg-background` - Main background (#FDFBF9)
+- `bg-card` - Card background (white)
+- `bg-disabled` - Disabled state background
+- `bg-primary` - Primary orange (#FA5A05)
+- `bg-primary-light` - Light pink (#EECED5)
+- `bg-primary-pink` / `bg-primary-dark-pink` / `bg-primary-light-pink` - Pink variations
+- `bg-primary-red` - Red accent (#AC0D2E)
+- `bg-purple` / `bg-dark-purple` - Purple variations
+- `bg-success` - Success green (#9fcd81)
+
+**Text colors:**
+- `text-app-primary` - Primary text (#111827)
+- `text-app-secondary` - Secondary text (#4b5563)
+- `text-app-muted` - Muted text (#6b7280)
+- `text-app-disabled` - Disabled text (purple)
+
+**Borders:**
+- `border-default` - Default border (#d1d5db)
+- `border-subtle` - Subtle border (#e5e7eb)
+
+**Hover states:**
+- `hover:bg-primary-hover` - Primary hover state
+- `hover:bg-success-hover` - Success hover state
+
+**Direct CSS variables (for inline styles):**
+- Use `var(--purple)`, `var(--primary)`, `var(--background)`, etc.
+
+**Never use arbitrary color values** like `bg-[#FA5A05]` or hard-coded hex values. Always reference the design system colors.
+
 ## Database Migrations
 
 Migrations are in `backend/alembic/versions/`. Naming convention: `NNN_description.py`

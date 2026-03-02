@@ -29,14 +29,20 @@ export default function Footer({ data, footerPages }: FooterProps = {}) {
         <footer className="bg-dark-purple shadow-lg p-8 text-white">
             <div className="flex flex-wrap justify-between mb-8">
                 <div>
-                    LOGO
+                    <Link href="/">
+                        <img
+                            src="/Pearly_navnetrekk 1.svg"
+                            alt="Pearly logo"
+                            className="h-16"
+                        />
+                    </Link>
                 </div>
                 <div className="flex flex-wrap justify-between">
                     <div className="w-48 flex-auto">
                         {column1Header && (
                             <p className="text-lg my-2">{column1Header}</p>
                         )}
-                        <ul>
+                        <ul className="text-lavender-pink">
                             {pages?.filter((page: any) => page.footerOrder > 10 && page.footerOrder < 20).map((page: any) => (
                                 <li key={page._id}>
                                     <Link
@@ -53,7 +59,7 @@ export default function Footer({ data, footerPages }: FooterProps = {}) {
                         {column2Header && (
                             <p className="text-lg my-2">{column2Header}</p>
                         )}
-                        <ul>
+                        <ul className="text-lavender-pink">
                             {pages?.filter((page: any) => page.footerOrder > 20 && page.footerOrder < 30).map((page: any) => (
                                 <li key={page._id}>
                                     <Link
@@ -70,7 +76,7 @@ export default function Footer({ data, footerPages }: FooterProps = {}) {
                         {column3Header && (
                             <p className="text-lg my-2">{column3Header}</p>
                         )}
-                        <ul>
+                        <ul className="text-lavender-pink">
                             {footer && footer.companyInfo && footer.companyInfo.email && (
                                 <li>
                                     <a
