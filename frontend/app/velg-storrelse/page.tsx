@@ -60,8 +60,8 @@ export default function VelgStorrelsePage() {
   const [error, setError] = useState<string | null>(null);
   const [loadingMockups, setLoadingMockups] = useState<Set<string>>(new Set());
   const [hoveredPattern, setHoveredPattern] = useState<string | null>(null);
-  const chooseSizeHeader = useUIString("velg_størrelse_header");
-  const chooseSizeText = useUIString("velg_størrelse_tekst");
+  const chooseSizeHeader = useUIString("velg_storrelse_header");
+  const chooseSizeText = useUIString("velg_storrelse_tekst");
 
   const fetchCustomKits = async () => {
     try {
@@ -121,6 +121,9 @@ export default function VelgStorrelsePage() {
 
       const result = await response.json();
       setPatterns(result.patterns);
+      for (const pattern of result.patterns) {
+        loadMockup(pattern);
+      }
     } catch (err) {
       console.error("Error generating patterns:", err);
       setError("Kunne ikke generere perlemønstre. Vennligst prøv igjen.");
@@ -146,8 +149,8 @@ export default function VelgStorrelsePage() {
         },
         body: JSON.stringify({
           patternBase64: pattern.patternBase64,
-          boardsWidth: pattern.boardsWidth,
-          boardsHeight: pattern.boardsHeight,
+          width: pattern.patternData.width,
+          height: pattern.patternData.height,
         }),
       });
 
@@ -250,8 +253,10 @@ export default function VelgStorrelsePage() {
     const labels: Record<string, string> = {
       small: "Liten",
       medium: "Medium",
+      large: "Stor",
     };
-    return `${labels[size] || size} (ca ${boardsW * 15}x${boardsH * 15} cm)`;
+    // return `${labels[size] || size} (ca ${boardsW * 15}x${boardsH * 15} cm)`;
+    return `${labels[size] || size}`;
   };
 
   if (!flowData.imageFile) {
@@ -261,7 +266,7 @@ export default function VelgStorrelsePage() {
   return (
     <div className="min-h-screen bg-[var(--background)]">
       <Header />
-      <main className="min-h-screen bg-[#F5EDE8] py-4">
+      <main className="min-h-screen bg-background py-4">
         <PatternFlowStepper currentStep={2} />
 
         <div className="max-w-4xl mx-auto px-4 pb-12">
@@ -300,7 +305,7 @@ export default function VelgStorrelsePage() {
                   return (
                     <ProductCard
                       key={pattern.size}
-                      title={getSizeLabel(pattern.size, pattern.boardsWidth, pattern.boardsHeight)}
+                      title={getSizeLabel(pattern.size, pattern.patternData, pattern.boardsHeight)}
                       imageUrl={showMockup ? pattern.mockupBase64! : pattern.patternBase64}
                       imageAlt={`${pattern.size} ${showMockup ? "mockup" : "pattern"}`}
                       imageOverlay={
@@ -314,7 +319,6 @@ export default function VelgStorrelsePage() {
                       onClick={() => handleSizeSelect(pattern.size)}
                       onMouseEnter={() => {
                         setHoveredPattern(pattern.size);
-                        loadMockup(pattern);
                       }}
                       onMouseLeave={() => setHoveredPattern(null)}
                       className="h-full"
@@ -322,11 +326,6 @@ export default function VelgStorrelsePage() {
                       {customKit?.price && (
                         <p className="text-lg font-bold text-[#6B4E71] mt-2">
                           {formatPrice(customKit?.price, "NOK")}
-                        </p>
-                      )}
-                      {isHovered && !pattern.mockupBase64 && !isLoadingMockup && (
-                        <p className="text-xs text-[#6B4E71] opacity-60 mt-1">
-                          Hold musepekeren for interiørbilde
                         </p>
                       )}
                     </ProductCard>

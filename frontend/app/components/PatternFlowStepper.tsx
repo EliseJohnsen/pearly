@@ -37,7 +37,7 @@ export default function PatternFlowStepper({ currentStep }: PatternFlowStepperPr
                     ? "bg-dark-purple"
                     : isCurrent
                     ? "bg-dark-purple"
-                    : "bg-primary-pink border-2 border-[#C4B5C7]"
+                    : "bg-background border-2 border-[#C4B5C7]"
                 }`}
               >
                 {isCompleted && <CheckIcon className="w-4 h-4 text-white" />}

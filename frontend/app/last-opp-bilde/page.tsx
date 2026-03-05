@@ -43,16 +43,9 @@ export default function LastOppBildePage() {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       try {
-        const data = JSON.parse(stored);
-        setFlowData(data);
-        if (data.style) {
-          setSelectedStyle(data.style);
-        }
-        if (data.imagePreview) {
-          setImageSelected(true);
-        }
+        localStorage.clear();
       } catch (e) {
-        console.error("Failed to parse stored flow data", e);
+        console.error("Failed clear stored flow data", e);
       }
     }
   }, []);
@@ -85,7 +78,7 @@ export default function LastOppBildePage() {
   return (
     <div className="min-h-screen bg-[var(--background)]">
       <Header />
-      <main className="min-h-screen bg-[#F5EDE8] py-4">
+      <main className="min-h-screen bg-background py-4">
         <PatternFlowStepper currentStep={0} />
 
         <div className="max-w-2xl mx-auto px-4 pb-12">

@@ -27,15 +27,7 @@ export default defineType({
       title: 'Brett-dimensjon',
       type: 'string',
       description: 'Format: "WxH" f.eks. "2x2", "4x4"',
-      validation: (Rule) =>
-        Rule.required().custom((value) => {
-          if (!value) return 'Brett-dimensjon er påkrevd'
-          const pattern = /^\d+x\d+$/
-          if (!pattern.test(value)) {
-            return 'Format må være "WxH" f.eks. "2x2" eller "4x4"'
-          }
-          return true
-        }),
+      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'frameZone',
