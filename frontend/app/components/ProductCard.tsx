@@ -64,7 +64,7 @@ export default function ProductCard({
   const cardHref = isProductCard ? `/produkter/${product.slug.current}` : href;
 
   // Base classes
-  const baseClasses = "rounded-lg p-4 transition-all text-left hover:z-10";
+  const baseClasses = "rounded-lg p-4 transition-all text-left hover:z-10 cursor-pointer";
   const selectedClasses = isSelected
     ? "border-[#6B4E71] bg-[#F5F0F6] shadow-lg"
     : "border-[#C4B5C7] bg-white hover:border-[#6B4E71]";

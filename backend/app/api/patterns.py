@@ -1,3 +1,5 @@
+import math
+
 from fastapi import APIRouter, UploadFile, File, Depends, HTTPException
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
@@ -55,8 +57,8 @@ class GenerateThreeSizesResponse(BaseModel):
 
 class GenerateMockupRequest(BaseModel):
     patternBase64: str  # base64 encoded pattern image
-    boardsWidth: int
-    boardsHeight: int
+    width: int
+    height: int
 
 class GenerateMockupResponse(BaseModel):
     mockupBase64: str
@@ -90,15 +92,15 @@ async def generate_three_sizes(request: GenerateThreeSizesRequest):
 
         sizes = [
             {"name": "small", "boards": 2},   # Max 58x58 beads area
-            {"name": "medium", "boards": 4},  # Max 116x116 beads area
+            {"name": "large", "boards": 4},  # Max 116x116 beads area
         ]
 
         # Use same boards for both dimensions - pattern generator maintains aspect ratio internally
         sizes = [
             {
                 "name": size["name"],
-                "boards_w": size["boards"],
-                "boards_h": size["boards"]
+                "boards_w": math.ceil(size["boards"] if aspect_ratio >= 1 else size["boards"] * aspect_ratio),
+                "boards_h": math.ceil(size["boards"] / aspect_ratio if aspect_ratio >= 1 else size["boards"])
             }
             for size in sizes
         ]
@@ -217,17 +219,19 @@ async def generate_mockup(request: GenerateMockupRequest):
     try:
         # Get room template for dimensions
         room_template_service = RoomTemplateService()
+        width = round((request.width / 29),1)
+        height = round((request.height / 29),1)
         room_template = await room_template_service.get_room_template_for_dimensions(
-            request.boardsWidth, request.boardsHeight
+            width, height
         )
 
         if not room_template:
             raise HTTPException(
                 status_code=404,
-                detail=f"No room template found for {request.boardsWidth}x{request.boardsHeight} boards"
+                detail=f"No room template found for {width}x{height} boards"
             )
 
-        logger.info(f"Generating mockup for {request.boardsWidth}x{request.boardsHeight}...")
+        logger.info(f"Generating mockup for {width}x{height}...")
 
         # Download room image
         room_image_bytes = await room_template_service.download_room_image(

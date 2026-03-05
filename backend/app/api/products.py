@@ -166,8 +166,8 @@ async def create_product_from_pattern_data(
 
     mockup_asset_id = None
     try:
-        boards_w = product_data.pattern_data.get("boards_width", 1)
-        boards_h = product_data.pattern_data.get("boards_height", 1)
+        boards_w = round(product_data.pattern_data.get("boards_width", 1),1)
+        boards_h = round(product_data.pattern_data.get("boards_height", 1),1)
 
         logger.info(f"Looking for room template for dimensions: {boards_w}x{boards_h}")
 
