@@ -7,6 +7,12 @@ export interface OrderLine {
   name: string;
   unit_price: number; // In øre (cents)
   quantity: number;
+  product_type?: string;
+  children?: OrderLine[];
+  custom_pattern?: {
+    patternData: any;
+    colorsUsed: any[];
+  };
 }
 
 interface VippsCheckoutButtonProps {

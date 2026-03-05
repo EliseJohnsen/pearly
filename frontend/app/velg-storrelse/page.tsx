@@ -8,6 +8,7 @@ import PatternFlowStepper from "@/app/components/PatternFlowStepper";
 import LoadingSpinner from "../components/LoadingSpinner";
 import ProductCard from "../components/ProductCard";
 import { useUIString } from "../hooks/useSanityData";
+import { formatPrice } from "../utils/priceFormatter";
 
 const STORAGE_KEY = "pearly_pattern_flow";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -175,21 +176,41 @@ export default function VelgStorrelsePage() {
     }
   };
 
-  const handleSizeSelect = (size: string) => {
+  const handleSizeSelect = async (size: string) => {
     setSelectedSize(size);
-  };
 
-  const handleContinue = async () => {
     if (!selectedSize) return;
 
     const selectedPattern = patterns.find((p) => p.size === selectedSize);
     if (!selectedPattern) return;
 
     try {
-      // Save pattern to localStorage
+      // Save pattern to localStorage (WITHOUT images to avoid QuotaExceededError)
       const updatedData = { ...flowData, size: selectedSize };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
-      localStorage.setItem("custom_pattern", JSON.stringify(selectedPattern));
+
+      // Store only essential pattern data (no base64 images)
+      const essentialPatternData = {
+        size: selectedPattern.size,
+        boardsWidth: selectedPattern.boardsWidth,
+        boardsHeight: selectedPattern.boardsHeight,
+        patternData: selectedPattern.patternData,
+        colorsUsed: selectedPattern.colorsUsed,
+        beadCount: selectedPattern.beadCount,
+        // Store images in sessionStorage instead (larger limit, auto-clears on tab close)
+      };
+      localStorage.setItem("custom_pattern", JSON.stringify(essentialPatternData));
+
+      // Store images separately in sessionStorage (if available)
+      try {
+        sessionStorage.setItem("custom_pattern_images", JSON.stringify({
+          patternBase64: selectedPattern.patternBase64,
+          mockupBase64: selectedPattern.mockupBase64,
+        }));
+      } catch (e) {
+        console.warn("Could not store pattern images in sessionStorage:", e);
+        // Continue anyway - images can be regenerated if needed
+      }
 
       // Find the custom kit from the cached list
       const customKit = customKits.find((kit) => kit.sizeName === selectedSize);
@@ -229,7 +250,6 @@ export default function VelgStorrelsePage() {
     const labels: Record<string, string> = {
       small: "Liten",
       medium: "Medium",
-      large: "Stor",
     };
     return `${labels[size] || size} (ca ${boardsW * 15}x${boardsH * 15} cm)`;
   };
@@ -270,13 +290,12 @@ export default function VelgStorrelsePage() {
                   {chooseSizeText}
                 </p>
               </div>
-              <div className="flex flex-col-reverse md:grid md:grid-cols-3 gap-6 mb-8">
+              <div className="flex flex-col-reverse md:grid md:grid-cols-2 gap-6 mb-8">
                 {patterns.map((pattern) => {
                   const isHovered = hoveredPattern === pattern.size;
                   const showMockup = isHovered && pattern.mockupBase64;
                   const isLoadingMockup = loadingMockups.has(pattern.size);
                   const customKit = customKits.find((kit) => kit.sizeName === pattern.size);
-                  const priceInKr = customKit ? customKit.price.toFixed(0) : null;
 
                   return (
                     <ProductCard
@@ -300,9 +319,9 @@ export default function VelgStorrelsePage() {
                       onMouseLeave={() => setHoveredPattern(null)}
                       className="h-full"
                     >
-                      {priceInKr && (
+                      {customKit?.price && (
                         <p className="text-lg font-bold text-[#6B4E71] mt-2">
-                          {priceInKr}
+                          {formatPrice(customKit?.price, "NOK")}
                         </p>
                       )}
                       {isHovered && !pattern.mockupBase64 && !isLoadingMockup && (
@@ -313,16 +332,6 @@ export default function VelgStorrelsePage() {
                     </ProductCard>
                   );
                 })}
-              </div>
-
-              <div className="mt-8">
-                <button
-                  onClick={handleContinue}
-                  disabled={!selectedSize}
-                  className="w-full bg-dark-purple hover:bg-[#5A3E5F] disabled:bg-[#C4B5C7] disabled:cursor-not-allowed text-white font-semibold py-4 px-6 rounded-full transition-colors text-lg"
-                >
-                  Gå til bestilling
-                </button>
               </div>
             </>
           )}

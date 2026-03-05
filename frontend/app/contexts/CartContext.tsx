@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 
 export interface CartItem {
-  lineId: string;              // NEW: Unique identifier for this line
+  lineId: string;
   productId: string;
   title: string;
   price: number;
@@ -11,19 +11,19 @@ export interface CartItem {
   quantity: number;
   imageUrl?: string;
   slug: string;
-  productType?: string;        // NEW: Product type (kit, tools, structure)
-  requiresParent?: boolean;    // NEW: Whether this is a strukturprodukt
-  requiredBoards?: number;     // NEW: How many boards recommended for kits
-  children?: CartItem[];       // NEW: Nested add-ons
-  customPattern?: any;         // NEW: Custom pattern data for custom_kit products
+  productType?: string;
+  requiresParent?: boolean;
+  requiredBoards?: number;
+  children?: CartItem[];
+  customPattern?: any;
 }
 
 interface CartContextType {
   items: CartItem[];
   addItem: (item: Omit<CartItem, "quantity" | "lineId">) => void;
   addChildItem: (parentLineId: string, item: Omit<CartItem, "quantity" | "lineId">, quantity?: number) => void;  // NEW
-  removeItem: (lineId: string) => void;  // CHANGED: Use lineId instead of productId
-  updateQuantity: (lineId: string, quantity: number) => void;  // CHANGED: Use lineId
+  removeItem: (lineId: string) => void;
+  updateQuantity: (lineId: string, quantity: number) => void;
   clearCart: () => void;
   totalItems: number;
   totalPrice: number;
@@ -42,9 +42,6 @@ function generateLineId(): string {
 function calculateTotalItems(items: CartItem[]): number {
   return items.reduce((sum, item) => {
     let itemSum = item.quantity;
-    if (item.children) {
-      itemSum += calculateTotalItems(item.children);
-    }
     return sum + itemSum;
   }, 0);
 }

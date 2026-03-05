@@ -9,6 +9,7 @@ class CheckoutOrderLineCreate(BaseModel):
     quantity: int
     product_type: Optional[str] = None
     children: Optional[List['CheckoutOrderLineCreate']] = None
+    custom_pattern: Optional[dict] = None
 
     @field_validator('quantity')
     @classmethod

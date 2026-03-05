@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.models.order import Order
-from app.models.customer import Customer
 from app.models.order_line import OrderLine
 from app.models.order_log import OrderLog
 from app.schemas.checkout import (
@@ -14,6 +13,7 @@ from app.schemas.checkout import (
 from app.services.vipps import vipps_client
 from app.services.sanity_service import SanityService
 from app.services.cart_validator import CartValidator
+from app.services.pattern_service import save_custom_pattern
 from typing import List, Optional
 import logging
 
@@ -45,6 +45,21 @@ def create_order_lines_recursively(
     for line_data in lines:
         line_total = line_data.unit_price * line_data.quantity
 
+        custom_data = None
+        pattern_id = None
+        if line_data.custom_pattern:
+            custom_data = {"custom_pattern": line_data.custom_pattern}
+            try:
+                custom_pattern = custom_data['custom_pattern']
+                pattern_data = custom_pattern.get('patternData')
+                colors_used = custom_pattern.get('colorsUsed', [])
+
+                if pattern_data and colors_used:
+                    pattern_id = save_custom_pattern(db, pattern_data, colors_used)
+                    logger.info(f"Linked pattern {pattern_id} to order id {order_id})")
+            except Exception as e:
+                logger.error(f"Failed to save custom pattern for order id {order_id}: {str(e)}")
+
         order_line = OrderLine(
             order_id=order_id,
             parent_line_id=parent_line_id,
@@ -53,10 +68,21 @@ def create_order_lines_recursively(
             product_type=line_data.product_type,
             unit_price=line_data.unit_price,
             quantity=line_data.quantity,
-            line_total=line_total
+            line_total=line_total,
+            pattern_id=pattern_id,
         )
-        db.add(order_line)
-        db.flush()  # Get the ID for potential children
+
+        try:
+            db.add(order_line)
+        except Exception as e:
+            logger.error(f"Database add error: {str(e)}", exc_info=True)
+            raise
+
+        try:
+            db.flush()
+        except Exception as e:
+            logger.error(f"Database flush error: {str(e)}", exc_info=True)
+            raise
 
         created_lines.append(order_line)
 

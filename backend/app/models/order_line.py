@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import JSONB
 from app.core.database import Base
 
 class OrderLine(Base):
@@ -14,7 +15,9 @@ class OrderLine(Base):
     unit_price = Column(Integer, nullable=False)
     quantity = Column(Integer, nullable=False)
     line_total = Column(Integer, nullable=False)
+    pattern_id = Column(Integer, ForeignKey("patterns.id", ondelete="SET NULL"), nullable=True, index=True)
 
     # Relationships
     order = relationship("Order", back_populates="order_lines")
     parent = relationship("OrderLine", remote_side=[id], backref="children")
+    pattern = relationship("Pattern", foreign_keys=[pattern_id])
