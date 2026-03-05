@@ -326,9 +326,8 @@ def convert_image_to_pattern(
 
     # Build pattern_data dict with v2 format
     pattern_data_dict = {
-        "grid": pattern_data_codes,        # NEW: Default to codes (v2)
-        "grid_hex": pattern_data_hex,      # LEGACY: Keep for transition
-        "storage_version": 2,              # NEW: Version marker
+        "grid": pattern_data_codes,
+        "storage_version": 2,
         "width": new_width,
         "height": new_height,
         "boards_width": boards_width,
@@ -578,9 +577,8 @@ def convert_image_to_pattern_in_memory(
 
     # Build pattern_data dict with v2 format
     pattern_data_dict = {
-        "grid": pattern_data_codes,        # NEW: Default to codes (v2)
-        "grid_hex": pattern_data_hex,      # LEGACY: Keep for transition
-        "storage_version": 2,              # NEW: Version marker
+        "grid": pattern_data_codes,
+        "storage_version": 2,
         "width": new_width,
         "height": new_height,
         "boards_width": boards_width,

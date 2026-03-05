@@ -138,9 +138,13 @@ export default function OrderDetailPage() {
   const getProductName = (id: string ) => {return products.find((product) => product._id === id)?.title};
   const getProductPatternId = (id: string ) => {return products.find((product) => product._id === id)?.patternId};
 
-  const handleOrderLineRowClick = (productId: string) => {
-    const patternId = getProductPatternId(productId)
-    router.push(`/admin/patterns/${patternId}`);
+  const handleOrderLineRowClick = (orderLine: OrderLine) => {
+    if (orderLine.pattern_id) {
+      router.push(`/admin/patterns/${orderLine.pattern_id}`);
+    } else {
+      const patternId = getProductPatternId(orderLine.product_id)
+      router.push(`/admin/patterns/${patternId}`);
+    }
   };
 
   const handleUpdateTracking = async () => {
@@ -615,7 +619,7 @@ export default function OrderDetailPage() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {order.order_lines.map((line: OrderLine) => (
                   <tr key={line.id}
-                    onClick={() => handleOrderLineRowClick(line.product_id)}
+                    onClick={() => handleOrderLineRowClick(line)}
                     className="cursor-pointer transition-colors"
                   >
                     <td className="px-6 py-4 whitespace-nowrap">

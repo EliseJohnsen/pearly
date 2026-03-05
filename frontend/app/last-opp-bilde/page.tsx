@@ -6,6 +6,7 @@ import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
 import PatternFlowStepper from "@/app/components/PatternFlowStepper";
 import UploadImage from "@/app/components/UploadImage";
+import { useUIString } from "../hooks/useSanityData";
 
 const STORAGE_KEY = "pearly_pattern_flow";
 
@@ -25,6 +26,15 @@ export default function LastOppBildePage() {
     style: null,
     size: null,
   });
+  const [selectedStyle, setSelectedStyle] = useState<"realistic" | "ai-style" | null>(null);
+
+  const uploadImageHeader = useUIString("last_opp_bilde");
+  const uploadImageDesription = useUIString("last_opp_bilde_beskrivelse");
+  const realisticStyleHeader = useUIString("realistisk_stil");
+  const realisticStyleDescription = useUIString("realistisk_stil_beskrivelse");
+  const wpapStyleHeader = useUIString("wpap_stil");
+  const wpapStyleDescription = useUIString("wpap_stil_beskrivelse");
+  const readAIPolicy = useUIString("les_om_ai_policy");
 
   // Load existing data from localStorage on mount
   useEffect(() => {
@@ -33,6 +43,9 @@ export default function LastOppBildePage() {
       try {
         const data = JSON.parse(stored);
         setFlowData(data);
+        if (data.style) {
+          setSelectedStyle(data.style);
+        }
         if (data.imagePreview) {
           setImageSelected(true);
         }
@@ -59,10 +72,11 @@ export default function LastOppBildePage() {
     reader.readAsDataURL(file);
   };
 
-  const handleContinue = () => {
-    if (imageSelected) {
-      router.push("/velg-stil");
-    }
+  const handleStyleSelect = (selectedStyle: "realistic" | "ai-style") => {
+    const updatedData = { ...flowData, style: selectedStyle };
+    setFlowData(updatedData);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
+    router.push("/velg-storrelse");
   };
 
   return (
@@ -74,10 +88,10 @@ export default function LastOppBildePage() {
         <div className="max-w-2xl mx-auto px-4 pb-12">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-[#6B4E71] mb-3">
-              Last opp et bilde
+              {uploadImageHeader}
             </h1>
             <p className="text-[#6B4E71] text-base">
-              Velg et bilde eller tegning du vil perle. Enkle motiv med god kontrast egner seg ofte best.
+              {uploadImageDesription}
             </p>
           </div>
 
@@ -86,15 +100,48 @@ export default function LastOppBildePage() {
             initialPreview={flowData.imagePreview}
           />
 
-          <div className="mt-8">
-            <button
-              onClick={handleContinue}
-              disabled={!imageSelected}
-              className="w-full bg-dark-purple hover:bg-[#5A3E5F] disabled:bg-[#C4B5C7] disabled:cursor-not-allowed text-white font-semibold py-4 px-6 rounded-full transition-colors text-lg"
-            >
-              Lag ditt perlemønster
-            </button>
-          </div>
+          {imageSelected && (
+            <div className="space-y-4 mt-8">
+              {/* Realistic Style */}
+              <button
+                onClick={() => handleStyleSelect("realistic")}
+                className={`w-full text-left p-6 rounded-2xl border-2 transition-all ${selectedStyle === "realistic"
+                  ? "border-[#6B4E71] bg-[#F5F0F6]"
+                  : "border-[#C4B5C7] bg-white hover:border-[#6B4E71]"
+                  }`}
+              >
+                <h3 className="text-lg font-bold text-[#6B4E71] mb-2">
+                  {realisticStyleHeader}
+                </h3>
+                <p className="text-sm text-[#6B4E71]">
+                  {realisticStyleDescription}
+                </p>
+              </button>
+
+              {/* AI Style */}
+              <button
+                onClick={() => handleStyleSelect("ai-style")}
+                className={`w-full text-left p-6 rounded-2xl border-2 transition-all ${selectedStyle === "ai-style"
+                  ? "border-[#6B4E71] bg-[#F5F0F6]"
+                  : "border-[#C4B5C7] bg-white hover:border-[#6B4E71]"
+                  }`}
+              >
+                <h3 className="text-lg font-bold text-[#6B4E71] mb-2">
+                  {wpapStyleHeader}
+                </h3>
+                <p className="text-sm text-[#6B4E71]">
+                  {wpapStyleDescription}{" "}
+                  <a
+                    href="/ai-policy"
+                    className="underline hover:text-[#5A3E5F]"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {readAIPolicy}
+                  </a>
+                </p>
+              </button>
+            </div>
+          )}
         </div>
       </main>
       <Footer />

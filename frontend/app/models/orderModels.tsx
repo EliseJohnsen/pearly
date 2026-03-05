@@ -19,6 +19,7 @@ export interface OrderLine {
   unit_price: number;
   quantity: number;
   line_total: number;
+  pattern_id: number;
 }
 
 export interface OrderLog {

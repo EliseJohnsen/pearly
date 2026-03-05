@@ -16,6 +16,13 @@ function transformCartItemsToOrderLines(items: CartItem[]): OrderLine[] {
     quantity: item.quantity,
     product_type: item.productType,
     children: item.children ? transformCartItemsToOrderLines(item.children) : undefined,
+    custom_pattern: item.customPattern ? {
+      patternData: (() => {
+        const { grid_hex, ...patternDataWithoutHex } = item.customPattern.patternData || {};
+        return patternDataWithoutHex;
+      })(),
+      colorsUsed: item.customPattern.colorsUsed,
+    } : undefined,
   }));
 }
 

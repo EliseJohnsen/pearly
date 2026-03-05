@@ -359,6 +359,7 @@ def _map_to_order_response(
                 unit_price=line.unit_price,
                 quantity=line.quantity,
                 line_total=line.line_total,
+                pattern_id=line.pattern_id,
             )
             for line in order.order_lines
         ],

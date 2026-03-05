@@ -148,7 +148,29 @@ export default function ProductDetailPage({
             const storedPattern = localStorage.getItem("custom_pattern");
             if (storedPattern) {
               const pattern = JSON.parse(storedPattern);
-              setCustomPattern(pattern);
+
+              // Try to get images from sessionStorage
+              let patternBase64 = null;
+              let mockupBase64 = null;
+              try {
+                const storedImages = sessionStorage.getItem("custom_pattern_images");
+                if (storedImages) {
+                  const images = JSON.parse(storedImages);
+                  patternBase64 = images.patternBase64;
+                  mockupBase64 = images.mockupBase64;
+                }
+              } catch (e) {
+                console.warn("Could not load pattern images from sessionStorage:", e);
+              }
+
+              // Combine pattern data with images
+              const fullPattern = {
+                ...pattern,
+                patternBase64,
+                mockupBase64,
+              };
+
+              setCustomPattern(fullPattern);
 
               // Set required boards based on pattern dimensions
               const requiredBoards = pattern.boardsWidth * pattern.boardsHeight;
@@ -263,7 +285,15 @@ export default function ProductDetailPage({
       productType: product.productType,
       requiredBoards: product.requiredBoards,
       children: children.length > 0 ? children : undefined,
-      customPattern: isCustomPattern && customPattern ? customPattern : undefined,
+      customPattern: isCustomPattern && customPattern ? {
+        // Only store essential data (no images) to avoid QuotaExceededError
+        size: customPattern.size,
+        boardsWidth: customPattern.boardsWidth,
+        boardsHeight: customPattern.boardsHeight,
+        patternData: customPattern.patternData,
+        colorsUsed: customPattern.colorsUsed,
+        beadCount: customPattern.beadCount,
+      } : undefined,
     });
 
     setAddedToCart(true);

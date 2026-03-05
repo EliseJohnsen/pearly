@@ -91,7 +91,6 @@ async def generate_three_sizes(request: GenerateThreeSizesRequest):
         sizes = [
             {"name": "small", "boards": 2},   # Max 58x58 beads area
             {"name": "medium", "boards": 4},  # Max 116x116 beads area
-            {"name": "large", "boards": 6},   # Max 174x174 beads area
         ]
 
         # Use same boards for both dimensions - pattern generator maintains aspect ratio internally
