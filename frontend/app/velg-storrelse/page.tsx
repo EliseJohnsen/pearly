@@ -9,6 +9,7 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import ProductCard from "../components/ProductCard";
 import { useUIString } from "../hooks/useSanityData";
 import { formatPrice } from "../utils/priceFormatter";
+import PearlyButton from "../components/PearlyButton";
 
 const STORAGE_KEY = "pearly_pattern_flow";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -62,6 +63,9 @@ export default function VelgStorrelsePage() {
   const [hoveredPattern, setHoveredPattern] = useState<string | null>(null);
   const chooseSizeHeader = useUIString("velg_storrelse_header");
   const chooseSizeText = useUIString("velg_storrelse_tekst");
+  const startOverHeader = useUIString("start_paa_nytt_header");
+  const startOverText = useUIString("start_paa_nytt_tekst");
+  const startOverButtonLabel = useUIString("start_paa_nytt_knapp");
 
   const fetchCustomKits = async () => {
     try {
@@ -333,6 +337,20 @@ export default function VelgStorrelsePage() {
                 })}
               </div>
             </>
+          )}
+          {!isLoading && patterns.length > 0 && (
+            <div className="justify-items-center">
+              <h2>
+                {startOverHeader}
+              </h2>
+              <p>
+                {startOverText}
+              </p>
+              <PearlyButton
+                label={startOverButtonLabel}
+                skin="outline"
+                onClick={() => router.push("/last-opp-bilde")} />
+            </div>
           )}
         </div>
       </main>
