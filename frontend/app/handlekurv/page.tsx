@@ -8,6 +8,7 @@ import { TrashIcon, MinusIcon, PlusIcon, ShoppingBagIcon } from "@heroicons/reac
 import Link from "next/link";
 
 // Transform cart items to order lines (recursive)
+// Filter out child items with quantity 0
 function transformCartItemsToOrderLines(items: CartItem[]): OrderLine[] {
   return items.map((item) => ({
     product_id: item.productId,
@@ -15,7 +16,9 @@ function transformCartItemsToOrderLines(items: CartItem[]): OrderLine[] {
     unit_price: Math.round(item.price * 100), // Convert to øre
     quantity: item.quantity,
     product_type: item.productType,
-    children: item.children ? transformCartItemsToOrderLines(item.children) : undefined,
+    children: item.children
+      ? transformCartItemsToOrderLines(item.children.filter(child => child.quantity > 0))
+      : undefined,
     custom_pattern: item.customPattern ? {
       patternData: (() => {
         const { grid_hex, ...patternDataWithoutHex } = item.customPattern.patternData || {};
@@ -33,14 +36,17 @@ function CartItemRow({
   onRemove,
   onUpdateQuantity,
   formatPrice,
+  parentItem,
 }: {
   item: CartItem;
   level?: number;
   onRemove: (lineId: string) => void;
   onUpdateQuantity: (lineId: string, qty: number) => void;
   formatPrice: (price: number, currency?: string) => string;
+  parentItem?: CartItem;
 }) {
   const isChild = level > 0;
+  const isMaxQuantityReached = isChild && parentItem?.requiredBoards !== undefined && item.quantity >= parentItem.requiredBoards;
 
   return (
     <>
@@ -89,7 +95,12 @@ function CartItemRow({
               <span className="w-8 text-center font-medium">{item.quantity}</span>
               <button
                 onClick={() => onUpdateQuantity(item.lineId, item.quantity + 1)}
-                className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 hover:bg-gray-100 transition-colors"
+                disabled={isMaxQuantityReached}
+                className={`w-8 h-8 flex items-center justify-center rounded-full border transition-colors ${
+                  isMaxQuantityReached
+                    ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
+                    : "border-gray-300 hover:bg-gray-100"
+                }`}
                 aria-label="Øk antall"
               >
                 <PlusIcon className="w-4 h-4" />
@@ -134,7 +145,12 @@ function CartItemRow({
             <span className="w-8 text-center font-medium">{item.quantity}</span>
             <button
               onClick={() => onUpdateQuantity(item.lineId, item.quantity + 1)}
-              className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 hover:bg-gray-100 transition-colors"
+              disabled={isMaxQuantityReached}
+              className={`w-8 h-8 flex items-center justify-center rounded-full border transition-colors ${
+                isMaxQuantityReached
+                  ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
+                  : "border-gray-300 hover:bg-gray-100"
+              }`}
               aria-label="Øk antall"
             >
               <PlusIcon className="w-4 h-4" />
@@ -164,6 +180,7 @@ function CartItemRow({
           onRemove={onRemove}
           onUpdateQuantity={onUpdateQuantity}
           formatPrice={formatPrice}
+          parentItem={item}
         />
       ))}
     </>
