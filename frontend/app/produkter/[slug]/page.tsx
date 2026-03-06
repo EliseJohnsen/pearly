@@ -15,6 +15,7 @@ import CollapsableCard from "@/app/components/CollapsableCard";
 import { useUIString, useUIStringWithVars } from "@/app/hooks/useSanityData";
 import ProductCard from "@/app/components/ProductCard";
 import { formatPrice } from "@/app/utils/priceFormatter";
+import ImageCarousel from "@/app/components/ImageCarousel";
 
 interface ProductVariant {
   sku: string;
@@ -109,7 +110,6 @@ export default function ProductDetailPage({
   const [strukturprodukter, setStrukturprodukter] = useState<Product[]>([]);
   const [customPattern, setCustomPattern] = useState<CustomPattern | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [addedToCart, setAddedToCart] = useState(false);
   const [addonQuantities, setAddonQuantities] = useState<Record<string, number>>({});
   const { addItem } = useCart();
@@ -246,7 +246,18 @@ export default function ProductDetailPage({
     ? [{ url: product.image.asset.url, alt: product.image.alt || product.title, isPattern: false }]
     : [];
 
-  const selectedImage = productImages[selectedImageIndex];
+  // Transform productImages to ImageCarousel format
+  const carouselImages = productImages.map((img, index) => ({
+    asset: {
+      _id: `${product._id}-${index}`,
+      url: img.url,
+      metadata: {
+        lqip: product.images?.[index]?.asset?.metadata?.lqip,
+        dimensions: product.images?.[index]?.asset?.metadata?.dimensions,
+      },
+    },
+    alt: img.alt || product.title,
+  }));
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -344,40 +355,18 @@ export default function ProductDetailPage({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           {/* Image Gallery */}
           <div className="space-y-4">
-            {selectedImage && (
-              <div className="min-h-100 md:min-h-150 lg:min-h-175 px-6 py-10 bg-primary-light-pink content-center relative overflow-hidden bg-gray-100">
-                <img
-                  src={selectedImage.url}
-                  alt={selectedImage.alt || product.title}
-                  className={`w-full h-full ${selectedImage.isPattern ? "object-contain" : "object-cover"}`}
-                />
-              </div>
-            )}
-
-            {productImages && productImages.length > 1 && (
-              <div className="grid grid-cols-4 gap-2">
-                {productImages.map((image, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setSelectedImageIndex(index)}
-                    className={`relative aspect-square rounded-lg overflow-hidden border-2 transition ${
-                      index === selectedImageIndex
-                        ? "border-primary"
-                        : "border-transparent hover:border-300"
-                    }`}
-                  >
-                    <img
-                      src={image.url}
-                      alt={image.alt || `${product.title} ${index + 1}`}
-                      className={`w-full h-full ${image.isPattern ? "object-contain" : "object-cover"}`}
-                    />
-                  </button>
-                ))}
-              </div>
+            {carouselImages.length > 0 && (
+              <ImageCarousel
+                data={{
+                  images: carouselImages,
+                  autoRotate: false,
+                  aspectRatio: "portrait",
+                }}
+              />
             )}
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-4">
             <div>
               <h1 className="text-5xl text-dark-purple font-bold mb-2">{product.title}</h1>
             </div>
@@ -497,7 +486,7 @@ export default function ProductDetailPage({
               currency={product.currency}
             />
 
-            <CollapsableCard header={innholdHeader} defaultExpanded={false} className="border-t border-purple">
+            <CollapsableCard header={innholdHeader} defaultExpanded={false} className="">
               {product.longDescription && (
                 <div className="pt-6">
                   <div className="prose prose-sm max-w-none text-gray-700">
@@ -525,10 +514,10 @@ export default function ProductDetailPage({
               )}
 
             </CollapsableCard>
-            <CollapsableCard header={leveringHeader} defaultExpanded={false} className="border-y border-purple">
+            <CollapsableCard header={leveringHeader} defaultExpanded={false} className="border-t border-purple">
               {leveringText}
             </CollapsableCard>
-            <CollapsableCard header={bytteOgReturHeader} defaultExpanded={false} className="border-b border-purple">
+            <CollapsableCard header={bytteOgReturHeader} defaultExpanded={false} className="border-y border-purple">
               {bytteOgReturText}
             </CollapsableCard>
           </div>

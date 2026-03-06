@@ -158,22 +158,39 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const removeItem = useCallback((lineId: string) => {
     setItems((prev) => {
-      // Recursively remove item by lineId
-      function filterItems(items: CartItem[]): CartItem[] {
-        return items.filter(item => item.lineId !== lineId).map(item => ({
-          ...item,
-          children: item.children ? filterItems(item.children) : undefined,
-        }));
+      // Check if the item is a child (nested within another item)
+      function isChildItem(items: CartItem[], targetLineId: string, isNested: boolean = false): boolean {
+        for (const item of items) {
+          if (item.children) {
+            if (item.children.some(child => child.lineId === targetLineId)) {
+              return true;
+            }
+            if (isChildItem(item.children, targetLineId, true)) {
+              return true;
+            }
+          }
+        }
+        return false;
       }
 
-      return filterItems(prev);
-    });
-  }, []);
+      const isChild = isChildItem(prev, lineId);
 
-  const updateQuantity = useCallback((lineId: string, quantity: number) => {
-    setItems((prev) => {
-      if (quantity <= 0) {
-        // Remove item if quantity is 0
+      if (isChild) {
+        // For child items, set quantity to 0 instead of removing
+        function setChildQuantityToZero(items: CartItem[]): CartItem[] {
+          return items.map((item) => {
+            if (item.lineId === lineId) {
+              return { ...item, quantity: 0 };
+            }
+            if (item.children) {
+              return { ...item, children: setChildQuantityToZero(item.children) };
+            }
+            return item;
+          });
+        }
+        return setChildQuantityToZero(prev);
+      } else {
+        // For parent items, remove completely (including children)
         function filterItems(items: CartItem[]): CartItem[] {
           return items.filter(item => item.lineId !== lineId).map(item => ({
             ...item,
@@ -182,8 +199,56 @@ export function CartProvider({ children }: { children: ReactNode }) {
         }
         return filterItems(prev);
       }
+    });
+  }, []);
 
-      // Recursively update quantity
+  const updateQuantity = useCallback((lineId: string, quantity: number) => {
+    setItems((prev) => {
+      if (quantity <= 0) {
+        // Check if the item is a child
+        function isChildItem(items: CartItem[], targetLineId: string): boolean {
+          for (const item of items) {
+            if (item.children) {
+              if (item.children.some(child => child.lineId === targetLineId)) {
+                return true;
+              }
+              if (isChildItem(item.children, targetLineId)) {
+                return true;
+              }
+            }
+          }
+          return false;
+        }
+
+        const isChild = isChildItem(prev, lineId);
+
+        if (isChild) {
+          // For child items, set quantity to 0 instead of removing
+          function updateItems(items: CartItem[]): CartItem[] {
+            return items.map((item) => {
+              if (item.lineId === lineId) {
+                return { ...item, quantity: 0 };
+              }
+              if (item.children) {
+                return { ...item, children: updateItems(item.children) };
+              }
+              return item;
+            });
+          }
+          return updateItems(prev);
+        } else {
+          // For parent items, remove completely
+          function filterItems(items: CartItem[]): CartItem[] {
+            return items.filter(item => item.lineId !== lineId).map(item => ({
+              ...item,
+              children: item.children ? filterItems(item.children) : undefined,
+            }));
+          }
+          return filterItems(prev);
+        }
+      }
+
+      // Recursively update quantity (for positive quantities)
       function updateItems(items: CartItem[]): CartItem[] {
         return items.map((item) => {
           if (item.lineId === lineId) {
