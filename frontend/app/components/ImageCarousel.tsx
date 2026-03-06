@@ -8,7 +8,7 @@ import Link from "next/link";
 
 interface ImageCarouselProps {
   data: {
-    heading: string;
+    heading?: string;
     description?: string;
     images: Array<{
       asset: {
@@ -26,11 +26,12 @@ interface ImageCarouselProps {
     }>;
     autoRotate?: boolean;
     rotationInterval?: number;
-    ctaButton: {
+    ctaButton?: {
       text: string;
       href: string;
     };
     isActive?: boolean;
+    aspectRatio?: "square" | "portrait";
   };
 }
 
@@ -66,24 +67,30 @@ export default function ImageCarousel({ data }: ImageCarouselProps) {
 
   if (data.isActive === false) return null;
 
+  const aspectRatio = data.aspectRatio || "square";
+  const aspectClass = aspectRatio === "portrait" ? "aspect-[3/4]" : "aspect-[4/3]";
+  const objectFit = aspectRatio === "portrait" ? "object-contain" : "object-cover";
+
   return (
-    <section className="container max-w-4xl mx-auto px-4 py-6 md:py-10">
+    <section className="container max-w-4xl mx-auto p-4 bg-primary-pink">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl md:text-3xl font-bold text-dark-purple mb-4">
-          {data.heading}
-        </h1>
-        {data.description && (
-          <p className="text-lg md:text-xl text-gray-900">
-            {data.description}
-          </p>
-        )}
-      </div>
+      {data.heading && (
+        <div className="mb-8">
+          <h1 className="text-3xl md:text-3xl font-bold text-dark-purple mb-4">
+            {data.heading}
+          </h1>
+          {data.description && (
+            <p className="text-lg md:text-xl text-gray-900">
+              {data.description}
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Carousel */}
       <div className="relative mx-auto">
         {/* Main Image */}
-        <div className="relative aspect-[4/3] bg-pink-100 rounded-md overflow-hidden">
+        <div className={`relative ${aspectClass} bg-pink-100 rounded-md overflow-hidden`}>
           {data.images.map((image, index) => (
             <div
               key={image.asset._id}
@@ -95,7 +102,7 @@ export default function ImageCarousel({ data }: ImageCarouselProps) {
                 src={urlFor(image).width(1200).quality(85).auto("format").url()}
                 alt={image.alt}
                 fill
-                className="object-cover"
+                className={objectFit}
                 priority={index === 0}
                 placeholder={image.asset.metadata?.lqip ? "blur" : "empty"}
                 blurDataURL={image.asset.metadata?.lqip}
@@ -145,14 +152,16 @@ export default function ImageCarousel({ data }: ImageCarouselProps) {
       </div>
 
       {/* CTA Button */}
-      <div className="text-center mt-8">
-        <Link
-          href={data.ctaButton.href}
-          className="inline-block px-8 py-4 bg-dark-purple text-white text-lg font-semibold rounded-full hover:bg-purple-800 transition-colors"
-        >
-          {data.ctaButton.text}
-        </Link>
-      </div>
+      {data.ctaButton && (
+        <div className="text-center mt-8">
+          <Link
+            href={data.ctaButton.href}
+            className="inline-block px-8 py-4 bg-dark-purple text-white text-lg font-semibold rounded-full hover:bg-purple-800 transition-colors"
+          >
+            {data.ctaButton.text}
+          </Link>
+        </div>
+      )}
     </section>
   );
 }
