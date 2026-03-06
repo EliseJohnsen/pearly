@@ -53,11 +53,17 @@ export default function CollapsableCardsSection({
       <div className="mx-auto">
         {sortedCards.map((card, index) => {
           const IconComponent = getIconComponent(card.icon);
+          const isFirst = index === 0;
           const isLast = index === sortedCards.length - 1;
 
           // Apply border styling based on position
-          // All items get top border, last item also gets bottom border
-          const borderClass = isLast ? "border-y border-purple" : "border-t border-purple";
+          // All items except first get top border, last item also gets bottom border
+          let borderClass = "";
+          if (!isFirst) {
+            borderClass = isLast ? "border-y border-purple" : "border-t border-purple";
+          } else if (isLast) {
+            borderClass = "border-b border-purple";
+          }
 
           return (
             <CollapsableCard
