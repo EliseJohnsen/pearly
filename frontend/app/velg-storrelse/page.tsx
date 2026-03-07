@@ -186,14 +186,14 @@ export default function VelgStorrelsePage() {
   const handleSizeSelect = async (size: string) => {
     setSelectedSize(size);
 
-    if (!selectedSize) return;
+    if (!size) return;
 
-    const selectedPattern = patterns.find((p) => p.size === selectedSize);
+    const selectedPattern = patterns.find((p) => p.size === size);
     if (!selectedPattern) return;
 
     try {
       // Save pattern to localStorage (WITHOUT images to avoid QuotaExceededError)
-      const updatedData = { ...flowData, size: selectedSize };
+      const updatedData = { ...flowData, size: size };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
 
       // Store only essential pattern data (no base64 images)
@@ -220,12 +220,12 @@ export default function VelgStorrelsePage() {
       }
 
       // Find the custom kit from the cached list
-      const customKit = customKits.find((kit) => kit.sizeName === selectedSize);
+      const customKit = customKits.find((kit) => kit.sizeName === size);
 
       if (!customKit) {
         // Fallback: fetch from API if not found in cached list
         const sizeMap: Record<string, number> = { small: 1, medium: 2, large: 3 };
-        const productSize = sizeMap[selectedSize];
+        const productSize = sizeMap[size];
         const response = await fetch(
           `${API_URL}/api/products/custom-kit-by-size?product_size=${productSize}`
         );

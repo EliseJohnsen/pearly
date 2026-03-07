@@ -277,14 +277,14 @@ export default function UploadImage({ onImageSelected, initialPreview }: UploadI
           >
             <div
               ref={modalRef}
-              className="w-full md:w-1/2 max-w-4xl bg-white rounded-3xl shadow-2xl flex flex-col"
+              className="w-full md:w-1/3 max-w-4xl bg-white rounded-3xl shadow-2xl flex flex-col"
               style={{ maxHeight: "95vh" }}
             >
               {/* Scrollable content */}
               <div className="overflow-y-auto flex-1 p-6 md:p-8">
-                <div className="space-y-4">
+                <div className="space-y-2">
                 {/* Header */}
-                <div className="text-center mb-4">
+                <div className="text-center mb-2">
                   <h2 id="crop-modal-title" className="text-2xl font-bold text-dark-purple mb-2">
                     {adaptYourImageText}
                   </h2>
@@ -316,7 +316,7 @@ export default function UploadImage({ onImageSelected, initialPreview }: UploadI
                 <div className="hidden md:flex relative items-center justify-center gap-4">
                   <button
                     onClick={() => setZoom(Math.max(1, zoom - 0.1))}
-                    className="w-10 h-10 bg-white border-2 border-purple rounded-full flex items-center justify-center text-dark-purple font-bold hover:border-dark-purple transition-colors text-xl"
+                    className="w-8 h-8 bg-white border-2 border-purple rounded-full flex items-center justify-center text-dark-purple font-bold hover:border-dark-purple transition-colors text-xl"
                   >
                     −
                   </button>
@@ -325,7 +325,7 @@ export default function UploadImage({ onImageSelected, initialPreview }: UploadI
                   </span>
                   <button
                     onClick={() => setZoom(Math.min(3, zoom + 0.1))}
-                    className="w-10 h-10 bg-white border-2 border-purple rounded-full flex items-center justify-center text-dark-purple font-bold hover:border-dark-purple transition-colors text-xl"
+                    className="w-8 h-8 bg-white border-2 border-purple rounded-full flex items-center justify-center text-dark-purple font-bold hover:border-dark-purple transition-colors text-xl"
                   >
                     +
                   </button>
@@ -364,7 +364,7 @@ export default function UploadImage({ onImageSelected, initialPreview }: UploadI
                   </button>
                   <button
                     onClick={() => setSelectedAspectRatio("1:1")}
-                    className={`py-3 px-4 rounded-xl border-2 font-medium transition-all ${
+                    className={`py-2 px-4 rounded-xl border-2 font-medium transition-all ${
                       selectedAspectRatio === "1:1"
                         ? "bg-dark-purple text-white border-dark-purple"
                         : "bg-white border-purple text-dark-purple hover:border-dark-purple"
