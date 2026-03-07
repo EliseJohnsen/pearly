@@ -71,6 +71,21 @@ export default function ImageCarousel({ data }: ImageCarouselProps) {
   const aspectClass = aspectRatio === "portrait" ? "aspect-[3/4]" : "aspect-[4/3]";
   const objectFit = aspectRatio === "portrait" ? "object-contain" : "object-cover";
 
+  // Helper function to check if image is base64 or direct URL
+  const isBase64OrDirectUrl = (url: string) => {
+    return url.startsWith("data:") || url.startsWith("http");
+  };
+
+  // Helper function to get image URL
+  const getImageUrl = (image: any, width: number) => {
+    // If the URL is already a base64 string or direct URL, return it as-is
+    if (isBase64OrDirectUrl(image.asset.url)) {
+      return image.asset.url;
+    }
+    // Otherwise, use Sanity's URL builder
+    return urlFor(image).width(width).quality(85).auto("format").url();
+  };
+
   return (
     <section className="container max-w-4xl mx-auto p-4 bg-primary-pink">
       {/* Header */}
@@ -99,7 +114,7 @@ export default function ImageCarousel({ data }: ImageCarouselProps) {
               }`}
             >
               <Image
-                src={urlFor(image).width(1200).quality(85).auto("format").url()}
+                src={getImageUrl(image, 1200)}
                 alt={image.alt}
                 fill
                 className={objectFit}
@@ -141,7 +156,7 @@ export default function ImageCarousel({ data }: ImageCarouselProps) {
               aria-label={`Gå til bilde ${index + 1}`}
             >
               <Image
-                src={urlFor(image).width(200).quality(70).auto("format").url()}
+                src={getImageUrl(image, 200)}
                 alt={image.alt}
                 fill
                 className="object-cover"
