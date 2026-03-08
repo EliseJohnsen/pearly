@@ -137,7 +137,12 @@ async def create_product_from_pattern_data(
 
     # Upload images to Sanity
     try:
-        pattern_image_bytes = base64.b64decode(product_data.pattern_image_base64)
+        # Strip data URI prefix if present (e.g., "data:image/png;base64,")
+        pattern_base64 = product_data.pattern_image_base64
+        if ',' in pattern_base64:
+            pattern_base64 = pattern_base64.split(',', 1)[1]
+
+        pattern_image_bytes = base64.b64decode(pattern_base64)
         pattern_filename = f"{product_data.slug}-pattern.png"
         pattern_upload_result = await sanity_service.upload_image_from_bytes(
             pattern_image_bytes,
@@ -148,7 +153,12 @@ async def create_product_from_pattern_data(
         styled_image_asset_id = None
         if product_data.styled_image_base64:
             try:
-                styled_image_bytes = base64.b64decode(product_data.styled_image_base64)
+                # Strip data URI prefix if present
+                styled_base64 = product_data.styled_image_base64
+                if ',' in styled_base64:
+                    styled_base64 = styled_base64.split(',', 1)[1]
+
+                styled_image_bytes = base64.b64decode(styled_base64)
                 styled_filename = f"{product_data.slug}-styled.png"
                 styled_upload_result = await sanity_service.upload_image_from_bytes(
                     styled_image_bytes,
