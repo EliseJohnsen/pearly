@@ -105,7 +105,7 @@ export default function PatternDetailPage() {
       ? beadCount + 5
       : beadCount + 20;
     const value = (adjustedCount / 1000 * 60)
-    return Math.ceil(Math.round(value * 10) / 10);
+    return Math.round(value * 10) / 10;
   }
 
   const toggleColorCheck = (colorCode: string) => {
@@ -203,7 +203,7 @@ export default function PatternDetailPage() {
           />
         </CollapsableCard>
 
-        <CollapsableCard header="Farger du trenger">
+        <CollapsableCard header="Farger du trenger" className="bg-white">
           <div>
             {pattern!.colors_used
               .slice()
@@ -220,7 +220,7 @@ export default function PatternDetailPage() {
                 return (
                   <div
                     key={colorCode}
-                    className={`flex items-center gap-4 p-3 max-w-2xl rounded-lg bg-primary-light hover:bg-primary-light transition-colors ${
+                    className={`flex items-center gap-4 p-3 max-w-2xl rounded-lg hover:bg-primary-light transition-colors ${
                       checkedColors.has(colorCode) ? 'bg-gray-300' : 'bg-background'
                     }`}
                   >

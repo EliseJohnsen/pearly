@@ -120,7 +120,7 @@ export interface Category {
 export interface Footer {
   _id: string,
   title: string,
-  comapnyInfo: {
+  companyInfo: {
     companyName: string,
     email: string,
   },

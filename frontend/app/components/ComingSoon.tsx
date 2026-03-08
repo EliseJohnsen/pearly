@@ -1,17 +1,24 @@
 "use client";
 
 import Image from "next/image";
-import { useComingSoon } from "../hooks/useSanityData";
-import Footer from "./Footer";
+import { useComingSoon, useFooter } from "../hooks/useSanityData";
 
 export default function ComingSoon() {
   const { data: comingSoonData, loading, error } = useComingSoon();
+  const { data: fetchedFooter } = useFooter();
+  const footer = fetchedFooter;
 
   if (error || !comingSoonData) {
     return null;
   }
 
   const { logo, heading, headingFontSize, subheading, subheadingFontSize, backgroundColor, textColor } = comingSoonData;
+
+  const handleEmailClick = () => {
+    if (footer?.companyInfo?.email) {
+      navigator.clipboard.writeText(footer.companyInfo.email);
+    }
+  };
 
   return (
     <div
@@ -64,7 +71,25 @@ export default function ComingSoon() {
 
       {/* Footer */}
       <div className="mt-auto">
-        <Footer />
+        <footer className="bg-dark-purple shadow-lg p-8 text-white ">
+          <div className="flex flex-wrap mb-2  justify-center">
+            {footer && footer.companyInfo && footer.companyInfo.email && (
+              <div className="text-center">
+                <a
+                  href={`mailto:${footer.companyInfo.email}`}
+                  onClick={handleEmailClick}
+                  className="hover:text-black transition-colors"
+                  title="Åpner epost og kopierer epost-adressen til utklippstavle"
+                >
+                  {footer.companyInfo.email}
+                </a>
+                <div className="flex flex-wrap justify-between">
+                  {footer.companyInfo.companyName} | {footer.additionalText}
+                </div>
+              </div>
+            )}
+          </div>
+        </footer>
       </div>
 
       <style jsx>{`
