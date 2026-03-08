@@ -105,7 +105,7 @@ export default function PatternDetailPage() {
       ? beadCount + 5
       : beadCount + 20;
     const value = (adjustedCount / 1000 * 60)
-    return Math.round(value * 10) / 10;
+    return Math.ceil(Math.round(value * 10) / 10);
   }
 
   const toggleColorCheck = (colorCode: string) => {
@@ -160,7 +160,7 @@ export default function PatternDetailPage() {
         </div>
 
         <CollapsableCard header="Produkter knyttet til dette mønsteret">
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 gap-2 bg-primary-pink">
             {products?.map((product: any) => (
               <a
                   key={product._id}
@@ -220,7 +220,7 @@ export default function PatternDetailPage() {
                 return (
                   <div
                     key={colorCode}
-                    className={`flex items-center gap-4 p-3 max-w-2xl rounded-lg hover:bg-primary-light transition-colors ${
+                    className={`flex items-center gap-4 p-3 max-w-2xl rounded-lg bg-primary-light hover:bg-primary-light transition-colors ${
                       checkedColors.has(colorCode) ? 'bg-gray-300' : 'bg-background'
                     }`}
                   >
@@ -239,13 +239,13 @@ export default function PatternDetailPage() {
                       <p className="text-gray-900 truncate">
                         {color.code}
                       </p>
-                      <p className="text-bold text-gray-900">
+                      <p className="font-bold">
                         {getBeadWeight(color.count)} gram
                       </p>
-                      <p className="text-medium text-gray-500">
+                      <p>
                         {color.name}
                       </p>
-                      <p className="text-medium text-gray-600">
+                      <p>
                         {color.count} perler
                       </p>
                     </div>
