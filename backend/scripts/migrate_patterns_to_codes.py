@@ -24,7 +24,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from app.core.database import SessionLocal
 from app.models.pattern import Pattern
-from app.services.color_service import hex_to_code, get_perle_colors
+from app.services.color_service import hex_to_code, get_perle_colors, add_color_to_palette
 from sqlalchemy.orm.attributes import flag_modified
 
 
@@ -53,7 +53,7 @@ def migrate_pattern_to_codes(pattern: Pattern, dry_run: bool = False) -> dict:
 
     # Convert hex grid to code grid
     grid_codes = []
-    unknown_colors = {}
+    added_colors = {}
 
     for row_idx, row in enumerate(grid_hex):
         code_row = []
@@ -63,31 +63,43 @@ def migrate_pattern_to_codes(pattern: Pattern, dry_run: bool = False) -> dict:
             if code:
                 code_row.append(code)
             else:
-                # Unknown color - assign fallback code
-                if hex_color not in unknown_colors:
-                    fallback_code = "99"
-                    unknown_colors[hex_color] = fallback_code
-                    print(f"  ⚠️  Pattern {pattern.id}: Unknown color {hex_color} at ({row_idx}, {col_idx}), using {fallback_code}")
+                # Unknown color - add it to perle-colors.json with 900+ code
+                if hex_color not in added_colors:
+                    try:
+                        new_color = add_color_to_palette(hex_color)
+                        added_colors[hex_color] = new_color["code"]
+                        print(f"  ➕ Pattern {pattern.id}: Added unknown color {hex_color} to palette with code {new_color['code']}")
+                    except Exception as e:
+                        print(f"  ❌ Pattern {pattern.id}: Failed to add color {hex_color}: {e}")
+                        # Fallback to code "99" if adding fails
+                        added_colors[hex_color] = "99"
 
-                code_row.append(unknown_colors[hex_color])
+                code_row.append(added_colors[hex_color])
 
         grid_codes.append(code_row)
 
     if not dry_run:
+        # Update colors_used to ensure codes are present
+        if pattern.colors_used:
+            for color_entry in pattern.colors_used:
+                hex_val = color_entry.get("hex", "").upper()
+                # Ensure code is set
+                if not color_entry.get("code"):
+                    found_code = hex_to_code(hex_val)
+                    if found_code:
+                        color_entry["code"] = found_code
+
         # Update pattern
-        pattern.pattern_data["grid_hex"] = grid_hex  # Backup original
         pattern.pattern_data["grid"] = grid_codes
         pattern.pattern_data["storage_version"] = 2
 
-        if unknown_colors:
-            pattern.pattern_data["custom_colors"] = unknown_colors
-
         flag_modified(pattern, "pattern_data")
+        flag_modified(pattern, "colors_used")
 
     return {
         "status": "migrated",
         "grid_size": len(grid_hex) * len(grid_hex[0]) if grid_hex else 0,
-        "unknown_colors": len(unknown_colors)
+        "added_colors": len(added_colors)
     }
 
 
@@ -135,8 +147,8 @@ def main():
                 if result["status"] == "migrated":
                     results["migrated"] += 1
                     print(f"[{i}/{len(patterns)}] Pattern {pattern.id}: ✅ Migrated ({result['grid_size']} beads)")
-                    if result["unknown_colors"] > 0:
-                        print(f"             └─ ⚠️  Found {result['unknown_colors']} unknown colors")
+                    if result["added_colors"] > 0:
+                        print(f"             └─ ➕ Added {result['added_colors']} new colors to palette")
                 else:
                     results["skipped"] += 1
                     reason_text = {

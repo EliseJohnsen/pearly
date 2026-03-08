@@ -127,6 +127,77 @@ def clear_color_cache() -> None:
     print("Color cache cleared - will reload from perle-colors.json on next request")
 
 
+def add_color_to_palette(hex_color: str, name: str = None, code: str = None) -> Dict:
+    """
+    Add a new color to perle-colors.json with automatic code assignment.
+
+    Args:
+        hex_color: Hex color string (with or without # prefix)
+        name: Optional color name (defaults to "Custom {code}")
+        code: Optional code (defaults to next available 900+ code)
+
+    Returns:
+        The added color dictionary
+    """
+    # Normalize hex
+    hex_normalized = hex_color.strip().upper()
+    if not hex_normalized.startswith("#"):
+        hex_normalized = f"#{hex_normalized}"
+
+    # Load existing colors
+    try:
+        if not PERLE_COLORS_FILEPATH.exists():
+            raise FileNotFoundError(f"Perle colors file not found at {PERLE_COLORS_FILEPATH}")
+
+        with open(PERLE_COLORS_FILEPATH, 'r', encoding='utf-8') as f:
+            colors = json.load(f)
+    except Exception as e:
+        print(f"Error loading perle-colors.json: {e}")
+        raise
+
+    # Check if color already exists
+    for existing_color in colors:
+        if existing_color.get("hex", "").upper() == hex_normalized:
+            print(f"Color {hex_normalized} already exists in palette with code {existing_color.get('code')}")
+            return existing_color
+
+    # Find next available code in 900+ range
+    if code is None:
+        existing_codes = {c.get("code") for c in colors if c.get("code")}
+        code_num = 900
+        while str(code_num) in existing_codes:
+            code_num += 1
+        code = str(code_num)
+
+    # Generate name if not provided
+    if name is None:
+        name = f"Custom {code}"
+
+    # Create new color entry
+    new_color = {
+        "name": name,
+        "code": code,
+        "hex": hex_normalized
+    }
+
+    # Add to list
+    colors.append(new_color)
+
+    # Write back to file
+    try:
+        with open(PERLE_COLORS_FILEPATH, 'w', encoding='utf-8') as f:
+            json.dump(colors, f, indent=2, ensure_ascii=False)
+        print(f"Added color {hex_normalized} with code {code} to perle-colors.json")
+    except Exception as e:
+        print(f"Error writing to perle-colors.json: {e}")
+        raise
+
+    # Clear cache to reload with new color
+    clear_color_cache()
+
+    return new_color
+
+
 def get_perle_colors(force_reload: bool = False) -> List[Dict]:
     """
     Loads Perle colors from local JSON file (with caching) and adds RGB tuples.
