@@ -27,6 +27,7 @@ interface ProductCardProps {
   imageAlt?: string;
   imageOverlay?: ReactNode; // Content to overlay on the image (e.g., loading spinner)
   isSelected?: boolean;
+  disabled?: boolean;
   onClick?: () => void;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
@@ -42,6 +43,7 @@ export default function ProductCard({
   imageAlt,
   imageOverlay,
   isSelected = false,
+  disabled = false,
   onClick,
   onMouseEnter,
   onMouseLeave,
@@ -64,10 +66,12 @@ export default function ProductCard({
   const cardHref = isProductCard ? `/produkter/${product.slug.current}` : href;
 
   // Base classes
-  const baseClasses = "rounded-lg p-4 transition-all text-left hover:z-10 cursor-pointer";
+  const cursorClass = disabled ? "cursor-default" : "cursor-pointer";
+  const baseClasses = `rounded-lg p-4 transition-all text-left hover:z-10 ${cursorClass}`;
   const selectedClasses = isSelected
     ? "border-[#6B4E71] bg-[#F5F0F6] shadow-lg"
     : "border-[#C4B5C7] bg-white hover:border-[#6B4E71]";
+  const disabledClasses = disabled ? "opacity-60" : "";
 
   // Content wrapper
   const cardContent = (
@@ -106,10 +110,11 @@ export default function ProductCard({
   if (onClick) {
     return (
       <button
-        onClick={onClick}
-        onMouseEnter={onMouseEnter}
-        onMouseLeave={onMouseLeave}
-        className={`${baseClasses} ${selectedClasses} ${className}`}
+        onClick={disabled ? undefined : onClick}
+        onMouseEnter={disabled ? undefined : onMouseEnter}
+        onMouseLeave={disabled ? undefined : onMouseLeave}
+        disabled={disabled}
+        className={`${baseClasses} ${selectedClasses} ${disabledClasses} ${className}`}
       >
         {cardContent}
       </button>
@@ -120,8 +125,9 @@ export default function ProductCard({
   if (cardHref) {
     return (
       <a
-        href={cardHref}
-        className={`${baseClasses} hover:shadow-lg block ${className}`}
+        href={disabled ? undefined : cardHref}
+        onClick={disabled ? (e) => e.preventDefault() : undefined}
+        className={`${baseClasses} hover:shadow-lg block ${disabledClasses} ${className}`}
       >
         {cardContent}
       </a>
@@ -130,7 +136,7 @@ export default function ProductCard({
 
   // Otherwise, render as div
   return (
-    <div className={`${baseClasses} ${className}`}>
+    <div className={`${baseClasses} ${disabledClasses} ${className}`}>
       {cardContent}
     </div>
   );
