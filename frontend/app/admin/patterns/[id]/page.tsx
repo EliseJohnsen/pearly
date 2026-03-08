@@ -105,7 +105,7 @@ export default function PatternDetailPage() {
       ? beadCount + 5
       : beadCount + 20;
     const value = (adjustedCount / 1000 * 60)
-    return Math.ceil(Math.round(value * 10) / 10);
+    return Math.round(value * 10) / 10;
   }
 
   const toggleColorCheck = (colorCode: string) => {
