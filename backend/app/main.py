@@ -56,14 +56,116 @@ def run_migrations():
         # In production, you might want to raise the exception
 
 
+def run_pattern_migration():
+    """Migrate patterns from storage version 1 (hex) to version 2 (codes)"""
+    try:
+        from app.core.database import SessionLocal
+        from app.models.pattern import Pattern
+        from app.services.color_service import hex_to_code, get_perle_colors, add_color_to_palette
+        from sqlalchemy.orm.attributes import flag_modified
+
+        logger.info("🔄 Starting pattern storage migration (v1 → v2)...")
+
+        # Load color palette
+        get_perle_colors()
+
+        db = SessionLocal()
+        try:
+            # Find patterns that need migration (storage_version = 1 or null)
+            patterns = db.query(Pattern).filter(
+                (Pattern.pattern_data['storage_version'].astext == '1') |
+                (~Pattern.pattern_data.has_key('storage_version'))
+            ).all()
+
+            if not patterns:
+                logger.info("✅ No patterns need migration - all patterns are v2")
+                return
+
+            logger.info(f"Found {len(patterns)} pattern(s) to migrate")
+
+            migrated_count = 0
+            added_colors_total = 0
+
+            for pattern in patterns:
+                if not pattern.pattern_data or not pattern.pattern_data.get("grid"):
+                    continue
+
+                storage_version = pattern.pattern_data.get("storage_version", 1)
+                if storage_version == 2:
+                    continue
+
+                grid_hex = pattern.pattern_data.get("grid")
+                grid_codes = []
+                added_colors = {}
+
+                # Convert hex grid to code grid
+                for row in grid_hex:
+                    code_row = []
+                    for hex_color in row:
+                        code = hex_to_code(hex_color)
+
+                        if code:
+                            code_row.append(code)
+                        else:
+                            # Unknown color - add it to perle-colors.json
+                            if hex_color not in added_colors:
+                                try:
+                                    new_color = add_color_to_palette(hex_color)
+                                    added_colors[hex_color] = new_color["code"]
+                                    logger.info(f"Pattern {pattern.id}: Added color {hex_color} as code {new_color['code']}")
+                                except Exception as e:
+                                    logger.error(f"Pattern {pattern.id}: Failed to add color {hex_color}: {e}")
+                                    added_colors[hex_color] = "99"
+
+                            code_row.append(added_colors[hex_color])
+
+                    grid_codes.append(code_row)
+
+                # Update colors_used to ensure codes are present
+                if pattern.colors_used:
+                    for color_entry in pattern.colors_used:
+                        hex_val = color_entry.get("hex", "").upper()
+                        # Ensure code is set
+                        if not color_entry.get("code"):
+                            found_code = hex_to_code(hex_val)
+                            if found_code:
+                                color_entry["code"] = found_code
+
+                # Update pattern
+                pattern.pattern_data["grid"] = grid_codes
+                pattern.pattern_data["storage_version"] = 2
+                flag_modified(pattern, "pattern_data")
+                flag_modified(pattern, "colors_used")
+
+                migrated_count += 1
+                added_colors_total += len(added_colors)
+
+            # Commit all changes
+            db.commit()
+            logger.info(f"✅ Pattern migration complete: {migrated_count} pattern(s) migrated, {added_colors_total} color(s) added to palette")
+
+        except Exception as e:
+            logger.error(f"Error during pattern migration: {e}")
+            db.rollback()
+        finally:
+            db.close()
+
+    except Exception as e:
+        logger.error(f"Failed to run pattern migration: {e}")
+        logger.warning("Continuing without pattern migration...")
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     """Lifespan context manager for startup and shutdown events"""
     # Startup
     logger.info("Starting application...")
 
-    # Run migrations automatically
+    # Run database migrations automatically
     run_migrations()
+
+    # Run pattern storage migration (v1 → v2)
+    run_pattern_migration()
 
     yield
 

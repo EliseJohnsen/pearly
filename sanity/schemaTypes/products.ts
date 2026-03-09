@@ -40,6 +40,13 @@ export default defineType({
       validation: (Rule) => Rule.required(),
       initialValue: 'kit',
     }),
+    {
+      name: 'productSize',
+      title: 'Produktstørrelse',
+      type: 'number',
+      hidden: ({document}) => document?.productType !== 'custom_kit',
+      validation: (Rule) => Rule.integer().min(1).max(3)
+    },
     defineField({
       name: 'status',
       title: 'Status',
@@ -175,19 +182,15 @@ export default defineType({
     }),
     defineField({
       name: 'recommendedAddOns',
-      title: 'Anbefalte tilleggsvarer',
+      title: 'Relaterte produkter',
       type: 'array',
       of: [
         {
           type: 'reference',
           to: [{type: 'products'}],
-          options: {
-            filter: 'productType == "structure"',
-          },
         },
       ],
-      description: 'Strukturprodukter som anbefales sammen med dette produktet',
-      hidden: ({document}) => document?.productType === 'structure',
+      description: 'Produkter som anbefales sammen med dette produktet',
     }),
     defineField({
       name: 'gridSize',

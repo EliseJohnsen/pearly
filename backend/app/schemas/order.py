@@ -57,6 +57,7 @@ class OrderLineResponse(BaseModel):
     unit_price: int
     quantity: int
     line_total: int
+    pattern_id: Optional[int] = None
 
     class Config:
         from_attributes = True

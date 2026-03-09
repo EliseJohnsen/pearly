@@ -38,7 +38,9 @@ export default function CreateProductModal({
           imageBase64 = await renderGridToBase64(pattern.id);
         } else {
           // Fallback: use existing base64 or fetch from URL
-          imageBase64 = pattern.pattern_image_base64 || await convertImageToBase64(pattern.pattern_image_url);
+          let rawBase64 = pattern.pattern_image_base64 || await convertImageToBase64(pattern.pattern_image_url);
+          // Strip data URI prefix if present to avoid double-prefixing
+          imageBase64 = rawBase64.includes(',') ? rawBase64.split(',')[1] : rawBase64;
         }
         setPreviewImage(`data:image/png;base64,${imageBase64}`);
       } catch (err) {
@@ -128,12 +130,19 @@ export default function CreateProductModal({
         patternImageBase64 = await renderGridToBase64(pattern.id);
       } else {
         // Fallback: use existing base64 or fetch from URL
-        patternImageBase64 = pattern.pattern_image_base64 || await convertImageToBase64(pattern.pattern_image_url);
+        let rawBase64 = pattern.pattern_image_base64 || await convertImageToBase64(pattern.pattern_image_url);
+        // Strip data URI prefix if present
+        patternImageBase64 = rawBase64.includes(',') ? rawBase64.split(',')[1] : rawBase64;
       }
 
       // Use styled image base64 if available
-      let styledImageBase64: string | undefined = pattern.styled_image_base64;
-      if (!styledImageBase64 && pattern.pattern_data?.styled) {
+      let styledImageBase64: string | undefined;
+      if (pattern.styled_image_base64) {
+        // Strip data URI prefix if present
+        styledImageBase64 = pattern.styled_image_base64.includes(',')
+          ? pattern.styled_image_base64.split(',')[1]
+          : pattern.styled_image_base64;
+      } else if (pattern.pattern_data?.styled) {
         const styledImageUrl = `${apiUrl}/api/patterns/${pattern.uuid}/styled-image`;
         styledImageBase64 = await convertImageToBase64(styledImageUrl);
       }

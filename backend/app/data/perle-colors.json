@@ -258,6 +258,10 @@
     "name": "Midnight blue",
     "code": "116",
     "hex": "#0c1d33"
+  },
+  {
+    "name": "Custom 900",
+    "code": "900",
+    "hex": "#UNKNOWN"
   }
 ]
-

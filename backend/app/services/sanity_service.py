@@ -387,6 +387,52 @@ class SanityService:
                 logger.error(f"Error fetching product from Sanity: {str(e)}")
                 raise
 
+    async def get_custom_kit_by_size(self, product_size: int) -> Optional[Dict[str, Any]]:
+        """
+        Fetch custom_kit product from Sanity by product size.
+
+        Args:
+            product_size: Product size (1=small, 2=medium, 3=large)
+
+        Returns:
+            Dict with product data including slug, price, etc. or None if not found
+        """
+        url = f"https://{self.project_id}.api.sanity.io/v{self.api_version}/data/query/{self.dataset}"
+
+        # GROQ query to fetch custom_kit product with specific productSize
+        query = f'''*[_type == "products" && productType == "custom_kit" && productSize == {product_size}][0]{{
+            _id,
+            title,
+            "slug": slug.current,
+            productType,
+            productSize,
+            status,
+            price,
+            description
+        }}'''
+
+        params = {"query": query}
+
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            try:
+                response = await client.get(url, params=params)
+                response.raise_for_status()
+                result = response.json()
+                product = result.get("result")
+
+                if product:
+                    logger.info(f"Successfully fetched custom_kit for size {product_size} from Sanity")
+                else:
+                    logger.warning(f"Custom kit product not found for size {product_size}")
+
+                return product
+            except httpx.HTTPStatusError as e:
+                logger.error(f"Failed to fetch custom_kit from Sanity: {e.response.text}")
+                raise Exception(f"Sanity query failed: {e.response.text}")
+            except Exception as e:
+                logger.error(f"Error fetching custom_kit from Sanity: {str(e)}")
+                raise
+
     async def get_products_by_ids(self, product_ids: List[str]) -> List[Dict[str, Any]]:
         """
         Fetch multiple products from Sanity by IDs.

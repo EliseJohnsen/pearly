@@ -9,10 +9,13 @@ import Footer from "@/app/components/Footer";
 import { PortableText } from "@portabletext/react";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
 import { useCart } from "@/app/contexts/CartContext";
-import { CheckIcon, InformationCircleIcon, MinusIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { CheckIcon, MinusIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import VippsCheckoutButton, { OrderLine } from "@/app/components/VippsCheckoutButton";
 import CollapsableCard from "@/app/components/CollapsableCard";
 import { useUIString, useUIStringWithVars } from "@/app/hooks/useSanityData";
+import ProductCard from "@/app/components/ProductCard";
+import { formatPrice } from "@/app/utils/priceFormatter";
+import ImageCarousel from "@/app/components/ImageCarousel";
 
 interface ProductVariant {
   sku: string;
@@ -81,16 +84,32 @@ interface Product {
   };
 }
 
+interface CustomPattern {
+  size: string;
+  boardsWidth: number;
+  boardsHeight: number;
+  patternBase64: string;
+  mockupBase64: string | null;
+  colorsUsed: any[];
+  patternData: any;
+  beadCount: number;
+}
+
 export default function ProductDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ custom?: string }>;
 }) {
   const { slug } = use(params);
+  const { custom } = use(searchParams);
+  const isCustomPattern = custom === "true";
+
   const [product, setProduct] = useState<Product | null>(null);
   const [strukturprodukter, setStrukturprodukter] = useState<Product[]>([]);
+  const [customPattern, setCustomPattern] = useState<CustomPattern | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [addedToCart, setAddedToCart] = useState(false);
   const [addonQuantities, setAddonQuantities] = useState<Record<string, number>>({});
   const { addItem } = useCart();
@@ -110,12 +129,57 @@ export default function ProductDetailPage({
   const antallFargerText = useUIStringWithVars("antall_farger", {
     antall_farger: product?.colors || "",
   });
+  const customPatternText = useUIStringWithVars("ditt_eget_motiv_text", {
+    boardsWidth: customPattern?.boardsWidth || "",
+    boardsHeight: customPattern?.boardsHeight || "",
+    boardsWidthCm: customPattern?.boardsWidth ? customPattern?.boardsWidth * 15 : "",
+    boardsHeightCm: customPattern?.boardsHeight ? customPattern?.boardsHeight * 15 : "",
+  });
 
   useEffect(() => {
     async function fetchProduct() {
       try {
         const data = await client.fetch(productQuery, { slug });
         setProduct(data);
+
+        // Load custom pattern from localStorage if custom=true
+        if (isCustomPattern) {
+          try {
+            const storedPattern = localStorage.getItem("custom_pattern");
+            if (storedPattern) {
+              const pattern = JSON.parse(storedPattern);
+
+              // Try to get images from sessionStorage
+              let patternBase64 = null;
+              let mockupBase64 = null;
+              try {
+                const storedImages = sessionStorage.getItem("custom_pattern_images");
+                if (storedImages) {
+                  const images = JSON.parse(storedImages);
+                  patternBase64 = images.patternBase64;
+                  mockupBase64 = images.mockupBase64;
+                }
+              } catch (e) {
+                console.warn("Could not load pattern images from sessionStorage:", e);
+              }
+
+              // Combine pattern data with images
+              const fullPattern = {
+                ...pattern,
+                patternBase64,
+                mockupBase64,
+              };
+
+              setCustomPattern(fullPattern);
+
+              // Set required boards based on pattern dimensions
+              const requiredBoards = pattern.boardsWidth * pattern.boardsHeight;
+              data.requiredBoards = requiredBoards;
+            }
+          } catch (e) {
+            console.error("Failed to load custom pattern:", e);
+          }
+        }
 
         // Fetch all strukturprodukter that match this product's type
         if (data?.productType) {
@@ -140,7 +204,7 @@ export default function ProductDetailPage({
     }
 
     fetchProduct();
-  }, [slug]);
+  }, [slug, isCustomPattern]);
 
   if (loading) {
     return (
@@ -154,22 +218,51 @@ export default function ProductDetailPage({
     notFound();
   }
 
-  const productImages = product.images?.length
-    ? product.images
-    : (product.image ? [product.image] : []);
-  const selectedImage = productImages[selectedImageIndex];
+  // Use custom pattern images if available, otherwise use Sanity product images
+  const customImages = customPattern
+    ? [
+        {
+          url: customPattern.patternBase64,
+          alt: "Ditt perlemønster",
+          isPattern: true,
+        },
+        ...(customPattern.mockupBase64
+          ? [
+              {
+                url: customPattern.mockupBase64,
+                alt: "Interiørbilde",
+                isPattern: false,
+              },
+            ]
+          : []),
+      ]
+    : [];
 
-  const formatPrice = (price: number, currency: string) => {
-    return new Intl.NumberFormat("nb-NO", {
-      style: "currency",
-      currency: currency || "NOK",
-    }).format(price);
-  };
+  const productImages = customImages.length > 0
+    ? customImages
+    : product.images?.length
+    ? product.images.map(img => ({ url: img.asset.url, alt: img.alt || product.title, isPattern: false }))
+    : product.image
+    ? [{ url: product.image.asset.url, alt: product.image.alt || product.title, isPattern: false }]
+    : [];
+
+  // Transform productImages to ImageCarousel format
+  const carouselImages = productImages.map((img, index) => ({
+    asset: {
+      _id: `${product._id}-${index}`,
+      url: img.url,
+      metadata: {
+        lqip: product.images?.[index]?.asset?.metadata?.lqip,
+        dimensions: product.images?.[index]?.asset?.metadata?.dimensions,
+      },
+    },
+    alt: img.alt || product.title,
+  }));
 
   const handleAddToCart = () => {
     if (!product) return;
 
-    const primaryImage = productImages.find((img) => img.isPrimary) || productImages[0];
+    const primaryImage = productImages[0];
 
     // Add parent product with children
     const children: any[] = [];
@@ -198,11 +291,20 @@ export default function ProductDetailPage({
       title: product.title,
       price: product.price,
       currency: product.currency || "NOK",
-      imageUrl: primaryImage?.asset.url,
+      imageUrl: primaryImage?.url,
       slug: product.slug.current,
       productType: product.productType,
       requiredBoards: product.requiredBoards,
       children: children.length > 0 ? children : undefined,
+      customPattern: isCustomPattern && customPattern ? {
+        // Only store essential data (no images) to avoid QuotaExceededError
+        size: customPattern.size,
+        boardsWidth: customPattern.boardsWidth,
+        boardsHeight: customPattern.boardsHeight,
+        patternData: customPattern.patternData,
+        colorsUsed: customPattern.colorsUsed,
+        beadCount: customPattern.beadCount,
+      } : undefined,
     });
 
     setAddedToCart(true);
@@ -253,46 +355,31 @@ export default function ProductDetailPage({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           {/* Image Gallery */}
           <div className="space-y-4">
-            {selectedImage && (
-              <div className="min-h-100 md:min-h-150 lg:min-h-175 px-6 py-10 bg-primary-light-pink content-center relative overflow-hidden bg-gray-100">
-                <img
-                  src={selectedImage.asset.url}
-                  alt={selectedImage.alt || product.title}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
-
-            {productImages && productImages.length > 1 && (
-              <div className="grid grid-cols-4 gap-2">
-                {productImages.map((image, index) => (
-                  <button
-                    key={image.asset._id}
-                    onClick={() => setSelectedImageIndex(index)}
-                    className={`relative aspect-square rounded-lg overflow-hidden border-2 transition ${
-                      index === selectedImageIndex
-                        ? "border-primary"
-                        : "border-transparent hover:border-300"
-                    }`}
-                  >
-                    <img
-                      src={image.asset.url}
-                      alt={image.alt || `${product.title} ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </button>
-                ))}
-              </div>
+            {carouselImages.length > 0 && (
+              <ImageCarousel
+                data={{
+                  images: carouselImages,
+                  autoRotate: false,
+                  aspectRatio: "portrait",
+                }}
+              />
             )}
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-4">
             <div>
               <h1 className="text-5xl text-dark-purple font-bold mb-2">{product.title}</h1>
             </div>
 
             {product.description && (
               <p className="text-gray-700 text-lg">{product.description}</p>
+            )}
+
+                          
+            {isCustomPattern && customPattern && (
+              <p>
+                {customPatternText}
+              </p>
             )}
 
             {product.status === "coming_soon" && (
@@ -399,10 +486,9 @@ export default function ProductDetailPage({
               currency={product.currency}
             />
 
-            <CollapsableCard header={innholdHeader} defaultExpanded={false} className="border-t border-purple">
+            <CollapsableCard header={innholdHeader} defaultExpanded={false} className="">
               {product.longDescription && (
                 <div className="pt-6">
-                  <h2 className="text-lg font-semibold mb-4">Om produktet</h2>
                   <div className="prose prose-sm max-w-none text-gray-700">
                     <PortableText value={product.longDescription} />
                   </div>
@@ -428,14 +514,28 @@ export default function ProductDetailPage({
               )}
 
             </CollapsableCard>
-            <CollapsableCard header={leveringHeader} defaultExpanded={false} className="border-y border-purple">
+            <CollapsableCard header={leveringHeader} defaultExpanded={false} className="border-t border-purple">
               {leveringText}
             </CollapsableCard>
-            <CollapsableCard header={bytteOgReturHeader} defaultExpanded={false} className="border-b border-purple">
+            <CollapsableCard header={bytteOgReturHeader} defaultExpanded={false} className="border-y border-purple">
               {bytteOgReturText}
             </CollapsableCard>
           </div>
         </div>
+
+        {/* Recommended Add-ons Section */}
+        {product.recommendedAddOns && product.recommendedAddOns.length > 0 && (
+          <div className="mt-16">
+            <h2 className="text-2xl font-bold mb-4 text-dark-purple">
+              Har du sjekket ut disse?
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {product.recommendedAddOns.map((addon) => (
+                <ProductCard key={addon._id} product={addon} />
+              ))}
+            </div>
+          </div>
+        )}
       </main>
       <Footer />
     </div>

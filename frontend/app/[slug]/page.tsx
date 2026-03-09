@@ -72,13 +72,13 @@ const pageQuery = groq`*[_type == "page" && slug.current == $slug][0]{
         title,
         slug,
         description,
+        price,
         "images": images[]{
           asset->{_id, url, metadata{lqip, dimensions{width, height}}},
           alt,
           isPrimary
         },
         category,
-        difficulty
       },
       showFeaturedOnly
     },

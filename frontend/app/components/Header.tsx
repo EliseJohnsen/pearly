@@ -9,34 +9,53 @@ import {
 import {
   Bars3Icon,
   XMarkIcon,
-  ShoppingCartIcon,
+  ShoppingBagIcon,
 } from '@heroicons/react/24/outline'
 import { useCart } from '@/app/contexts/CartContext'
-import {useNavigationByType} from '@/app/hooks/useSanityData'
-import {useUIString} from '@/app/hooks/useSanityData'
+import { useNavigationByType } from '@/app/hooks/useSanityData'
+import { useUIString } from '@/app/hooks/useSanityData'
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const {data: mainNav, loading: mainNavLoading} = useNavigationByType('main')
-  const {data: ctaNav, loading: ctaNavLoading} = useNavigationByType('cta')
+  const { data: mainNav, loading: mainNavLoading } = useNavigationByType('main')
+  const { data: ctaNav, loading: ctaNavLoading } = useNavigationByType('cta')
   const { totalItems } = useCart()
 
   const openMainMenuText = useUIString('open_main_menu')
   const loadingText = useUIString('loading')
-  const feelingPearlyText = useUIString('feelin_pearly')
 
   return (
     <header className="bg-primary">
-      <nav aria-label="Global" className="mx-auto grid grid-cols-7 gap-4 max-w-7xl items-center justify-between p-6 lg:px-8">
-        <div className="lg:col-span-2">
-          <div className="justify-evenly hidden lg:flex">
-            {/* Main navigation items */}
+      <nav aria-label="Global" className="mx-auto max-w-7xl px-4 py-2 md:p-4 lg:px-8">
+        <div className="flex items-center justify-between md:justify-start md:gap-8">
+          {/* Hamburger menu - mobile only, far left */}
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(true)}
+            className="md:hidden -m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-primary-light"
+          >
+            <span className="sr-only">{openMainMenuText}</span>
+            <Bars3Icon aria-hidden="true" className="size-6" />
+          </button>
+
+          {/* Logo - far left on desktop, center on mobile */}
+          <div className="flex-1 md:flex-none flex justify-center md:justify-start h-auto">
+            <Link href="/">
+              <img
+                src="/Pearly_navnetrekk 1.svg"
+                alt="Pearly logo"
+                className="h-12 md:h-18"
+
+              />
+            </Link>
+          </div>
+
+          {/* Desktop nav + shopping bag - hidden on mobile */}
+          <div className="hidden md:flex md:flex-1 md:items-center md:justify-end md:gap-6">
             {mainNavLoading ? (
-              <div className="text-sm/6 font-semibold text-gray-900">{ loadingText }</div>
-            ) : mainNav && mainNav.length > 0 ? (
-              mainNav
-                .filter((item) => item.order <= 2)
-                .map((item) => (
+              <div className="text-sm/6 font-semibold text-gray-900">{loadingText}</div>
+            ) : mainNav ? (
+              mainNav.map((item) => (
                 <Link
                   key={item._id}
                   href={item.href || '/'}
@@ -46,50 +65,8 @@ export default function Header() {
                 </Link>
               ))
             ) : null}
-          </div>
-        </div>
-
-        <div className="items-center col-span-5 lg:col-span-3 justify-items-center">
-
-          <h1 className='text-3xl md:text-5xl lg:text-7xl font-bold tracking-tight text-primary-light leading-tight'>
-            <Link href="/">
-              { feelingPearlyText }
-            </Link>
-          </h1>
-
-          {!ctaNavLoading && ctaNav && ctaNav.length > 0 && ctaNav.map((item) => (
-            <Link
-              key={item._id}
-              href={item.href || '/'}
-              className={`text-sm/6 font-semibold ${
-                item.variant === 'primary'
-                  ? 'bg-primary-red text-white px-4 py-2 rounded-md hover:bg-primary-red/90'
-                  : 'text-gray-900 hover:text-gray-700'
-              } transition-colors`}
-            >
-              {item.title}
-            </Link>
-          ))}
-        </div>
-        <div className="lg:col-span-2 col-span-1">
-          <div className="flex justify-evenly items-center hidden lg:flex">
-            {mainNavLoading ? (
-              <div className="text-sm/6 font-semibold text-gray-900">{ loadingText }</div>
-            ) : mainNav && mainNav.length > 2 ? (
-              mainNav
-                .filter((item) => item.order > 2)
-                .map((item) => (
-                  <Link
-                    key={item._id}
-                    href={item.href || '/'}
-                    className="text-sm/6 font-semibold text-primary-light hover:text-white transition-colors"
-                  >
-                    {item.title.toUpperCase()}
-                  </Link>
-                ))
-            ) : null}
             <Link href="/handlekurv" className="relative text-primary-light hover:text-white transition-colors">
-              <ShoppingCartIcon className="w-6 h-6" />
+              <ShoppingBagIcon className="w-6 h-6" />
               {totalItems > 0 && (
                 <span className="absolute -top-2 -right-2 bg-primary-red text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
                   {totalItems > 9 ? '9+' : totalItems}
@@ -97,24 +74,16 @@ export default function Header() {
               )}
             </Link>
           </div>
-          <div className="lg:hidden justify-self-end flex items-center gap-3">
-              <Link href="/handlekurv" className="relative text-primary-light hover:text-white transition-colors">
-                <ShoppingCartIcon className="w-6 h-6" />
-                {totalItems > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-primary-red text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                    {totalItems > 9 ? '9+' : totalItems}
-                  </span>
-                )}
-              </Link>
-              <button
-                type="button"
-                onClick={() => setMobileMenuOpen(true)}
-                className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700"
-              >
-                <span className="sr-only">{ openMainMenuText }</span>
-                <Bars3Icon aria-hidden="true" className="size-6" />
-              </button>
-          </div>
+
+          {/* Shopping bag - mobile only, far right */}
+          <Link href="/handlekurv" className="md:hidden relative text-primary-light hover:text-white transition-colors">
+            <ShoppingBagIcon className="w-6 h-6" />
+            {totalItems > 0 && (
+              <span className="absolute -top-2 -right-2 bg-primary-red text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                {totalItems > 9 ? '9+' : totalItems}
+              </span>
+            )}
+          </Link>
         </div>
       </nav>
 
@@ -168,7 +137,7 @@ export default function Header() {
                   onClick={() => setMobileMenuOpen(false)}
                   className="-mx-3 flex items-center gap-2 rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
                 >
-                  <ShoppingCartIcon className="w-5 h-5" />
+                  <ShoppingBagIcon className="w-5 h-5" />
                   Handlekurv
                   {totalItems > 0 && (
                     <span className="bg-primary-red text-white text-xs font-bold rounded-full px-2 py-0.5">

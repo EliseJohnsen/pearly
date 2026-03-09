@@ -109,6 +109,22 @@ const ColorPickerModal: React.FC<ColorPickerModalProps> = ({
           </button>
         </div>
 
+        <div className="flex gap-3 py-4 border-t border-gray-200">
+          <button
+            onClick={onClose}
+            className="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
+          >
+            Avbryt
+          </button>
+          <button
+            onClick={handleSaveChanges}
+            disabled={pendingChanges.size === 0}
+            className="flex-1 px-4 py-2 bg-purple text-white rounded-lg font-semibold hover:bg-purple/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Lagre endringer {pendingChanges.size > 0 && `(${pendingChanges.size})`}
+          </button>
+        </div>
+
         <div className="mb-4 p-3 border border-gray-300 rounded-lg">
           {surroundingColors && surroundingColors.length > 0 ? (
             <>
@@ -194,22 +210,6 @@ const ColorPickerModal: React.FC<ColorPickerModalProps> = ({
               <span className="text-xs text-gray-500">{color.code}</span>
             </button>
           ))}
-        </div>
-
-        <div className="flex gap-3 pt-4 border-t border-gray-200">
-          <button
-            onClick={onClose}
-            className="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
-          >
-            Avbryt
-          </button>
-          <button
-            onClick={handleSaveChanges}
-            disabled={pendingChanges.size === 0}
-            className="flex-1 px-4 py-2 bg-purple text-white rounded-lg font-semibold hover:bg-purple/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Lagre endringer {pendingChanges.size > 0 && `(${pendingChanges.size})`}
-          </button>
         </div>
       </div>
     </div>

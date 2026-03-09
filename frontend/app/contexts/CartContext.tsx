@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 
 export interface CartItem {
-  lineId: string;              // NEW: Unique identifier for this line
+  lineId: string;
   productId: string;
   title: string;
   price: number;
@@ -11,18 +11,19 @@ export interface CartItem {
   quantity: number;
   imageUrl?: string;
   slug: string;
-  productType?: string;        // NEW: Product type (kit, tools, structure)
-  requiresParent?: boolean;    // NEW: Whether this is a strukturprodukt
-  requiredBoards?: number;     // NEW: How many boards recommended for kits
-  children?: CartItem[];       // NEW: Nested add-ons
+  productType?: string;
+  requiresParent?: boolean;
+  requiredBoards?: number;
+  children?: CartItem[];
+  customPattern?: any;
 }
 
 interface CartContextType {
   items: CartItem[];
   addItem: (item: Omit<CartItem, "quantity" | "lineId">) => void;
   addChildItem: (parentLineId: string, item: Omit<CartItem, "quantity" | "lineId">, quantity?: number) => void;  // NEW
-  removeItem: (lineId: string) => void;  // CHANGED: Use lineId instead of productId
-  updateQuantity: (lineId: string, quantity: number) => void;  // CHANGED: Use lineId
+  removeItem: (lineId: string) => void;
+  updateQuantity: (lineId: string, quantity: number) => void;
   clearCart: () => void;
   totalItems: number;
   totalPrice: number;
@@ -41,9 +42,6 @@ function generateLineId(): string {
 function calculateTotalItems(items: CartItem[]): number {
   return items.reduce((sum, item) => {
     let itemSum = item.quantity;
-    if (item.children) {
-      itemSum += calculateTotalItems(item.children);
-    }
     return sum + itemSum;
   }, 0);
 }
@@ -160,22 +158,39 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const removeItem = useCallback((lineId: string) => {
     setItems((prev) => {
-      // Recursively remove item by lineId
-      function filterItems(items: CartItem[]): CartItem[] {
-        return items.filter(item => item.lineId !== lineId).map(item => ({
-          ...item,
-          children: item.children ? filterItems(item.children) : undefined,
-        }));
+      // Check if the item is a child (nested within another item)
+      function isChildItem(items: CartItem[], targetLineId: string, isNested: boolean = false): boolean {
+        for (const item of items) {
+          if (item.children) {
+            if (item.children.some(child => child.lineId === targetLineId)) {
+              return true;
+            }
+            if (isChildItem(item.children, targetLineId, true)) {
+              return true;
+            }
+          }
+        }
+        return false;
       }
 
-      return filterItems(prev);
-    });
-  }, []);
+      const isChild = isChildItem(prev, lineId);
 
-  const updateQuantity = useCallback((lineId: string, quantity: number) => {
-    setItems((prev) => {
-      if (quantity <= 0) {
-        // Remove item if quantity is 0
+      if (isChild) {
+        // For child items, set quantity to 0 instead of removing
+        function setChildQuantityToZero(items: CartItem[]): CartItem[] {
+          return items.map((item) => {
+            if (item.lineId === lineId) {
+              return { ...item, quantity: 0 };
+            }
+            if (item.children) {
+              return { ...item, children: setChildQuantityToZero(item.children) };
+            }
+            return item;
+          });
+        }
+        return setChildQuantityToZero(prev);
+      } else {
+        // For parent items, remove completely (including children)
         function filterItems(items: CartItem[]): CartItem[] {
           return items.filter(item => item.lineId !== lineId).map(item => ({
             ...item,
@@ -184,8 +199,56 @@ export function CartProvider({ children }: { children: ReactNode }) {
         }
         return filterItems(prev);
       }
+    });
+  }, []);
 
-      // Recursively update quantity
+  const updateQuantity = useCallback((lineId: string, quantity: number) => {
+    setItems((prev) => {
+      if (quantity <= 0) {
+        // Check if the item is a child
+        function isChildItem(items: CartItem[], targetLineId: string): boolean {
+          for (const item of items) {
+            if (item.children) {
+              if (item.children.some(child => child.lineId === targetLineId)) {
+                return true;
+              }
+              if (isChildItem(item.children, targetLineId)) {
+                return true;
+              }
+            }
+          }
+          return false;
+        }
+
+        const isChild = isChildItem(prev, lineId);
+
+        if (isChild) {
+          // For child items, set quantity to 0 instead of removing
+          function updateItems(items: CartItem[]): CartItem[] {
+            return items.map((item) => {
+              if (item.lineId === lineId) {
+                return { ...item, quantity: 0 };
+              }
+              if (item.children) {
+                return { ...item, children: updateItems(item.children) };
+              }
+              return item;
+            });
+          }
+          return updateItems(prev);
+        } else {
+          // For parent items, remove completely
+          function filterItems(items: CartItem[]): CartItem[] {
+            return items.filter(item => item.lineId !== lineId).map(item => ({
+              ...item,
+              children: item.children ? filterItems(item.children) : undefined,
+            }));
+          }
+          return filterItems(prev);
+        }
+      }
+
+      // Recursively update quantity (for positive quantities)
       function updateItems(items: CartItem[]): CartItem[] {
         return items.map((item) => {
           if (item.lineId === lineId) {
