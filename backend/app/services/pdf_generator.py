@@ -124,24 +124,20 @@ def _draw_cover_page(
     """
     # Draw logo at the top of the page
     logo_image_path = get_pdf_image_path("pearly_black.png")
-    print(f"Logo path: {logo_image_path}")
 
     if logo_image_path:
         try:
             # Get original image dimensions
             with Image.open(logo_image_path) as img:
                 logo_width_pixels, logo_height_pixels = img.size
-                print(f"Logo dimensions: {logo_width_pixels}x{logo_height_pixels} pixels")
 
             # Convert pixels to points (assuming 72 DPI)
             logo_width = (logo_width_pixels * 72 / 96)  # Adjust DPI ratio as needed
             logo_height = (logo_height_pixels * 72 / 96)
-            print(f"Logo size in points: {logo_width}x{logo_height}")
 
             # Center the logo horizontally at top of page
             logo_x = (page_width - logo_width) / 2
             logo_y = page_height - 1 * cm - logo_height
-            print(f"Logo position: x={logo_x}, y={logo_y}")
 
             c.drawImage(
                 logo_image_path,
@@ -152,7 +148,6 @@ def _draw_cover_page(
                 preserveAspectRatio=True,
                 mask='auto'
             )
-            print(f"Logo drawn successfully")
             logger.info(f"Using logo image: {logo_image_path}")
 
             # Position content below logo
