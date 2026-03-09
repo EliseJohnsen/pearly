@@ -5,6 +5,7 @@ from reportlab.lib import colors as reportlab_colors
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from typing import List, Dict, Tuple
+from PIL import Image
 import io
 import os
 
@@ -16,16 +17,23 @@ logger = logging.getLogger(__name__)
 
 # Register custom fonts
 def _register_fonts():
-    """Register Quicksand font for use in PDFs."""
+    """Register Tahoma fonts for use in PDFs."""
     fonts_dir = os.path.join(os.path.dirname(__file__), '..', 'fonts')
-    font_path = os.path.join(fonts_dir, 'tahoma.ttf')
+    regular_path = os.path.join(fonts_dir, 'tahoma.ttf')
+    bold_path = os.path.join(fonts_dir, 'tahoma-bold.ttf')
 
-    if os.path.exists(font_path):
-        # Quicksand is a variable font, so we use the same file for all weights
-        # ReportLab will use it for Regular, Bold, and Italic
-        pdfmetrics.registerFont(TTFont('Tahoma', font_path))
-        pdfmetrics.registerFont(TTFont('Tahoma-Bold', font_path))
-        pdfmetrics.registerFont(TTFont('Tahoma-Oblique', font_path))
+    # Check if at least the regular font exists
+    if os.path.exists(regular_path):
+        pdfmetrics.registerFont(TTFont('Tahoma', regular_path))
+
+        # Register bold if available, otherwise use regular as fallback
+        if os.path.exists(bold_path):
+            pdfmetrics.registerFont(TTFont('Tahoma-Bold', bold_path))
+        else:
+            pdfmetrics.registerFont(TTFont('Tahoma-Bold', regular_path))
+
+        # Use regular for oblique (Tahoma doesn't have italic)
+        pdfmetrics.registerFont(TTFont('Tahoma-Oblique', regular_path))
         return True
     return False
 
@@ -69,6 +77,38 @@ def get_board_label(board_x: int, board_y: int) -> str:
     return f"{letter}{number}"
 
 
+def get_grid_image_path(boards_width: int, boards_height: int) -> str:
+    """
+    Returns the path to the grid image based on dimensions.
+    Images should be named like: 1x1.png, 2x3.png, etc.
+    Returns None if the image doesn't exist.
+    """
+    grids_dir = os.path.join(os.path.dirname(__file__), '..', 'static', 'grids')
+    image_name = f"{boards_width}x{boards_height}.png"
+    image_path = os.path.join(grids_dir, image_name)
+
+    if os.path.exists(image_path):
+        return image_path
+
+    logger.warning(f"Grid image not found: {image_path}. Falling back to drawn grid.")
+    return None
+
+def get_pdf_image_path(file_name: str) -> str:
+    """
+    Returns the path to the grid image based on dimensions.
+    Images should be named like: 1x1.png, 2x3.png, etc.
+    Returns None if the image doesn't exist.
+    """
+    pdf_dir = os.path.join(os.path.dirname(__file__), '..', 'static', 'pdf')
+    image_name = f"{file_name}"
+    image_path = os.path.join(pdf_dir, image_name)
+
+    if os.path.exists(image_path):
+        return image_path
+
+    logger.warning(f"pdf image not found: {image_path}.")
+    return None
+
 def _draw_cover_page(
     c: canvas.Canvas,
     page_width: float,
@@ -82,18 +122,56 @@ def _draw_cover_page(
     Draws a cover page showing the layout of boards.
     Each board is represented as a labeled square in a grid.
     """
-    c.setFont(_get_font('bold'), 24)
-    title_y = page_height - 3 * cm
-    c.drawCentredString(page_width / 2, title_y, "Perlemønster")
+    # Draw logo at the top of the page
+    logo_image_path = get_pdf_image_path("pearly_black.png")
+    print(f"Logo path: {logo_image_path}")
+
+    if logo_image_path:
+        try:
+            # Get original image dimensions
+            with Image.open(logo_image_path) as img:
+                logo_width_pixels, logo_height_pixels = img.size
+                print(f"Logo dimensions: {logo_width_pixels}x{logo_height_pixels} pixels")
+
+            # Convert pixels to points (assuming 72 DPI)
+            logo_width = (logo_width_pixels * 72 / 96)  # Adjust DPI ratio as needed
+            logo_height = (logo_height_pixels * 72 / 96)
+            print(f"Logo size in points: {logo_width}x{logo_height}")
+
+            # Center the logo horizontally at top of page
+            logo_x = (page_width - logo_width) / 2
+            logo_y = page_height - 1 * cm - logo_height
+            print(f"Logo position: x={logo_x}, y={logo_y}")
+
+            c.drawImage(
+                logo_image_path,
+                logo_x,
+                logo_y,
+                width=logo_width,
+                height=logo_height,
+                preserveAspectRatio=True,
+                mask='auto'
+            )
+            print(f"Logo drawn successfully")
+            logger.info(f"Using logo image: {logo_image_path}")
+
+            # Position content below logo
+            title_y = logo_y - 1 * cm
+        except Exception as e:
+            print(f"Failed to draw logo: {e}")
+            logger.error(f"Failed to draw logo: {e}.")
+            import traceback
+            traceback.print_exc()
+            logo_image_path = None
+            title_y = page_height - 3 * cm
+    else:
+        print("Logo image path not found")
+        # No logo, use standard title position
+        title_y = page_height - 3 * cm
 
     c.setFont(_get_font('regular'), 12)
-    info_y = title_y - 1 * cm
-    c.drawCentredString(page_width / 2, info_y, f"Totalt mønster: {pattern_width} × {pattern_height} perler")
-    c.drawCentredString(page_width / 2, info_y - 0.6 * cm, f"Antall brett: {boards_width} × {boards_height}")
-
-    c.setFont(_get_font('regular'), 10)
-    overview_y = info_y - 2 * cm
-    c.drawCentredString(page_width / 2, overview_y, "Brettoversikt:")
+    info_y = title_y
+    c.drawCentredString(page_width / 2, info_y, f"{pattern_width} × {pattern_height} perler   -   {boards_width} × {boards_height} brett")
 
     max_grid_width = 12 * cm
     max_grid_height = 12 * cm
@@ -103,46 +181,137 @@ def _draw_cover_page(
         max_grid_height / boards_height,
         3 * cm  # Maximum size per board square
     )
-
     # Calculate total grid size
     total_grid_width = boards_width * board_square_size
     total_grid_height = boards_height * board_square_size
-
     # Center the grid
     grid_start_x = (page_width - total_grid_width) / 2
-    grid_start_y = overview_y - 1.5 * cm - total_grid_height
+    grid_start_y = info_y - 1 * cm - total_grid_height
+    # Try to use grid image first, fall back to drawing if not available
+    grid_image_path = get_grid_image_path(boards_width, boards_height)
 
-    # Draw grid with board labels
-    for board_y in range(boards_height):
-        for board_x in range(boards_width):
-            # Calculate position (top-left origin, flip y to start from top)
-            x = grid_start_x + board_x * board_square_size
-            y = grid_start_y + (boards_height - 1 - board_y) * board_square_size
-
-            # Draw board rectangle
-            c.setStrokeColorRGB(0.2, 0.2, 0.2)
-            c.setFillColorRGB(1.0, 1.0, 1.0)
-            c.rect(x, y, board_square_size, board_square_size, fill=1, stroke=1)
-
-            board_label = get_board_label(board_x, board_y)
-            c.setFillColorRGB(0.2, 0.2, 0.2)
-            c.setFont(_get_font('bold'), min(board_square_size * 0.4, 18))
-            c.drawCentredString(
-                x + board_square_size / 2,
-                y + board_square_size / 2 - 0.2 * cm,
-                f"{board_label}"
+    if grid_image_path:
+        # Draw the grid image
+        try:
+            c.drawImage(
+                grid_image_path,
+                grid_start_x,
+                grid_start_y,
+                width=total_grid_width,
+                height=total_grid_height,
+                preserveAspectRatio=True,
+                mask='auto'
             )
+            logger.info(f"Using grid image: {grid_image_path}")
+        except Exception as e:
+            logger.error(f"Failed to draw grid image: {e}. Falling back to drawn grid.")
+            grid_image_path = None  # Fall back to drawing
+    # Draw grid manually if no image or image failed
+    if not grid_image_path:
+        for board_y in range(boards_height):
+            for board_x in range(boards_width):
+                # Calculate position (top-left origin, flip y to start from top)
+                x = grid_start_x + board_x * board_square_size
+                y = grid_start_y + (boards_height - 1 - board_y) * board_square_size
 
+                # Draw board rectangle
+                c.setStrokeColorRGB(0.2, 0.2, 0.2)
+                c.setFillColorRGB(1.0, 1.0, 1.0)
+                c.rect(x, y, board_square_size, board_square_size, fill=1, stroke=1)
+
+                board_label = get_board_label(board_x, board_y)
+                c.setFillColorRGB(0.2, 0.2, 0.2)
+                c.setFont(_get_font('bold'), min(board_square_size * 0.4, 18))
+                c.drawCentredString(
+                    x + board_square_size / 2,
+                    y + board_square_size / 2 - 0.2 * cm,
+                    f"{board_label}"
+                )
+    # Instructions section with proper line spacing
     c.setFont(_get_font('regular'), 10)
-    instructions_y = grid_start_y - 1.5 * cm
-    c.drawCentredString(page_width / 2, instructions_y, "Legg brettene sammen i rekkefølgen vist over.")
-    c.drawCentredString(page_width / 2, instructions_y - 0.5 * cm, "Hvert brett er merket med en bokstav og et nummer.")
+    instructions_y = grid_start_y - 1.25 * cm
+    line_spacing = 0.5 * cm
 
-    # Placeholder for future Sanity content
-    c.setFont(_get_font('oblique'), 9)
-    c.setFillColorRGB(0.5, 0.5, 0.5)
-    footer_y = 2 * cm
-    c.drawCentredString(page_width / 2, footer_y, "Ytterligere informasjon vil vises her")
+    # Line 1
+    c.drawCentredString(page_width / 2, instructions_y, "Mønsteret er delt opp som vist over, der hver del passer til ett perlebrett.")
+
+    # Line 2
+    c.drawCentredString(page_width / 2, instructions_y - line_spacing,
+                       "Du må pusle sammen brettene senest før du stryker motivet.")
+
+    # Line 3
+    c.drawCentredString(page_width / 2, instructions_y - 2 * line_spacing,
+                       "Når du pusler dem sammen skal du begynne med brett A1 og pusle dem sammen")
+
+    # Line 4
+    c.drawCentredString(page_width / 2, instructions_y - 3 * line_spacing,
+                       "fra venstre mot høyre, før du begynner på rad B.")
+
+    # Line 5 - "Viktig:" with bold
+    important_y = instructions_y - 5 * line_spacing
+    important_text = "Viktig:"
+    rest_text = " Orienter brettet med vingene mot høyre og nedover."
+
+    # Calculate widths to position text correctly
+    c.setFont(_get_font('bold'), 10)
+    bold_width = c.stringWidth(important_text, _get_font('bold'), 10)
+    c.setFont(_get_font('regular'), 10)
+    regular_width = c.stringWidth(rest_text, _get_font('regular'), 10)
+
+    # Center the combined text
+    total_width = bold_width + regular_width
+    start_x = (page_width - total_width) / 2
+
+    # Draw bold "Viktig:"
+    c.setFont(_get_font('bold'), 10)
+    c.drawString(start_x, important_y, important_text)
+
+    # Draw regular text
+    c.setFont(_get_font('regular'), 10)
+    c.drawString(start_x + bold_width, important_y, rest_text)
+
+    # Line 6
+    c.drawCentredString(page_width / 2, important_y - line_spacing,
+                       "Det er disse vingene du skal hekte neste brett på.")
+
+    # Draw QR code in original size, centered on page
+    qr_image_path = get_pdf_image_path("perlehjelpen_qr.png")
+
+    if qr_image_path:
+        try:
+            # Get original image dimensions
+            with Image.open(qr_image_path) as img:
+                qr_width_pixels, qr_height_pixels = img.size
+
+            # Convert pixels to points (assuming 72 DPI)
+            qr_width = (qr_width_pixels * 72 / 96)  # Adjust DPI ratio as needed
+            qr_height = (qr_height_pixels * 72 / 96)
+
+            # Center the QR code horizontally
+            qr_x = (page_width - qr_width) / 2
+            # Position below all instructions (6 lines with spacing)
+            qr_y = important_y - line_spacing - 1.25 * cm - qr_height
+
+            c.drawImage(
+                qr_image_path,
+                qr_x,
+                qr_y,
+                width=qr_width,
+                height=qr_height,
+                preserveAspectRatio=True,
+                mask='auto'
+            )
+            logger.info(f"Using QR code image: {qr_image_path}")
+        except Exception as e:
+            logger.error(f"Failed to draw QR image: {e}.")
+            qr_image_path = None
+
+    footer_y = 3 * cm
+    c.setFont(_get_font('bold'), 10)
+    c.drawCentredString(page_width / 2, footer_y, "For å sikre et godt resultat, les vår Perlehjelp.")
+    c.setFont(_get_font('regular'), 10)
+    c.drawCentredString(page_width / 2, footer_y - 1 * line_spacing, "Scan QR-koden, eller besøk")
+    c.drawCentredString(page_width / 2, footer_y - 2 * line_spacing, "www.feelpearly.no/perlehjelpen")
 
 
 def generate_pattern_pdf(
@@ -216,7 +385,6 @@ def generate_pattern_pdf(
         except KeyError as e:
             print(f"PDF Generation - KeyError building color_info for v1: {e}")
             raise
-
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)
     page_width, page_height = A4
@@ -230,7 +398,6 @@ def generate_pattern_pdf(
 
     _draw_cover_page(c, page_width, page_height, boards_width, boards_height, pattern_width, pattern_height)
     c.showPage()
-
     for board_y in range(boards_height):
         for board_x in range(boards_width):
             start_x = board_x * board_size
