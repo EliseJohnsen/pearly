@@ -23,7 +23,7 @@ export default function Content({ data }: ContentProps) {
     <section className="py-12 px-4" style={{backgroundColor: getBgColor()}}>
       <div className="max-w-4xl mx-auto">
         {data.title && (
-          <h2 className="text-3xl font-bold mb-6">{data.title}</h2>
+          <h2 className="text-3xl font-semibold mb-6">{data.title}</h2>
         )}
         <div className="prose prose-lg max-w-none">
           <PortableText value={data.body} components={portableTextComponents} />

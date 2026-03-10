@@ -292,7 +292,7 @@ export default function VelgStorrelsePage() {
           {!isLoading && patterns.length > 0 && (
             <>
               <div className="text-center mb-8">
-                <h1 className="text-3xl font-bold text-[#6B4E71] mb-3">
+                <h1 className="text-3xl font-semibold text-[#6B4E71] mb-3">
                   {chooseSizeHeader}
                 </h1>
                 <p className="text-[#6B4E71] text-base">

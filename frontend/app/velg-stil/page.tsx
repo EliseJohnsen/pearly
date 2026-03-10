@@ -74,7 +74,7 @@ export default function VelgStilPage() {
 
         <div className="max-w-2xl mx-auto px-4 pb-12">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-[#6B4E71] mb-3">
+            <h1 className="text-3xl font-semibold text-[#6B4E71] mb-3">
               Velg stil
             </h1>
           </div>

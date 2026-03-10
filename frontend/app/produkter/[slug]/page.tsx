@@ -9,9 +9,10 @@ import Footer from "@/app/components/Footer";
 import { PortableText } from "@portabletext/react";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
 import { useCart } from "@/app/contexts/CartContext";
-import { CheckIcon, MinusIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { ArrowUturnLeftIcon, CheckIcon, GiftIcon, MinusIcon, PlusIcon, QuestionMarkCircleIcon, TrashIcon } from "@heroicons/react/24/outline";
 import VippsCheckoutButton, { OrderLine } from "@/app/components/VippsCheckoutButton";
 import CollapsableCard from "@/app/components/CollapsableCard";
+import PerlebrettIcon from "@/app/components/icons/PerlebrettIcon";
 import { useUIString, useUIStringWithVars } from "@/app/hooks/useSanityData";
 import ProductCard from "@/app/components/ProductCard";
 import { formatPrice } from "@/app/utils/priceFormatter";
@@ -368,7 +369,7 @@ export default function ProductDetailPage({
 
           <div className="space-y-4">
             <div>
-              <h1 className="text-5xl text-dark-purple font-bold mb-2">{product.title}</h1>
+              <h1 className="text-5xl text-dark-purple font-semibold mb-2">{product.title}</h1>
             </div>
 
             {product.description && (
@@ -486,7 +487,7 @@ export default function ProductDetailPage({
               currency={product.currency}
             />
 
-            <CollapsableCard header={innholdHeader} defaultExpanded={false} className="">
+            <CollapsableCard header={<div className="flex items-center gap-4"><QuestionMarkCircleIcon className="w-6 h-6 text-dark-purple flex-shrink-0" /><h3 className="text-left text-xl font-medium">{innholdHeader}</h3></div>} defaultExpanded={false} className="">
               {product.longDescription && (
                 <div className="pt-6">
                   <div className="prose prose-sm max-w-none text-gray-700">
@@ -514,10 +515,13 @@ export default function ProductDetailPage({
               )}
 
             </CollapsableCard>
-            <CollapsableCard header={leveringHeader} defaultExpanded={false} className="border-t border-purple">
+            <CollapsableCard header={<div className="flex items-center gap-4"><PerlebrettIcon className="w-6 h-6 text-dark-purple flex-shrink-0" /><h3 className="text-left text-xl font-medium">Perlepakker</h3></div>} defaultExpanded={false} className="border-t border-purple">
+              For å perle våre mønstre trenger du brett i riktig størrelse som kan pusles sammen til én stor flate. Brettene er gjennomsiktige slik at du kan plassere dem oppå mønsteret. Du kan ikke kjøpe flere brett fra oss enn det motivet tilsier. Brettene kan brukes igjen og igjen til flere motiver.
+            </CollapsableCard>
+            <CollapsableCard header={<div className="flex items-center gap-4"><GiftIcon className="w-6 h-6 text-dark-purple flex-shrink-0" /><h3 className="text-left text-xl font-medium">{leveringHeader}</h3></div>} defaultExpanded={false} className="border-t border-purple">
               {leveringText}
             </CollapsableCard>
-            <CollapsableCard header={bytteOgReturHeader} defaultExpanded={false} className="border-y border-purple">
+            <CollapsableCard header={<div className="flex items-center gap-4"><ArrowUturnLeftIcon className="w-6 h-6 text-dark-purple flex-shrink-0" /><h3 className="text-left text-xl font-medium">{bytteOgReturHeader}</h3></div>} defaultExpanded={false} className="border-y border-purple">
               {bytteOgReturText}
             </CollapsableCard>
           </div>

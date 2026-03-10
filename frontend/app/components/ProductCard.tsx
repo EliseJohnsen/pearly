@@ -73,12 +73,12 @@ export default function ProductCard({
   const cardContent = (
     <>
       {cardImageUrl && (
-        <div className="overflow-hidden bg-primary-pink relative aspect-square">
-          <div className="absolute inset-0 flex items-center justify-center p-6">
+        <div className="overflow-hidden bg-primary-pink relative aspect-[3/4]">
+          <div className="absolute inset-0">
             <img
               src={cardImageUrl}
               alt={cardImageAlt || cardTitle || 'Product image'}
-              className="max-w-full max-h-full object-contain"
+              className="w-full h-full object-cover"
             />
           </div>
           {imageOverlay}

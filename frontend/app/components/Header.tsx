@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import {
   Dialog,
   DialogPanel,
@@ -17,6 +18,7 @@ import { useUIString } from '@/app/hooks/useSanityData'
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const pathname = usePathname()
   const { data: mainNav, loading: mainNavLoading } = useNavigationByType('main')
   const { data: ctaNav, loading: ctaNavLoading } = useNavigationByType('cta')
   const { totalItems } = useCart()
@@ -59,13 +61,13 @@ export default function Header() {
                 <Link
                   key={item._id}
                   href={item.href || '/'}
-                  className="text-sm/6 font-semibold text-primary-light hover:text-white transition-colors"
+                  className={`text-sm/6 font-semibold text-white underline-offset-4 hover:underline ${pathname === item.href ? 'underline' : ''}`}
                 >
                   {item.title.toUpperCase()}
                 </Link>
               ))
             ) : null}
-            <Link href="/handlekurv" className="relative text-primary-light hover:text-white transition-colors">
+            <Link href="/handlekurv" className="relative text-white hover:underline">
               <ShoppingBagIcon className="w-6 h-6" />
               {totalItems > 0 && (
                 <span className="absolute -top-2 -right-2 bg-primary-red text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
