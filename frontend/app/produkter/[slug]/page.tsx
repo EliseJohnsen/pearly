@@ -16,6 +16,7 @@ import { useUIString, useUIStringWithVars } from "@/app/hooks/useSanityData";
 import ProductCard from "@/app/components/ProductCard";
 import { formatPrice } from "@/app/utils/priceFormatter";
 import ImageCarousel from "@/app/components/ImageCarousel";
+import PearlyButton from "@/app/components/PearlyButton";
 
 interface ProductVariant {
   sku: string;
@@ -455,16 +456,11 @@ export default function ProductDetailPage({
               </div>
             )}
 
-            <button
+            <PearlyButton
+              skin={addedToCart ? "success" : "primary"}
               onClick={handleAddToCart}
               disabled={product.status !== "in_stock" || addedToCart}
-              className={`w-full py-4 px-6 rounded-lg font-semibold transition cursor-pointer disabled:cursor-not-allowed flex items-center justify-center gap-2
-                border
-                ${
-                addedToCart
-                  ? "bg-success text-white"
-                  : "hover:shadow-lg disabled:opacity-50"
-              }`}
+              className="w-full py-4 px-6"
             >
               {addedToCart ? (
                 <>
@@ -478,13 +474,13 @@ export default function ProductDetailPage({
                   Legg i handlekurv - {formatPrice(calculateTotalPrice(), product.currency)}
                 </>
               )}
-            </button>
+            </PearlyButton>
 
-            <VippsCheckoutButton
+            {/* <VippsCheckoutButton
               disabled={product.status !== "in_stock" || addedToCart}
               orderLines={orderLines}
               currency={product.currency}
-            />
+            /> */}
 
             <CollapsableCard header={innholdHeader} defaultExpanded={false} className="">
               {product.longDescription && (
