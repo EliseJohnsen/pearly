@@ -20,6 +20,7 @@ interface ProductCardProps {
     images?: ProductImage[];
     image?: ProductImage;
     price?: number;
+    requiredBoards?: number;
   };
   // Pattern-specific props
   title?: string;
@@ -74,7 +75,7 @@ export default function ProductCard({
     <>
       {cardImageUrl && (
         <div className="overflow-hidden bg-primary-pink relative aspect-square">
-          <div className="absolute inset-0 flex items-center justify-center p-6">
+          <div className="absolute inset-0 flex items-center justify-center py-6">
             <img
               src={cardImageUrl}
               alt={cardImageAlt || cardTitle || 'Product image'}
@@ -91,11 +92,15 @@ export default function ProductCard({
               {cardTitle}
             </h3>
           )}
-          {isProductCard && product.price && (
+          {isProductCard && product.price && product.requiredBoards ? (
             <p className="text-sm">
-              {formatPrice(product.price, "NOK")}
+              {formatPrice(product.price + (product.requiredBoards * 12), "NOK")}
             </p>
-          )}
+          ) : isProductCard && product.price ? (
+            <p className="text-sm">
+              fra {formatPrice(product.price, "NOK")}
+            </p>
+          ) : null}
           {children}
         </div>
       )}
