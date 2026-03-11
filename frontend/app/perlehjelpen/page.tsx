@@ -5,17 +5,11 @@ import Footer from "../components/Footer";
 
 export default function Perlehjelpen() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen" style={{ background: "#FFFFFF" }}>
       <Header />
 
       {/* HERO */}
-      <section
-        className="relative overflow-hidden"
-        style={{
-          background:
-            "radial-gradient(ellipse 60% 80% at 80% 30%, rgba(240,90,65,0.12) 0%, transparent 60%), radial-gradient(ellipse 40% 50% at 20% 80%, rgba(159,205,129,0.15) 0%, transparent 55%), var(--background)",
-        }}
-      >
+      <section className="relative overflow-hidden">
         <div className="py-12">
           <div className="max-w-7xl mx-auto px-4">
             <h1 className="text-4xl md:text-5xl font-semibold text-left text-dark-purple mb-4 leading-tight max-w-xl pl-4">
@@ -36,9 +30,8 @@ export default function Perlehjelpen() {
         <div className="flex items-start justify-center gap-0">
           {[
             { num: "1", label: "Start", color: "var(--primary)", href: "#steg-1" },
-            { num: "2", label: "Brett", color: "var(--purple)", href: "#steg-2" },
-            { num: "3", label: "Stryking", color: "var(--success)", href: "#steg-3" },
-            { num: "4", label: "Ferdig!", color: "var(--dark-purple)", href: "#steg-4" },
+            { num: "2", label: "Stryking", color: "var(--success)", href: "#steg-2" },
+            { num: "3", label: "Montering", color: "var(--dark-purple)", href: "#steg-3" },
           ].map((step, i, arr) => (
             <div key={i} className="flex-1 flex flex-col items-center relative max-w-[110px]">
               {i < arr.length - 1 && (
@@ -72,108 +65,62 @@ export default function Perlehjelpen() {
       <main className="pb-16">
         <div className="max-w-7xl mx-auto px-4 space-y-20">
 
-        {/* ── STEG 1 ── */}
+        {/* ── STEG 1: Slik starter du ── */}
         <section id="steg-1" className="pl-4">
           <SectionHeader num="01" subtitle="Steg én" title="Slik starter du" accentColor="var(--primary)" />
 
-          <div className="grid md:grid-cols-2 gap-5 mt-8">
+          <p className="text-sm leading-relaxed mt-6 mb-8 text-app-secondary">
+            Det er gøy og enkelt å perle etter mønster og å se motivet sakte, men sikkert stige frem på brettene. Det er fascinerende hvordan motivet kan se pixelert og rotete ut på nært hold mens det perles, men blir et fantastisk kunstverk når det er ferdig og betraktes på avstand!
+          </p>
+
+          <div className="grid md:grid-cols-2 gap-5">
             <InfoCard accent="primary">
-              <CardIcon bg="rgba(240,90,65,0.1)"></CardIcon>
-              <h3 className="text-lg font-semibold mb-2 text-app-primary">
-                Legg brettet over mønsteret
-              </h3>
-              <p className="text-sm leading-relaxed text-app-secondary">
-                Plasser perlebrettet direkte over mønsterutskriften din. Tallene i
-                mønsteret forteller nøyaktig hvilken farge du skal bruke i hvert hull.
+              <h3 className="text-lg font-semibold mb-3 text-app-primary">Brett for brett — eller samlet</h3>
+              <p className="text-sm leading-relaxed mb-4 text-app-secondary">
+                Du velger selv om du vil pusle sammen alle brettene før du begynner å perle, etterhvert som du perler, eller fullføre hvert brett separat og sette dem sammen til slutt rett før du stryker motivet.
               </p>
+              <div className="rounded-xl p-4" style={{ background: "rgba(240,90,65,0.06)", border: "1px solid rgba(240,90,65,0.15)" }}>
+                <p className="text-xs font-semibold uppercase tracking-wider mb-1 text-primary">Tips</p>
+                <p className="text-sm leading-relaxed text-app-secondary">
+                  Perler du brett for brett, er det lurt å notere brettnummeret fra oppskriften (f.eks. A1) før du legger det bort. Da blir det enkelt å finne riktig plass senere.
+                </p>
+              </div>
             </InfoCard>
 
             <InfoCard accent="success">
-              <CardIcon bg="rgba(159,205,129,0.15)"></CardIcon>
-              <h3 className="text-lg font-semibold mb-2 text-app-primary">
-                Brett for brett — eller samlet
-              </h3>
-              <p className="text-sm leading-relaxed mb-3 text-app-secondary">
-                Du velger selv: feste brettene fortløpende mens du perler, eller
-                fullføre hvert brett separat og sette dem sammen til slutt.
+              <h3 className="text-lg font-semibold mb-3 text-app-primary">Å perle etter mønster</h3>
+              <p className="text-sm leading-relaxed mb-4 text-app-secondary">
+                Legg perlebrettet direkte over mønsterutskriften. Tallene i mønsteret viser hvilken perlefarge du skal bruke. Noen liker å perle én farge om gangen på hvert brett, andre liker å perle rad for rad. You do you!
               </p>
-              <ul className="space-y-1">
-                {[
-                  "Perler du brett for brett: noter brettnummeret (f.eks. A1) før du legger det bort",
-                  "Fest alle brettene i riktig rekkefølge: A1 → A2 → osv.",
-                ].map((item, i) => (
-                  <li key={i} className="text-sm pl-5 relative text-app-secondary">
-                    <span className="absolute left-0 text-xs text-primary">→</span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
+              <div className="rounded-xl p-4" style={{ background: "rgba(240,90,65,0.06)", border: "1px solid rgba(240,90,65,0.2)" }}>
+                <p className="text-xs font-semibold uppercase tracking-wider mb-1 text-primary">Viktig!</p>
+                <p className="text-sm leading-relaxed text-app-secondary">
+                  Pass på at de små vingene/tennene på kanten av brettet peker <strong>nedover og mot høyre</strong>, slik det står i oppskriften — ellers får du ikke puslet dem riktig sammen til slutt.
+                </p>
+              </div>
             </InfoCard>
           </div>
-
-          <CalloutBox type="obs">
-            <span className="flex-shrink-0"></span>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider mb-1 text-primary">OBS! Viktig orientering</p>
-              <p className="text-sm leading-relaxed text-app-secondary">
-                Pass alltid på at <strong>vingene på brettet peker nedover og mot høyre</strong> — ellers kan mønsteret bli speilvendt.
-              </p>
-            </div>
-          </CalloutBox>
         </section>
 
-        <Divider />
-
-        {/* ── STEG 2 ── */}
+{/* ── STEG 2: Slik stryker du kunstverket ditt ── */}
         <section id="steg-2" className="pl-4">
-          <SectionHeader num="02" subtitle="Steg to" title="Sett sammen brettene" accentColor="#C9A96E" />
+          <SectionHeader num="02" subtitle="Steg to" title="Slik stryker du kunstverket ditt" accentColor="var(--success)" />
 
-          <div className="grid md:grid-cols-2 gap-5 mt-8">
-            <IllusPanel
-              caption="Brett-rekkefølge"
-              sub="Begynn alltid med A1, deretter A2, B1, B2 osv."
-              bg="linear-gradient(135deg, #F5EEE6 0%, #EDE0D4 100%)"
-            >
-              <BrettRekkefolgeSvg />
-            </IllusPanel>
-
-            <IllusPanel
-              caption="Alle brettene koblet"
-              sub="Ferdig sammensatt — klart for stryking!"
-              bg="linear-gradient(135deg, #EEF5EE 0%, #E0EBE0 100%)"
-            >
-              <BrettKobletSvg />
-            </IllusPanel>
-          </div>
-
-          <CalloutBox type="viktig">
-            <span className="flex-shrink-0"></span>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: "#C9A96E" }}>Viktig!</p>
-              <p className="text-sm leading-relaxed text-app-secondary">
-                Alle brettene <strong>må</strong> festes godt sammen <strong>før</strong> du begynner å stryke.
-                Løse brett kan forskyve seg og ødelegge motivet.
-              </p>
-            </div>
-          </CalloutBox>
-        </section>
-
-        <Divider />
-
-        {/* ── STEG 3 ── */}
-        <section id="steg-3" className="pl-4">
-          <SectionHeader num="03" subtitle="Steg tre" title="Slik stryker du kunstverket ditt" accentColor="var(--success)" />
-
-          <p className="text-sm leading-relaxed mt-4 mb-8 text-app-secondary">
-            For at perlebildet skal bli stabilt og holde formen, må perlene strykes slik at de smelter
-            forsiktig sammen. Ta deg god tid — det er verdt det!
+          <p className="text-sm leading-relaxed mt-6 mb-8 text-app-secondary">
+            For at perlebildet skal bli stabilt og holde formen, må perlene strykes slik at de smelter lett sammen. Det er helt normalt å måtte prøve seg litt frem — ta det rolig, så går det fint. Barn bør få hjelp av en voksen.
           </p>
 
-          {/* Du trenger */}
-          <div className="mb-8">
-            <p className="text-xs font-semibold uppercase tracking-widest mb-4 text-app-muted">Du trenger</p>
+          {/* Dette trenger du */}
+          <div className="mb-6">
+            <p className="text-xs font-semibold uppercase tracking-widest mb-4 text-app-muted">Dette trenger du</p>
             <div className="bg-card rounded-2xl p-6 grid sm:grid-cols-2 gap-3" style={{ border: "1.5px solid var(--border-subtle)" }}>
-              {["Strykejern", "Bakepapir", "Flatt, varmebestandig underlag", "Bok eller plate til avkjøling"].map((item) => (
+              {[
+                "Strykejern",
+                "Bakepapir",
+                "Et flatt, varmebestandig underlag",
+                "Eventuelt en bok eller plate til avkjøling",
+                "Evt. fryse- eller malertape (se Tape-metoden)",
+              ].map((item) => (
                 <div key={item} className="flex items-center gap-3 text-sm py-1 text-app-secondary" style={{ borderBottom: "1px solid var(--border-subtle)" }}>
                   <div
                     className="w-7 h-7 rounded-full flex items-center justify-center text-xs flex-shrink-0 text-success"
@@ -187,13 +134,42 @@ export default function Perlehjelpen() {
             </div>
           </div>
 
-          {/* Stryke-steg */}
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Sett sammen brettene */}
+          <div className="rounded-xl p-4 mb-10" style={{ background: "rgba(240,90,65,0.06)", border: "1px solid rgba(240,90,65,0.15)" }}>
+            <p className="text-xs font-semibold uppercase tracking-wider mb-1 text-primary">Sett sammen brettene</p>
+            <p className="text-sm leading-relaxed text-app-secondary">
+              Alle brettene må festes sammen før du begynner å stryke. Hvis du har perlet ett og ett brett, er dette siste frist for å pusle dem sammen. Begynn alltid med brett A1, pusle deretter på A2, og videre til hele rad A er fullført, deretter begynner du på B1, B2 osv.
+            </p>
+          </div>
+
+          {/* Tape-metoden vs stryk på brettene */}
+          <h3 className="text-xl font-semibold mb-3 text-app-primary">Tape-metoden — eller stryk på brettene</h3>
+          <p className="text-sm leading-relaxed mb-6 text-app-secondary">
+            Vi liker best at fremsiden av motivet er ustrøket slik at perlene er runde, jevne og usmeltet. For å få til dette, men allikevel få et stabilt resultat, må baksiden av motivet smeltes godt sammen. Dersom det er viktig for deg at motivet ikke ender opp speilvendt, må du løfte perlene av brettene og stryke den siden som har vært ned mot brettene — det er her vi bruker tape-metoden. Dersom det er likegyldig for deg hvilken side som ender opp som motivets forside, kan du trygt stryke perlene mens de fremdeles ligger på brettene.
+          </p>
+          <div className="grid md:grid-cols-2 gap-5 mb-10">
+            <InfoCard accent="primary">
+              <h4 className="text-base font-semibold mb-3 text-app-primary">Tape-metoden</h4>
+              <p className="text-sm leading-relaxed text-app-secondary">
+                Dekk hele motivet med maskeringstape eller malertape. Press godt ned slik at alle perlene er skikkelig festet til tapen. Løft hele motivet av brettene og legg det med tape-siden ned på et flatt og varmebestandig underlag. Stryk baksiden mens perlene fremdeles er festet til tapen. Når du har en stabil bakside, snu motivet, ta av tapen og stryk forsiden lett for ekstra styrke.
+              </p>
+            </InfoCard>
+            <InfoCard accent="success">
+              <h4 className="text-base font-semibold mb-3 text-app-primary">Stryk på brettene</h4>
+              <p className="text-sm leading-relaxed text-app-secondary">
+                Begynn med å stryke perlene mens de ligger på brettene. Du trenger ikke et varmebestandig underlag mens du gjør dette, da brettene vil beskytte underlaget. Pass på at du ikke stryker perlene så hardt at tappene på brettet smelter inni perlene. Når motivet er stabilt, løft det av brettene og flytt det til et varmebestandig underlag der du stryker den andre siden lett for ekstra styrke.
+              </p>
+            </InfoCard>
+          </div>
+
+          {/* Stryk forsiktig */}
+          <h3 className="text-xl font-semibold mb-6 text-app-primary">Stryk forsiktig</h3>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             {[
-              { num: "1", title: "Still inn strykejernet", text: "Bruk middels varme (bomull / 2 prikker). Ikke bruk damp — fuktighet kan påvirke resultatet.", badge: null },
-              { num: "2", title: "Dekk perlebildet", text: "Legg et ark bakepapir over hele motivet. Stryk aldri direkte på perlene.", badge: null },
-              { num: "3", title: "Stryk forsiktig", text: "Press strykejernet rett ned — ikke dra det. Hold i 5–10 sekunder per område, flytt rolig videre.", badge: "5–10 sek" },
-              { num: "4", title: "Avkjøl flatt", text: "La bildet ligge flatt. Legg en bok eller plate oppå og vent minst 10 minutter.", badge: "10 min" },
+              { num: "1", title: "Bakepapir over motivet", text: "Legg et ark bakepapir over hele motivet. Stryk aldri direkte på perlene.", badge: null },
+              { num: "2", title: "Middels varme", text: "Bruk middels varme (bomull / 2 prikker). Ikke bruk damp. For høy varme kan ødelegge formen — test gjerne på et lite område først.", badge: null },
+              { num: "3", title: "Press ned, ikke dra", text: "Press strykejernet rett ned. Hold i 5–10 sekunder per område før du flytter rolig videre. Fortsett til perlene er lett smeltet — hullene skal fortsatt være synlige.", badge: "5–10 sek" },
+              { num: "4", title: "Avkjøl flatt", text: "La bildet ligge flatt. Legg gjerne en bok eller tung plate oppå. Vent minst 10 minutter før du løfter motivet.", badge: "10 min" },
             ].map((step) => (
               <div
                 key={step.num}
@@ -215,9 +191,9 @@ export default function Perlehjelpen() {
             ))}
           </div>
 
-          {/* Før/etter illustrasjon */}
-          <div className="mt-8">
-            <p className="text-xs font-semibold uppercase tracking-widest mb-4 text-app-muted">Slik ser det ut</p>
+          {/* Slik ser det ut */}
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest mb-4 text-app-muted">Slik ser det ut når du er ferdig å stryke (med bakepapir)</p>
             <div className="grid md:grid-cols-2 gap-5">
               <IllusPanel
                 caption="Under stryking"
@@ -228,7 +204,7 @@ export default function Perlehjelpen() {
               </IllusPanel>
               <IllusPanel
                 caption="Ferdig strøket"
-                sub="Tette, sammensmeltede perler — ingen mellomrom"
+                sub="Tette, sammensmeltede perler — hullene er fortsatt synlige"
                 bg="linear-gradient(135deg, #EEF5EE 0%, #E4EDE4 100%)"
               >
                 <FerdigStroketSvg />
@@ -237,64 +213,27 @@ export default function Perlehjelpen() {
           </div>
         </section>
 
-        <Divider />
+{/* ── STEG 3: Montering ── */}
+        <section id="steg-3" className="pl-4">
+          <SectionHeader num="03" subtitle="Steg tre" title="Montering" accentColor="var(--dark-purple)" />
 
-        {/* ── STEG 4: TIPS ── */}
-        <section id="steg-4" className="pl-4">
-          <SectionHeader num="04" subtitle="Husk" title="Viktige tips" accentColor="var(--primary-light)" />
-
-          <div className="grid sm:grid-cols-2 gap-4 mt-8">
-            {[
-              { title: "For høy varme", text: "Kan ødelegge formen på perlene. Hold deg til middels varme (bomull / 2 prikker)." },
-              { title: "For lav varme", text: "Kan gjøre at perlene løsner og ikke holder seg på plass over tid." },
-              { title: "Test først", text: "Er du usikker? Test gjerne på et lite hjørneområde før du stryker over hele bildet." },
-              { title: "Barn og strykejern", text: "Barn bør alltid få hjelp av en voksen under strykedelen av prosessen." },
-            ].map((tip) => (
-              <div
-                key={tip.title}
-                className="flex gap-4 items-start bg-card rounded-2xl p-5"
-                style={{ border: "1.5px solid var(--border-subtle)" }}
-              >
-                <div>
-                  <h4 className="text-sm font-semibold mb-1 text-app-primary">{tip.title}</h4>
-                  <p className="text-xs leading-relaxed text-app-secondary">{tip.text}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          <p className="text-sm leading-relaxed mt-6 mb-4 text-app-secondary">
+            Store motiv blir tunge, så vi anbefaler glass fremfor plast til innramming for å tåle vekten av perlemotivet.
+          </p>
+          <p className="text-sm leading-relaxed text-app-secondary">
+            Når perlene er riktig strøket, sitter de godt sammen og motivet er klart til oppheng eller innramming.
+          </p>
         </section>
 
         {/* ── SUCCESS BANNER ── */}
         <div
-          className="rounded-3xl p-12 md:p-16 text-center relative overflow-hidden pl-4"
-          style={{ background: "linear-gradient(135deg, var(--foreground) 0%, #3D3531 100%)" }}
+          className="rounded-3xl p-12 md:p-16 text-center pl-4"
+          style={{ background: "linear-gradient(135deg, var(--lavender-pink) 0%, var(--primary-light-pink) 100%)", border: "1.5px solid var(--primary-dark-pink)" }}
         >
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background:
-                "radial-gradient(ellipse 50% 60% at 20% 50%, rgba(240,90,65,0.15) 0%, transparent 60%), radial-gradient(ellipse 40% 50% at 80% 50%, rgba(159,205,129,0.12) 0%, transparent 55%)",
-            }}
-          />
-          <div className="flex justify-center gap-1.5 mb-6 relative">
-            {["var(--primary)", "#C9A96E", "var(--success)", "var(--primary-light)", "var(--purple)"].map((color, i) => (
-              <div
-                key={i}
-                className="w-3 h-3 rounded-full"
-                style={{ background: color, animation: "confettiBounce 2s ease-in-out infinite", animationDelay: `${i * 0.15}s` }}
-              />
-            ))}
-          </div>
-          <style>{`
-            @keyframes confettiBounce {
-              0%, 100% { transform: translateY(0); }
-              50% { transform: translateY(-8px); }
-            }
-          `}</style>
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 relative" style={{ color: "var(--background-secondary)" }}>
+          <h2 className="text-2xl md:text-3xl font-bold mb-4 text-dark-purple">
             Du er ferdig!
           </h2>
-          <p className="text-base font-light max-w-lg mx-auto relative leading-relaxed" style={{ color: "rgba(253,251,249,0.65)" }}>
+          <p className="text-base max-w-lg mx-auto leading-relaxed text-app-secondary">
             Når perlene er riktig strøket, sitter de godt sammen og motivet er
             klart til bruk — til oppheng, innramming eller som en spesiell gave.
           </p>
@@ -337,14 +276,6 @@ function InfoCard({ children, accent }: { children: React.ReactNode; accent: "pr
       style={{ border: "1.5px solid var(--border-subtle)" }}
     >
       <div className="absolute top-0 left-0 right-0 h-1 rounded-t-2xl" style={{ background: topBar }} />
-      {children}
-    </div>
-  );
-}
-
-function CardIcon({ children, bg }: { children: React.ReactNode; bg: string }) {
-  return (
-    <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-4" style={{ background: bg }}>
       {children}
     </div>
   );
@@ -396,59 +327,6 @@ function Divider() {
 /* ── SVG Illustrations ── */
 
 const BEAD_COLORS = ["#F05A41", "#C9A96E", "#9fcd81", "#D4A0A0", "#F05A41", "#9fcd81", "#C9A96E", "#F05A41", "#D4A0A0"];
-
-function BeadGridSvg() {
-  const cols = [60, 95, 130, 165, 200, 235, 270];
-  const rows = [60, 95, 130, 165, 200, 235, 270];
-  const palette = ["hb1","hb2","hb3","hb4","hb5","hb6","hb7"];
-  const grid = [
-    ["hb5","hb3","hb1","hb2","hb4","hb3","hb1"],
-    ["hb2","hb1","hb7","hb3","hb1","hb6","hb4"],
-    ["hb4","hb6","hb2","hb1","hb5","hb3","hb2"],
-    ["hb3","hb1","hb4","hb7","hb1","hb2","hb3"],
-    ["hb1","hb5","hb3","hb2","hb4","hb1","hb6"],
-    ["hb6","hb3","hb1","hb5","hb2","hb7","hb1"],
-    ["hb3","hb4","hb6","hb1","hb3","hb2","hb5"],
-  ];
-  return (
-    <svg viewBox="0 0 340 340" fill="none" xmlns="http://www.w3.org/2000/svg" width="320" height="320">
-      <circle cx="170" cy="170" r="160" fill="url(#heroGlow)" opacity="0.5"/>
-      <defs>
-        <radialGradient id="heroGlow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#F2C4B0" stopOpacity="0.4"/>
-          <stop offset="100%" stopColor="#F2C4B0" stopOpacity="0"/>
-        </radialGradient>
-        {[["hb1","#F5856A","#C85A3A"],["hb2","#E8C97A","#A07838"],["hb3","#A8C8A6","#527050"],
-          ["hb4","#E8B8B8","#A86868"],["hb5","#C8DEFA","#6090C8"],["hb6","#F0E0C0","#C8A870"],
-          ["hb7","#D8B8E8","#8858A8"]].map(([id, c1, c2]) => (
-          <radialGradient key={id} id={id} cx="35%" cy="30%" r="65%">
-            <stop offset="0%" stopColor={c1}/>
-            <stop offset="100%" stopColor={c2}/>
-          </radialGradient>
-        ))}
-        <filter id="beadShadow" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="1" dy="2" stdDeviation="2" floodColor="#0000001A"/>
-        </filter>
-      </defs>
-      <g filter="url(#beadShadow)">
-        {grid.map((row, ri) =>
-          row.map((color, ci) => (
-            <circle key={`${ri}-${ci}`} cx={cols[ci]} cy={rows[ri]} r="14" fill={`url(#${color})`}/>
-          ))
-        )}
-      </g>
-      {cols.map((cx, i) => (
-        <circle key={i} cx={cx - 7} cy={53} r="4" fill="white" opacity="0.5"/>
-      ))}
-      <rect x="38" y="38" width="250" height="250" rx="16" stroke="#C9A96E" strokeWidth="2.5" fill="none" strokeDasharray="6 4" opacity="0.45"/>
-      <circle cx="38" cy="38" r="5" fill="#C9A96E" opacity="0.6"/>
-      <circle cx="288" cy="38" r="5" fill="#C9A96E" opacity="0.6"/>
-      <circle cx="38" cy="288" r="5" fill="#C9A96E" opacity="0.6"/>
-      <circle cx="288" cy="288" r="5" fill="#C9A96E" opacity="0.6"/>
-      <text x="170" y="322" textAnchor="middle" fontFamily="Quicksand, sans-serif" fontSize="12" fill="#9A8F89" letterSpacing="0.1em">Brett A1</text>
-    </svg>
-  );
-}
 
 function BrettRekkefolgeSvg() {
   const board1 = [[38,50],[55,50],[72,50],[89,50],[106,50],[38,68],[55,68],[72,68],[89,68],[106,68],[38,86],[55,86],[72,86],[89,86],[106,86]];
