@@ -17,6 +17,7 @@ import { useUIString, useUIStringWithVars } from "@/app/hooks/useSanityData";
 import ProductCard from "@/app/components/ProductCard";
 import { formatPrice } from "@/app/utils/priceFormatter";
 import ImageCarousel from "@/app/components/ImageCarousel";
+import ProductCarousel from '@/app/components/ProductCarousel'
 
 interface ProductVariant {
   sku: string;
@@ -515,7 +516,7 @@ export default function ProductDetailPage({
               )}
 
             </CollapsableCard>
-            <CollapsableCard header={<div className="flex items-center gap-4"><PerlebrettIcon className="w-6 h-6 text-dark-purple flex-shrink-0" /><h3 className="text-left text-xl font-medium">Perlepakker</h3></div>} defaultExpanded={false} className="border-t border-purple">
+            <CollapsableCard header={<div className="flex items-center gap-4"><PerlebrettIcon className="w-6 h-6 text-dark-purple flex-shrink-0" /><h3 className="text-left text-xl font-medium">Perlebrett</h3></div>} defaultExpanded={false} className="border-t border-purple">
               For å perle våre mønstre trenger du brett i riktig størrelse som kan pusles sammen til én stor flate. Brettene er gjennomsiktige slik at du kan plassere dem oppå mønsteret. Du kan ikke kjøpe flere brett fra oss enn det motivet tilsier. Brettene kan brukes igjen og igjen til flere motiver.
             </CollapsableCard>
             <CollapsableCard header={<div className="flex items-center gap-4"><GiftIcon className="w-6 h-6 text-dark-purple flex-shrink-0" /><h3 className="text-left text-xl font-medium">{leveringHeader}</h3></div>} defaultExpanded={false} className="border-t border-purple">
@@ -529,15 +530,11 @@ export default function ProductDetailPage({
 
         {/* Recommended Add-ons Section */}
         {product.recommendedAddOns && product.recommendedAddOns.length > 0 && (
-          <div className="mt-16">
-            <h2 className="text-2xl font-bold mb-4 text-dark-purple">
-              Har du sjekket ut disse?
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {product.recommendedAddOns.map((addon) => (
-                <ProductCard key={addon._id} product={addon} />
-              ))}
-            </div>
+          <div className="mt-8">
+            <ProductCarousel
+              heading="Har du sjekket ut disse?"
+              products={product.recommendedAddOns}
+            />
           </div>
         )}
       </main>

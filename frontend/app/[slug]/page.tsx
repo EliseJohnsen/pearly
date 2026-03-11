@@ -14,6 +14,7 @@ import ProductSection from "../components/ProductSection";
 import LoadingSpinner from "../components/LoadingSpinner";
 import ImageCarousel from "../components/ImageCarousel";
 import CollapsableCardsSection from "../components/CollapsableCardsSection";
+import ProductCarousel from '../components/ProductCarousel'
 
 // Define the page query
 const pageQuery = groq`*[_type == "page" && slug.current == $slug][0]{
@@ -104,6 +105,22 @@ const pageQuery = groq`*[_type == "page" && slug.current == $slug][0]{
         order
       },
       isActive
+    },
+    _type == "productCarousel" => {
+      heading,
+      products[]->{
+        _id,
+        title,
+        slug,
+        price,
+        "images": images[]{
+          asset->{_id, url},
+          alt,
+          isPrimary
+        },
+      },
+      viewMoreLink{text, href},
+      isActive
     }
   },
 }`;
@@ -164,6 +181,8 @@ export default function DynamicPage({
               return <ImageCarousel key={index} data={section} />;
             case "collapsableCards":
               return <CollapsableCardsSection key={index} data={section} />;
+            case "productCarousel":
+              return <ProductCarousel key={index} heading={section.heading} products={section.products || []} viewMoreLink={section.viewMoreLink} />;
             default:
               return null;
           }

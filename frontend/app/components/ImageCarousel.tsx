@@ -91,9 +91,9 @@ export default function ImageCarousel({ data }: ImageCarouselProps) {
       {/* Header */}
       {data.heading && (
         <div className="mb-8">
-          <h1 className="text-3xl md:text-3xl font-semibold text-dark-purple mb-4">
+          <h2 className="text-3xl font-semibold text-dark-purple mb-4">
             {data.heading}
-          </h1>
+          </h2>
           {data.description && (
             <p className="text-lg md:text-xl text-gray-900">
               {data.description}

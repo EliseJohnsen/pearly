@@ -38,7 +38,7 @@ export default function Footer({ data, footerPages }: FooterProps = {}) {
                         <img
                             src="/Pearly_navnetrekk 1.svg"
                             alt="Pearly logo"
-                            className="h-16"
+                            className="h-12 md:h-[48px]"
                         />
                     </Link>
                 </div>
@@ -52,11 +52,11 @@ export default function Footer({ data, footerPages }: FooterProps = {}) {
                             className="w-full flex items-center justify-between py-3 tablet:hidden"
                             onClick={() => toggleSection(0)}
                         >
-                            <span className="text-lg font-semibold">{column1Header}</span>
+                            <span className="text-base font-semibold">{column1Header}</span>
                             {openSection === 0 ? <ChevronUpIcon className="w-5 h-5" /> : <ChevronDownIcon className="w-5 h-5" />}
                         </button>
                         {column1Header && (
-                            <p className="hidden tablet:block text-lg my-2">{column1Header}</p>
+                            <p className="hidden tablet:block text-base my-2">{column1Header}</p>
                         )}
                         <ul className={`text-white pb-3 tablet:pb-0 ${openSection === 0 ? 'block' : 'hidden'} tablet:block`}>
                             {pages?.filter((page: any) => page.footerOrder > 10 && page.footerOrder < 20).map((page: any) => (
@@ -75,11 +75,11 @@ export default function Footer({ data, footerPages }: FooterProps = {}) {
                             className="w-full flex items-center justify-between py-3 tablet:hidden"
                             onClick={() => toggleSection(1)}
                         >
-                            <span className="text-lg font-semibold">{column2Header}</span>
+                            <span className="text-base font-semibold">{column2Header}</span>
                             {openSection === 1 ? <ChevronUpIcon className="w-5 h-5" /> : <ChevronDownIcon className="w-5 h-5" />}
                         </button>
                         {column2Header && (
-                            <p className="hidden tablet:block text-lg my-2">{column2Header}</p>
+                            <p className="hidden tablet:block text-base my-2">{column2Header}</p>
                         )}
                         <ul className={`text-white pb-3 tablet:pb-0 ${openSection === 1 ? 'block' : 'hidden'} tablet:block`}>
                             {pages?.filter((page: any) => page.footerOrder > 20 && page.footerOrder < 30).map((page: any) => (
@@ -98,11 +98,11 @@ export default function Footer({ data, footerPages }: FooterProps = {}) {
                             className="w-full flex items-center justify-between py-3 tablet:hidden"
                             onClick={() => toggleSection(2)}
                         >
-                            <span className="text-lg font-semibold">{column3Header}</span>
+                            <span className="text-base font-semibold">{column3Header}</span>
                             {openSection === 2 ? <ChevronUpIcon className="w-5 h-5" /> : <ChevronDownIcon className="w-5 h-5" />}
                         </button>
                         {column3Header && (
-                            <p className="hidden tablet:block text-lg my-2">{column3Header}</p>
+                            <p className="hidden tablet:block text-base my-2">{column3Header}</p>
                         )}
                         <ul className={`text-white pb-3 tablet:pb-0 ${openSection === 2 ? 'block' : 'hidden'} tablet:block`}>
                             {footer && footer.companyInfo && footer.companyInfo.email && (
