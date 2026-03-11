@@ -270,10 +270,10 @@ export default function CartPage() {
                 </div>
               </div>
 
-              {/* <VippsCheckoutButton
+              <VippsCheckoutButton
                 orderLines={orderLines}
                 currency={currency}
-              /> */}
+              />
 
               <button
                 onClick={clearCart}
