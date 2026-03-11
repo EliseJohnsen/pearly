@@ -106,6 +106,10 @@
   --color-border-subtle: var(--border-subtle);
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 @media (min-width: 768px) {
   html {
     font-size: 14px;
