@@ -87,7 +87,7 @@ export default function ImageCarousel({ data }: ImageCarouselProps) {
   };
 
   return (
-    <section className="container max-w-4xl mx-auto p-4 bg-primary-pink">
+    <section className="container max-w-4xl mx-auto p-4">
       {/* Header */}
       {data.heading && (
         <div className="mb-8">
