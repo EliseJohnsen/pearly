@@ -39,8 +39,14 @@ export default function ProductCarousel({ heading, products, viewMoreLink }: Pro
 
   useEffect(() => {
     const updateArrowTop = () => {
+      const container = scrollRef.current?.parentElement as HTMLElement
       const card = scrollRef.current?.querySelector('[class*="flex-shrink-0"]') as HTMLElement
-      if (card) setArrowTop(card.offsetWidth * 4/3 / 2)
+      if (!card || !container) return
+      const imgContainer = card.querySelector('img')?.parentElement as HTMLElement
+      if (!imgContainer) return
+      const containerTop = container.getBoundingClientRect().top
+      const imgRect = imgContainer.getBoundingClientRect()
+      setArrowTop(imgRect.top - containerTop + imgRect.height / 2)
     }
     updateArrowTop()
     window.addEventListener('resize', updateArrowTop)
@@ -66,7 +72,7 @@ export default function ProductCarousel({ heading, products, viewMoreLink }: Pro
 
   const scroll = (direction: 'left' | 'right') => {
     if (!scrollRef.current) return
-    const cardWidth = scrollRef.current.offsetWidth / 3
+    const cardWidth = scrollRef.current.offsetWidth / 4
     scrollRef.current.scrollBy({ left: direction === 'left' ? -cardWidth : cardWidth, behavior: 'smooth' })
   }
 
@@ -103,13 +109,13 @@ export default function ProductCarousel({ heading, products, viewMoreLink }: Pro
           {products.map((product) => (
             <div
               key={product._id}
-              className="flex-shrink-0 w-[58vw] md:w-[calc(33.33%-1rem)] snap-start"
+              className="flex-shrink-0 w-[58vw] md:w-[calc(25%-1.125rem)] snap-start"
             >
               <ProductCard product={product} />
             </div>
           ))}
           {viewMoreLink?.href && (
-            <div className="flex-shrink-0 w-[65vw] md:w-[calc(33.33%-1rem)] snap-start rounded-lg p-4">
+            <div className="flex-shrink-0 w-[65vw] md:w-[calc(25%-1.125rem)] snap-start">
               <Link
                 href={viewMoreLink.href}
                 className="flex flex-col items-center justify-center aspect-[3/4] bg-primary-pink rounded-lg hover:opacity-80 transition-all text-dark-purple gap-3 group"
