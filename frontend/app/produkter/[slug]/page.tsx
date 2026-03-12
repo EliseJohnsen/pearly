@@ -121,6 +121,8 @@ export default function ProductDetailPage({
   const bytteOgReturText = useUIString("bytte_og_retur_tekst");
   const leveringHeader = useUIString("levering_header");
   const leveringText = useUIString("levering_tekst");
+  const perlebrettHeader = useUIString("perlebrett_header");
+  const perlebrettText = useUIString("perlebrett_tekst");
   const innholdHeader = useUIString("innhold_header");
   const innholdText = useUIString("innhold_tekst");
   const dimensjonText = useUIStringWithVars("dimensjon_tekst", {
@@ -512,8 +514,8 @@ export default function ProductDetailPage({
               )}
 
             </CollapsableCard>
-            <CollapsableCard header={<div className="flex items-center gap-4"><PerlebrettIcon className="w-6 h-6 text-dark-purple flex-shrink-0" /><h3 className="text-left text-xl font-medium">Perlebrett</h3></div>} defaultExpanded={false} className="border-t border-purple">
-              For å perle våre mønstre trenger du brett i riktig størrelse som kan pusles sammen til én stor flate. Brettene er gjennomsiktige slik at du kan plassere dem oppå mønsteret. Du kan ikke kjøpe flere brett fra oss enn det motivet tilsier. Brettene kan brukes igjen og igjen til flere motiver.
+            <CollapsableCard header={<div className="flex items-center gap-4"><PerlebrettIcon className="w-6 h-6 text-dark-purple flex-shrink-0" /><h3 className="text-left text-xl font-medium">{perlebrettHeader}</h3></div>} defaultExpanded={false} className="border-t border-purple">
+              {perlebrettText}
             </CollapsableCard>
             <CollapsableCard header={<div className="flex items-center gap-4"><GiftIcon className="w-6 h-6 text-dark-purple flex-shrink-0" /><h3 className="text-left text-xl font-medium">{leveringHeader}</h3></div>} defaultExpanded={false} className="border-t border-purple">
               {leveringText}
