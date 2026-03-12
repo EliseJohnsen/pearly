@@ -61,11 +61,14 @@ export default function VelgStorrelsePage() {
   const [error, setError] = useState<string | null>(null);
   const [loadingMockups, setLoadingMockups] = useState<Set<string>>(new Set());
   const [hoveredPattern, setHoveredPattern] = useState<string | null>(null);
+  const [showGhostCards, setShowGhostCards] = useState(false);
+  const [loadingStage, setLoadingStage] = useState<'ai-generation' | 'pattern-generation'>('ai-generation');
   const chooseSizeHeader = useUIString("velg_storrelse_header");
   const chooseSizeText = useUIString("velg_storrelse_tekst");
   const startOverHeader = useUIString("start_paa_nytt_header");
   const startOverText = useUIString("start_paa_nytt_tekst");
   const startOverButtonLabel = useUIString("start_paa_nytt_knapp");
+  const generate_pattern_description = useUIString("hama_generate_pattern_description");
 
   const fetchCustomKits = async () => {
     try {
@@ -106,6 +109,27 @@ export default function VelgStorrelsePage() {
   const generatePatterns = async (data: PatternFlowData) => {
     setIsLoading(true);
     setError(null);
+    setShowGhostCards(false);
+
+    // Set initial loading stage based on style
+    if (data.style === 'ai-style') {
+      setLoadingStage('ai-generation');
+    } else {
+      setLoadingStage('pattern-generation');
+    }
+
+    // Show ghost cards after 8 seconds
+    const ghostCardTimer = setTimeout(() => {
+      setShowGhostCards(true);
+    }, 9000);
+
+    // For AI style, transition to pattern generation stage after 3 seconds
+    let stageTimer: NodeJS.Timeout | null = null;
+    if (data.style === 'ai-style') {
+      stageTimer = setTimeout(() => {
+        setLoadingStage('pattern-generation');
+      }, 5000);
+    }
 
     try {
       const response = await fetch(`${API_URL}/api/patterns/generate-three-sizes`, {
@@ -132,7 +156,10 @@ export default function VelgStorrelsePage() {
       console.error("Error generating patterns:", err);
       setError("Kunne ikke generere perlemønstre. Vennligst prøv igjen.");
     } finally {
+      clearTimeout(ghostCardTimer);
+      if (stageTimer) clearTimeout(stageTimer);
       setIsLoading(false);
+      setShowGhostCards(false);
     }
   };
 
@@ -276,11 +303,49 @@ export default function VelgStorrelsePage() {
         <div className="max-w-4xl mx-auto px-4 pb-12">
 
           {isLoading && (
-            <div className="flex flex-col items-center justify-center py-16">
-              <LoadingSpinner
-                loadingMessage="Genererer dine perlemønster..."
-                description="Dette tar ca. 10-15 sekunder"></LoadingSpinner>
-            </div>
+            <>
+              {!showGhostCards ? (
+                <div className="flex flex-col items-center justify-center py-16">
+                  <LoadingSpinner
+                    loadingMessage={
+                      loadingStage === 'ai-generation'
+                        ? "Genererer AI-stilisert bilde..."
+                        : "Genererer dine perlemønster..."
+                    }
+                    description={
+                      loadingStage === 'ai-generation'
+                        ? "Vi lager et kunstnerisk bilde av motivet ditt"
+                        : generate_pattern_description || ""
+                    }
+                  />
+                </div>
+              ) : (
+                <div className="space-y-8">
+                  <div className="text-center mb-8">
+                    <h1 className="text-3xl font-bold text-[#6B4E71] mb-3">
+                      {chooseSizeHeader}
+                    </h1>
+                    <p className="text-[#6B4E71] text-base">
+                      {chooseSizeText}
+                    </p>
+                  </div>
+                  <div className="flex flex-col-reverse md:grid md:grid-cols-2 gap-6 mb-8">
+                    {['small', 'large'].map((size) => (
+                      <div
+                        key={size}
+                        className="rounded-lg p-4 border-2 border-[#C4B5C7] bg-white animate-pulse"
+                      >
+                        <div className="aspect-square bg-primary-pink/30 rounded mb-2"></div>
+                        <div className="py-2">
+                          <div className="h-6 bg-[#C4B5C7]/30 rounded w-2/3 mb-2"></div>
+                          <div className="h-5 bg-[#C4B5C7]/20 rounded w-1/2"></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
           {error && (

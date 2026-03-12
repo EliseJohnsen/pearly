@@ -14,7 +14,7 @@
 
   /* Primærfarger */
   --primary: #F05A41;
-  --primary-hover: #1d4ed8;
+  --primary-hover: color-mix(in srgb, var(--primary) 80%, white);
   --primary-light: #EECED5;
   --primary-dark: #1e3a8a;
   --primary-pink: #FBE7F5;

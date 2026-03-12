@@ -1,6 +1,7 @@
 "use client";
 
 import { CheckIcon } from "@heroicons/react/24/solid";
+import Link from "next/link";
 
 interface Step {
   id: string;
@@ -28,8 +29,12 @@ export default function PatternFlowStepper({ currentStep }: PatternFlowStepperPr
           const isCurrent = index === currentStep;
           const isLastStep = index === steps.length - 1;
 
-          return (
-            <div key={step.id} className="flex flex-col items-center relative flex-1">
+          // Determine if this step should be clickable
+          // Steps 1 and 2 (Bilde and Stil) link to /last-opp-bilde
+          // Steps 3 and 4 (Størrelse and Bestill) are not clickable
+          const isClickable = index <= 1;
+          const stepContent = (
+            <>
               {/* Circle */}
               <div
                 className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors flex-shrink-0 relative z-10 ${
@@ -59,6 +64,21 @@ export default function PatternFlowStepper({ currentStep }: PatternFlowStepperPr
               >
                 {step.label}
               </span>
+            </>
+          );
+
+          return (
+            <div key={step.id} className="flex flex-col items-center relative flex-1">
+              {isClickable ? (
+                <Link
+                  href="/last-opp-bilde"
+                  className="flex flex-col items-center cursor-pointer"
+                >
+                  {stepContent}
+                </Link>
+              ) : (
+                stepContent
+              )}
             </div>
           );
         })}
