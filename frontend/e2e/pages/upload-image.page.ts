@@ -15,6 +15,7 @@ export class UploadImagePage {
   readonly aspectRatioButtons: Locator;
   readonly cropperModal: Locator;
   readonly applyCropButton: Locator;
+  readonly cancelCropButton: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -27,7 +28,9 @@ export class UploadImagePage {
     this.aiStyleButton = page.getByRole('button').filter({ hasText: /wpap|ai/i });
     this.aspectRatioButtons = page.getByRole('button').filter({ hasText: /3:4|4:3|1:1/ });
     this.cropperModal = page.locator('[role="dialog"][aria-modal="true"]');
-    this.applyCropButton = page.getByRole('button').filter({ hasText: /bruk beskjæring|apply crop/i });
+    // Find the apply crop button - it's the first button in the button group with purple background
+    this.applyCropButton = this.cropperModal.locator('button').filter({ hasText: /velg utsnitt|bruk beskjæring|apply crop|select crop/i });
+    this.cancelCropButton = this.cropperModal.locator('button').filter({ hasText: /avbryt|cancel/i });
   }
 
   /**
