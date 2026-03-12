@@ -78,7 +78,10 @@ interface Product {
   images?: ProductImage[];
   image?: ProductImage;
   variants?: ProductVariant[];
-  recommendedAddOns?: Product[];
+  recommendedAddOns?: {
+    heading?: string;
+    products?: Product[];
+  };
   requiresParent?: boolean;
   seo?: {
     metaTitle?: string;
@@ -527,11 +530,11 @@ export default function ProductDetailPage({
         </div>
 
         {/* Recommended Add-ons Section */}
-        {product.recommendedAddOns && product.recommendedAddOns.length > 0 && (
+        {product.recommendedAddOns?.products && product.recommendedAddOns.products.length > 0 && (
           <div className="mt-8">
             <ProductCarousel
-              heading="Har du sjekket ut disse?"
-              products={product.recommendedAddOns}
+              heading={product.recommendedAddOns.heading}
+              products={product.recommendedAddOns.products}
             />
           </div>
         )}

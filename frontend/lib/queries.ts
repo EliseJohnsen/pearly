@@ -141,21 +141,24 @@ export const productQuery = groq`*[_type == "products" && slug.current == $slug]
   image{asset->{_id,url,metadata{lqip,dimensions{width,height}}},alt},
   price,
   originalPrice,
-  "recommendedAddOns": recommendedAddOns[]->{
-    _id,
-    title,
-    slug,
-    description,
-    price,
-    originalPrice,
-    currency,
-    productType,
-    status,
-    requiresParent,
-    "images": images[]{
-      asset->{_id, url, metadata{lqip, dimensions{width, height}}},
-      alt,
-      isPrimary
+  "recommendedAddOns": {
+    "heading": recommendedAddOns.heading,
+    "products": recommendedAddOns.products[]->{
+      _id,
+      title,
+      slug,
+      description,
+      price,
+      originalPrice,
+      currency,
+      productType,
+      status,
+      requiresParent,
+      "images": images[]{
+        asset->{_id, url, metadata{lqip, dimensions{width, height}}},
+        alt,
+        isPrimary
+      }
     }
   },
   seo{
