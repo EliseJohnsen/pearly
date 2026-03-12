@@ -14,7 +14,7 @@ export default function CollapsableCard({
   header,
   children,
   defaultExpanded = false,
-  className = "border-purple",
+  className = "border-pink-100",
 }: CollapsableCardProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 

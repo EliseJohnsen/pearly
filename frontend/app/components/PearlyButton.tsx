@@ -25,20 +25,20 @@ export default function PearlyButton({
   const getSkinClasses = (skin: string) => {
     switch (skin) {
       case 'primary':
-        return 'bg-primary text-white hover:bg-primary-hover border-primary';
+        return 'bg-dark-purple text-white enabled:hover:bg-purple-extra-dark border-dark-purple';
       case 'secondary':
-        return 'bg-primary-dark-pink text-dark-purple hover:bg-primary-light border-primary-dark-pink';
+        return 'bg-primary-dark-pink text-dark-purple enabled:hover:bg-primary-light border-primary-dark-pink';
       case 'success':
-        return 'bg-success text-white hover:bg-success-hover border-success';
+        return 'bg-success text-white border-success';
       case 'danger':
-        return 'bg-primary-red text-white hover:opacity-90 border-primary-red';
+        return 'bg-primary-red text-white enabled:hover:bg-red-dark border-primary-red';
       case 'outline':
-        return 'bg-transparent border-dark-purple text-dark-purple hover:bg-primary-dark-pink';
+        return 'bg-transparent border-dark-purple text-dark-purple enabled:hover:bg-disabled';
       case 'ghost':
-        return 'bg-transparent border-transparent text-dark-purple hover:bg-primary-light';
+        return 'bg-transparent border-transparent text-dark-purple enabled:hover:bg-primary-light';
       case 'default':
       default:
-        return 'bg-background-secondary border-default text-app-primary hover:bg-primary-light';
+        return 'bg-background-secondary border-default text-app-primary enabled:hover:bg-primary-light';
     }
   };
 

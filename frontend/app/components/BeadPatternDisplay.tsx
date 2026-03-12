@@ -325,7 +325,7 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
             <button
               onClick={handleDownloadPDF}
               disabled={downloadingPDF}
-              className="flex items-center gap-2 px-4 py-2 bg-purple text-white hover:bg-primary-dark-pink rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-2 bg-purple text-white enabled:hover:bg-dark-purple rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ArrowDownTrayIcon className="w-5 h-5" />
               <span>{downloadingPDF ? "Genererer PDF..." : "Last ned PDF"}</span>
@@ -334,7 +334,7 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
 
             <button
               onClick={() => setShowColorSwap(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-dark-purple text-white hover:bg-purple rounded-lg font-semibold transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-dark-purple text-white enabled:hover:bg-purple-extra-dark rounded-lg font-semibold transition-colors"
             >
               <ArrowsRightLeftIcon className="w-5 h-5" />
               <span>Bytt farger</span>
@@ -342,7 +342,7 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
 
             <button
               onClick={() => setShowProductModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark-pink text-white rounded-lg font-semibold transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-lg font-semibold transition-colors"
             >
               <ShoppingBagIcon className="w-5 h-5" />
               <span>Opprett produkt</span>
@@ -366,7 +366,7 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
               <button
                 onClick={handleSaveChanges}
                 disabled={isSaving}
-                className="px-4 py-2 bg-success text-white rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-success text-white rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed enabled:hover:bg-green-dark"
               >
                 {isSaving ? "Lagrer..." : "Lagre endringer"}
               </button>

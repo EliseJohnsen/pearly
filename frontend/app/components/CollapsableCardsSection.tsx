@@ -60,9 +60,9 @@ export default function CollapsableCardsSection({
           // All items except first get top border, last item also gets bottom border
           let borderClass = "";
           if (!isFirst) {
-            borderClass = isLast ? "border-y border-purple" : "border-t border-purple";
+            borderClass = isLast ? "border-y border-pink-100" : "border-t border-pink-100";
           } else if (isLast) {
-            borderClass = "border-b border-purple";
+            borderClass = "border-b border-pink-100";
           }
 
           return (
