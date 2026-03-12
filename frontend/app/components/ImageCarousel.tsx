@@ -68,8 +68,8 @@ export default function ImageCarousel({ data }: ImageCarouselProps) {
   if (data.isActive === false) return null;
 
   const aspectRatio = data.aspectRatio || "square";
-  const aspectClass = aspectRatio === "portrait" ? "aspect-[3/4]" : "aspect-[4/3]";
-  const objectFit = aspectRatio === "portrait" ? "object-contain" : "object-cover";
+  const aspectClass = aspectRatio === "portrait" ? "aspect-[3/4]" : "aspect-square";
+  const objectFit = "object-contain";
 
   // Helper function to check if image is base64 or direct URL
   const isBase64OrDirectUrl = (url: string) => {
@@ -104,38 +104,38 @@ export default function ImageCarousel({ data }: ImageCarouselProps) {
 
       {/* Carousel */}
       <div className="relative mx-auto">
-        {/* Main Image */}
-        <div className={`relative ${aspectClass} bg-pink-100 rounded-md overflow-hidden`}>
-          {data.images.map((image, index) => (
-            <div
-              key={image.asset._id}
-              className={`absolute inset-0 transition-opacity duration-500 ${
-                index === currentIndex ? "opacity-100" : "opacity-0"
-              }`}
-            >
-              <Image
-                src={getImageUrl(image, 1200)}
-                alt={image.alt}
-                fill
-                className={objectFit}
-                priority={index === 0}
-                placeholder={image.asset.metadata?.lqip ? "blur" : "empty"}
-                blurDataURL={image.asset.metadata?.lqip}
-              />
-            </div>
-          ))}
-
-          {/* Navigation Arrows */}
+        {/* Main Image + Navigation Arrows */}
+        <div className="relative">
+          <div className={`${aspectClass} bg-pink-100 rounded-md overflow-hidden`}>
+            {data.images.map((image, index) => (
+              <div
+                key={image.asset._id}
+                className={`absolute inset-[7.5%] transition-opacity duration-500 ${
+                  index === currentIndex ? "opacity-100" : "opacity-0"
+                }`}
+              >
+                <Image
+                  src={getImageUrl(image, 1200)}
+                  alt={image.alt}
+                  fill
+                  className={`${objectFit} drop-shadow-lg`}
+                  priority={index === 0}
+                  placeholder={image.asset.metadata?.lqip ? "blur" : "empty"}
+                  blurDataURL={image.asset.metadata?.lqip}
+                />
+              </div>
+            ))}
+          </div>
           <button
             onClick={goToPrevious}
-            className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors z-10"
+            className="absolute -left-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors z-10"
             aria-label="Forrige bilde"
           >
             <ChevronLeftIcon className="w-6 h-6 text-gray-900" />
           </button>
           <button
             onClick={goToNext}
-            className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors z-10"
+            className="absolute -right-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors z-10"
             aria-label="Neste bilde"
           >
             <ChevronRightIcon className="w-6 h-6 text-gray-900" />
@@ -150,7 +150,7 @@ export default function ImageCarousel({ data }: ImageCarouselProps) {
               onClick={() => goToSlide(index)}
               className={`relative flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-md overflow-hidden transition-all ${
                 index === currentIndex
-                  ? "ring-4 ring-purple-600 opacity-100"
+                  ? "opacity-100"
                   : "opacity-60 hover:opacity-80"
               }`}
               aria-label={`Gå til bilde ${index + 1}`}

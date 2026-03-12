@@ -360,16 +360,16 @@ export default function ProductDetailPage({
   return (
     <div className="min-h-screen bg-[var(--background)]">
       <Header />
-      <main className="max-w-7xl mx-auto px-4 py-12 min-h-screen">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+      <main className="max-w-6xl mx-auto px-4 py-12 min-h-screen">
+        <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-12">
           {/* Image Gallery */}
-          <div className="space-y-4">
+          <div className="space-y-4 md:sticky md:top-4 md:self-start">
             {carouselImages.length > 0 && (
               <ImageCarousel
                 data={{
                   images: carouselImages,
                   autoRotate: false,
-                  aspectRatio: "portrait",
+                  aspectRatio: "square",
                 }}
               />
             )}
