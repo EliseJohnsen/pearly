@@ -160,7 +160,7 @@ export default function PatternDetailPage() {
         </div>
 
         <CollapsableCard header="Produkter knyttet til dette mønsteret">
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 gap-2 bg-primary-pink">
             {products?.map((product: any) => (
               <a
                   key={product._id}
@@ -203,7 +203,7 @@ export default function PatternDetailPage() {
           />
         </CollapsableCard>
 
-        <CollapsableCard header="Farger du trenger">
+        <CollapsableCard header="Farger du trenger" className="bg-white">
           <div>
             {pattern!.colors_used
               .slice()
@@ -239,13 +239,13 @@ export default function PatternDetailPage() {
                       <p className="text-gray-900 truncate">
                         {color.code}
                       </p>
-                      <p className="text-bold text-gray-900">
+                      <p className="font-bold">
                         {getBeadWeight(color.count)} gram
                       </p>
-                      <p className="text-medium text-gray-500">
+                      <p>
                         {color.name}
                       </p>
-                      <p className="text-medium text-gray-600">
+                      <p>
                         {color.count} perler
                       </p>
                     </div>

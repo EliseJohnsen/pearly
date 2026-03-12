@@ -193,7 +193,7 @@ const ColorSwapModal: React.FC<ColorSwapModalProps> = ({
                 return (
                   <button
                     key={`target-${color.code}`}
-                    onClick={() => setTargetColor(colorValue)}
+                    onClick={() => setTargetColor(colorCode)}
                     className={`
                       flex flex-col items-center p-2 rounded-lg border-2 transition-all
                       ${

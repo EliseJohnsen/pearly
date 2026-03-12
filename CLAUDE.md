@@ -114,6 +114,214 @@ ngrok http 8000
 
 **Note:** ngrok URLs change on each restart unless you have a paid account with static domains.
 
+## Git Workflow
+
+This project uses a feature branch workflow with pull requests.
+
+**Repository:** <https://github.com/EliseJohnsen/pearly>
+
+### Branch Naming
+- `main` - Production branch (deployed to Vercel/Railway)
+- `dev` - Development branch (PRs should target this branch)
+- `feature/description` - New features (e.g., `feature/dark-mode`)
+- `bugfix/description` - Bug fixes (e.g., `bugfix/cart-total`)
+- `design/description` - Design/UI changes (e.g., `design/update-footer`)
+
+### Basic Workflow
+
+1. **Check current branch and status:**
+   ```bash
+   git status
+   git branch
+   ```
+
+2. **Create a new branch from dev:**
+   ```bash
+   git checkout dev            # Switch to dev branch
+   git pull origin dev         # Get latest changes
+   git checkout -b design/my-changes  # Create and switch to new branch
+   ```
+
+3. **Make your changes:**
+   - Edit files in VS Code
+   - Save your changes
+
+4. **Check what changed:**
+   ```bash
+   git status                  # See which files changed
+   git diff                    # See detailed changes
+   ```
+
+5. **Commit your changes:**
+   ```bash
+   git add .                   # Stage all changes
+   git commit -m "Brief description of changes"
+   ```
+
+6. **Push to GitHub:**
+   ```bash
+   git push origin design/my-changes
+   ```
+
+7. **Create a Pull Request:**
+   - Go to <https://github.com/EliseJohnsen/pearly>
+   - Click "Compare & pull request" button
+   - **Important:** Set base branch to `dev` (not `main`)
+   - Add description of changes
+   - Request review
+   - Wait for approval and merge
+
+### Useful Git Commands
+
+```bash
+# See all branches
+git branch -a
+
+# Switch between branches
+git checkout branch-name
+
+# Discard changes to a file
+git checkout -- filename
+
+# Discard all uncommitted changes (careful!)
+git reset --hard
+
+# See commit history
+git log --oneline
+
+# Update your branch with latest dev
+git checkout dev
+git pull origin dev
+git checkout your-branch
+git merge dev
+```
+
+### Tips
+- **Commit often** with clear messages
+- **Pull from dev** regularly to avoid conflicts
+- **Always create PRs against dev branch**, not main
+- **Test your changes** before creating PR
+- **Ask for help** if you get merge conflicts
+
+## For Designers: Frontend-Only Development
+
+If you're only working on frontend UI/styling, you can run the frontend without the backend.
+
+### Quick Start (Frontend Only)
+
+1. **Open VS Code terminal** (Terminal → New Terminal)
+
+2. **Navigate to frontend folder:**
+   ```bash
+   cd frontend
+   ```
+
+3. **Install dependencies** (first time only):
+   ```bash
+   npm install
+   ```
+
+4. **Start the development server:**
+   ```bash
+   npm run dev
+   ```
+
+5. **Open browser:** http://localhost:3000
+
+The app will show errors for backend API calls, but you can still see and test UI changes. Changes will auto-reload when you save files.
+
+### Making Design Changes
+
+**Files you'll commonly edit:**
+- `frontend/app/components/*.tsx` - React components
+- `frontend/app/globals.css` - Global styles and color system
+- `frontend/app/**/page.tsx` - Page components
+- `frontend/tailwind.config.ts` - Tailwind configuration (rarely needed)
+
+**Styling with Tailwind CSS:**
+- We use **Tailwind CSS 4** - a utility-first CSS framework
+- Add classes directly to HTML elements: `className="bg-primary text-white p-4"`
+- **Always use the color system** defined in [globals.css](frontend/app/globals.css)
+- **To change or add colors:** Edit the CSS custom properties in [globals.css](frontend/app/globals.css) (e.g., `--primary: #F05A41;`)
+- Common patterns:
+  - Spacing: `p-4`, `m-2`, `gap-4`, `space-y-2`
+  - Layout: `flex`, `grid`, `items-center`, `justify-between`
+  - Typography: `text-lg`, `font-bold`, `leading-tight`
+  - Responsive: `md:text-xl`, `lg:grid-cols-3`
+  - Hover: `hover:bg-primary-hover`, `hover:underline`
+
+**Example component edit:**
+```tsx
+// Before
+<button className="bg-blue-500 text-white">Click me</button>
+
+// After (using design system)
+<button className="bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary-hover transition-colors">
+  Click me
+</button>
+```
+
+### Workflow for Design Changes
+
+1. **Create a new branch:**
+   ```bash
+   git checkout dev
+   git pull origin dev
+   git checkout -b design/update-footer-styling
+   ```
+
+2. **Start frontend:**
+   ```bash
+   cd frontend
+   npm run dev
+   ```
+
+3. **Make changes in VS Code:**
+   - Edit component files
+   - Save to see changes instantly in browser
+   - Use browser DevTools to inspect elements
+
+4. **Commit when done:**
+   ```bash
+   git add .
+   git commit -m "Update footer styling with new colors and spacing"
+   git push origin design/update-footer-styling
+   ```
+
+5. **Create Pull Request on GitHub**
+
+### Common Tasks
+
+**Add spacing:**
+```tsx
+<div className="p-4 space-y-2">  {/* padding + vertical spacing between children */}
+```
+
+**Center content:**
+```tsx
+<div className="flex items-center justify-center">
+```
+
+**Make responsive:**
+```tsx
+<div className="text-sm md:text-base lg:text-lg">  {/* Smaller on mobile, larger on desktop */}
+```
+
+**Add hover effect:**
+```tsx
+<a className="text-primary hover:underline transition-all">
+```
+
+### Getting Help from Claude Code
+
+You can ask Claude Code to help you with:
+- "Update the button styling in [Footer.tsx](frontend/app/components/Footer.tsx) to use rounded corners and hover effect"
+- "Make the header responsive for mobile devices"
+- "Change the color of all links to use our primary color"
+- "Add more spacing between the product cards"
+
+Claude Code knows our design system and will use the correct Tailwind classes from [globals.css](frontend/app/globals.css).
+
 ## Backend Structure
 
 ```

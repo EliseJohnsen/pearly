@@ -6,6 +6,10 @@ for hex codes and color codes.
 """
 
 import pytest
+import json
+import tempfile
+import shutil
+from pathlib import Path
 from app.services.color_service import (
     get_perle_colors,
     code_to_hex,
@@ -13,8 +17,11 @@ from app.services.color_service import (
     get_color_by_code,
     build_color_lookup_maps,
     hex_to_rgb,
+    add_color_to_palette,
+    clear_color_cache,
     CODE_TO_COLOR_MAP,
     HEX_TO_COLOR_MAP,
+    PERLE_COLORS_FILEPATH,
 )
 
 
@@ -227,3 +234,129 @@ class TestColorService:
             # Should contain only valid hex characters
             hex_chars = set("0123456789ABCDEFabcdef")
             assert all(c in hex_chars for c in hex_val[1:]), f"Hex {hex_val} contains invalid characters"
+
+
+class TestAddColorToPalette:
+    """Test suite for add_color_to_palette function."""
+
+    def setup_method(self):
+        """Setup before each test - backup original colors file."""
+        self.backup_path = PERLE_COLORS_FILEPATH.with_suffix('.json.backup')
+        if PERLE_COLORS_FILEPATH.exists():
+            shutil.copy(PERLE_COLORS_FILEPATH, self.backup_path)
+        clear_color_cache()
+
+    def teardown_method(self):
+        """Cleanup after each test - restore original colors file."""
+        if self.backup_path.exists():
+            shutil.copy(self.backup_path, PERLE_COLORS_FILEPATH)
+            self.backup_path.unlink()
+        clear_color_cache()
+
+    def test_add_new_color_to_palette(self):
+        """Test adding a new color to the palette."""
+        test_hex = "#ABCDEF"
+
+        # Add the color
+        result = add_color_to_palette(test_hex)
+
+        assert result is not None
+        assert result["hex"] == test_hex
+        assert result["code"].startswith("9")  # Should be in 900+ range
+        assert "name" in result
+
+        # Verify it was written to file
+        with open(PERLE_COLORS_FILEPATH, 'r', encoding='utf-8') as f:
+            colors = json.load(f)
+
+        added_color = next((c for c in colors if c["hex"] == test_hex), None)
+        assert added_color is not None
+        assert added_color["code"] == result["code"]
+
+        # Verify it's accessible via lookup functions
+        clear_color_cache()
+        get_perle_colors()
+        assert hex_to_code(test_hex) == result["code"]
+        assert code_to_hex(result["code"]) == test_hex
+
+    def test_add_color_without_hash_prefix(self):
+        """Test adding color without # prefix."""
+        test_hex = "FEDCBA"
+
+        result = add_color_to_palette(test_hex)
+
+        assert result["hex"] == "#FEDCBA"  # Should normalize with #
+
+    def test_add_duplicate_color_returns_existing(self):
+        """Test that adding an existing color returns the existing entry."""
+        # Load colors and get an existing one
+        colors = get_perle_colors()
+        existing = colors[0]
+        existing_hex = existing["hex"]
+        existing_code = existing["code"]
+
+        # Try to add it again
+        result = add_color_to_palette(existing_hex)
+
+        assert result["code"] == existing_code
+        assert result["hex"] == existing_hex
+
+        # Verify no duplicate was added
+        with open(PERLE_COLORS_FILEPATH, 'r', encoding='utf-8') as f:
+            colors_after = json.load(f)
+
+        matching_colors = [c for c in colors_after if c["hex"].upper() == existing_hex.upper()]
+        assert len(matching_colors) == 1
+
+    def test_add_color_with_custom_name(self):
+        """Test adding color with custom name."""
+        test_hex = "#123456"
+        custom_name = "My Custom Color"
+
+        result = add_color_to_palette(test_hex, name=custom_name)
+
+        assert result["name"] == custom_name
+        assert result["hex"] == test_hex
+
+    def test_add_color_with_custom_code(self):
+        """Test adding color with custom code."""
+        test_hex = "#654321"
+        custom_code = "950"
+
+        result = add_color_to_palette(test_hex, code=custom_code)
+
+        assert result["code"] == custom_code
+        assert result["hex"] == test_hex
+
+    def test_sequential_code_assignment(self):
+        """Test that codes are assigned sequentially in 900+ range."""
+        # Add multiple colors
+        colors_to_add = ["#111111", "#222222", "#333333"]
+        added_codes = []
+
+        for hex_color in colors_to_add:
+            result = add_color_to_palette(hex_color)
+            added_codes.append(int(result["code"]))
+
+        # Codes should be in 900+ range
+        for code in added_codes:
+            assert code >= 900
+
+        # Codes should be unique
+        assert len(added_codes) == len(set(added_codes))
+
+    def test_add_color_clears_cache(self):
+        """Test that adding a color clears and reloads the cache."""
+        # Load initial colors
+        initial_colors = get_perle_colors()
+        initial_count = len(initial_colors)
+
+        # Add a new color
+        test_hex = "#AABBCC"
+        add_color_to_palette(test_hex)
+
+        # Get colors again - should be reloaded with new color
+        updated_colors = get_perle_colors()
+
+        assert len(updated_colors) == initial_count + 1
+        assert any(c["hex"] == test_hex for c in updated_colors)
