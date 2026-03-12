@@ -81,6 +81,7 @@ interface Product {
   recommendedAddOns?: {
     heading?: string;
     products?: Product[];
+    viewMoreLink?: { text?: string; href?: string };
   };
   requiresParent?: boolean;
   seo?: {
@@ -535,6 +536,7 @@ export default function ProductDetailPage({
             <ProductCarousel
               heading={product.recommendedAddOns.heading}
               products={product.recommendedAddOns.products}
+              viewMoreLink={product.recommendedAddOns.viewMoreLink}
             />
           </div>
         )}

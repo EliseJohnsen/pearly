@@ -118,10 +118,11 @@ export default function ProductCarousel({ heading, products, viewMoreLink }: Pro
             <div className="flex-shrink-0 w-[65vw] md:w-[calc(25%-1.125rem)] snap-start">
               <Link
                 href={viewMoreLink.href}
-                className="flex flex-col items-center justify-center aspect-[3/4] bg-primary-pink rounded-lg hover:opacity-80 transition-all text-dark-purple gap-3 group"
+                className="relative flex flex-col items-center justify-center aspect-[3/4] bg-primary-pink rounded-lg transition-all text-dark-purple gap-3 group overflow-hidden"
               >
-                <ArrowRightIcon className="w-8 h-8 group-hover:translate-x-1 transition-transform" />
-                <span className="text-lg font-semibold">{viewMoreLink.text || 'Vis flere'}</span>
+                <div className="absolute inset-0 bg-white/0 group-hover:bg-white/15 transition-colors" />
+                <ArrowRightIcon className="relative w-8 h-8 group-hover:translate-x-1 transition-transform" />
+                <span className="relative text-lg font-semibold">{viewMoreLink.text || 'Vis flere'}</span>
               </Link>
             </div>
           )}
