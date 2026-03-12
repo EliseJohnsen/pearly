@@ -58,7 +58,7 @@ export default function Header() {
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden -m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-primary-light"
+            className="md:hidden -m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-white"
           >
             <span className="sr-only">{openMainMenuText}</span>
             <span className="relative w-6 h-6">
@@ -104,7 +104,7 @@ export default function Header() {
           </div>
 
           {/* Shopping bag - mobile only, far right */}
-          <Link href="/handlekurv" className="md:hidden relative text-primary-light hover:text-white transition-colors">
+          <Link href="/handlekurv" className="md:hidden relative text-white transition-colors">
             <ShoppingBagIcon className="w-6 h-6" />
             {totalItems > 0 && (
               <span className="absolute -top-2 -right-2 bg-primary-red text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
