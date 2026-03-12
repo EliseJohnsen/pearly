@@ -13,6 +13,8 @@ export class UploadImagePage {
   readonly realisticStyleButton: Locator;
   readonly aiStyleButton: Locator;
   readonly aspectRatioButtons: Locator;
+  readonly cropperModal: Locator;
+  readonly applyCropButton: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -24,6 +26,8 @@ export class UploadImagePage {
     this.realisticStyleButton = page.getByRole('button').filter({ hasText: /realistisk/i });
     this.aiStyleButton = page.getByRole('button').filter({ hasText: /wpap|ai/i });
     this.aspectRatioButtons = page.getByRole('button').filter({ hasText: /3:4|4:3|1:1/ });
+    this.cropperModal = page.locator('[role="dialog"][aria-modal="true"]');
+    this.applyCropButton = page.getByRole('button').filter({ hasText: /bruk beskjæring|apply crop/i });
   }
 
   /**
@@ -52,7 +56,18 @@ export class UploadImagePage {
       mimeType: mimeType,
       buffer: buffer,
     });
-    await this.page.waitForTimeout(500);
+    // Wait for cropper modal to appear
+    await expect(this.cropperModal).toBeVisible({ timeout: 5000 });
+  }
+
+  /**
+   * Confirm crop in the cropper modal
+   */
+  async confirmCrop() {
+    await expect(this.applyCropButton).toBeVisible({ timeout: 5000 });
+    await this.applyCropButton.click();
+    // Wait for cropper to close
+    await expect(this.cropperModal).not.toBeVisible({ timeout: 5000 });
   }
 
   /**
@@ -66,8 +81,8 @@ export class UploadImagePage {
    * Verify style buttons are visible after image upload
    */
   async verifyStyleButtonsVisible() {
-    await expect(this.realisticStyleButton).toBeVisible();
-    await expect(this.aiStyleButton).toBeVisible();
+    await expect(this.realisticStyleButton).toBeVisible({ timeout: 5000 });
+    await expect(this.aiStyleButton).toBeVisible({ timeout: 5000 });
   }
 
   /**
@@ -96,6 +111,7 @@ export class UploadImagePage {
    */
   async completeUploadFlow(imageBuffer: Buffer, style: 'realistic' | 'ai-style') {
     await this.uploadImageBuffer(imageBuffer, 'test-image.jpg', 'image/jpeg');
+    await this.confirmCrop();
     await this.verifyImagePreviewVisible();
     await this.verifyStyleButtonsVisible();
 

@@ -39,47 +39,51 @@ test.describe('Custom Pattern Flow - Happy Path', () => {
     const testImageBuffer = getTestImageBuffer('jpeg');
     await uploadPage.uploadImageBuffer(testImageBuffer, 'test-image.jpg', 'image/jpeg');
 
-    // Step 3: Verify image preview
-    console.log('🖼️  Step 3: Verifying image preview');
+    // Step 3: Confirm crop
+    console.log('✂️  Step 3: Confirming crop');
+    await uploadPage.confirmCrop();
+
+    // Step 4: Verify image preview
+    console.log('🖼️  Step 4: Verifying image preview');
     await uploadPage.verifyImagePreviewVisible();
     await uploadPage.verifyStyleButtonsVisible();
 
-    // Step 4: Select realistic style
-    console.log('🎨 Step 4: Selecting realistic style');
+    // Step 5: Select realistic style
+    console.log('🎨 Step 5: Selecting realistic style');
     await uploadPage.selectRealisticStyle();
 
-    // Step 5: Wait for navigation to size selection
-    console.log('⏳ Step 5: Waiting for navigation to size selection');
+    // Step 6: Wait for navigation to size selection
+    console.log('⏳ Step 6: Waiting for navigation to size selection');
     await uploadPage.waitForNavigation();
     await expect(page).toHaveURL(/\/velg-storrelse/);
 
-    // Step 6: Wait for pattern generation
-    console.log('⏳ Step 6: Waiting for pattern generation');
+    // Step 7: Wait for pattern generation
+    console.log('⏳ Step 7: Waiting for pattern generation');
     await sizePage.waitForPatternGenerationComplete();
 
-    // Step 7: Verify patterns are displayed
-    console.log('✅ Step 7: Verifying patterns are displayed');
+    // Step 8: Verify patterns are displayed
+    console.log('✅ Step 8: Verifying patterns are displayed');
     await sizePage.verifyThreePatternsDisplayed();
     await sizePage.verifyPatternImageDisplayed('medium');
 
-    // Step 8: Select medium size
-    console.log('📏 Step 8: Selecting medium size');
+    // Step 9: Select medium size
+    console.log('📏 Step 9: Selecting medium size');
     await sizePage.selectSize('medium');
 
-    // Step 9: Wait for navigation to product page
-    console.log('⏳ Step 9: Waiting for product page');
+    // Step 10: Wait for navigation to product page
+    console.log('⏳ Step 10: Waiting for product page');
     await expect(page).toHaveURL(/\/produkter\/.*custom=true/);
 
-    // Step 10: Verify product page loaded
-    console.log('✅ Step 10: Verifying product page');
+    // Step 11: Verify product page loaded
+    console.log('✅ Step 11: Verifying product page');
     await productPage.waitForPageLoad();
 
-    // Step 11: Verify custom pattern is displayed
-    console.log('🖼️  Step 11: Verifying custom pattern displayed');
+    // Step 12: Verify custom pattern is displayed
+    console.log('🖼️  Step 12: Verifying custom pattern displayed');
     await productPage.verifyCustomPatternDisplayed();
 
-    // Step 12: Verify data is stored correctly
-    console.log('💾 Step 12: Verifying data storage');
+    // Step 13: Verify data is stored correctly
+    console.log('💾 Step 13: Verifying data storage');
     await productPage.verifyCustomPatternStored();
     await productPage.verifyCustomKitStored();
 
@@ -100,6 +104,7 @@ test.describe('Custom Pattern Flow - Happy Path', () => {
     await uploadPage.goto();
     const testImageBuffer = getTestImageBuffer('jpeg');
     await uploadPage.uploadImageBuffer(testImageBuffer, 'test-image.jpg', 'image/jpeg');
+    await uploadPage.confirmCrop();
 
     // Select AI style
     console.log('🎨 Selecting AI style');
@@ -144,6 +149,7 @@ test.describe('Custom Pattern Flow - Happy Path', () => {
       await uploadPage.goto();
       const testImageBuffer = getTestImageBuffer('jpeg');
       await uploadPage.uploadImageBuffer(testImageBuffer, 'test-image.jpg', 'image/jpeg');
+      await uploadPage.confirmCrop();
       await uploadPage.verifyStyleButtonsVisible();
       await uploadPage.selectRealisticStyle();
 
@@ -189,6 +195,7 @@ test.describe('Custom Pattern Flow - Happy Path', () => {
     await uploadPage.goto();
     const testImageBuffer = getTestImageBuffer('jpeg');
     await uploadPage.uploadImageBuffer(testImageBuffer, 'test-image.jpg', 'image/jpeg');
+    await uploadPage.confirmCrop();
     await uploadPage.verifyStyleButtonsVisible();
     await uploadPage.selectRealisticStyle();
 
@@ -220,6 +227,7 @@ test.describe('Custom Pattern Flow - Happy Path', () => {
     await uploadPage.goto();
     const testImageBuffer = getTestImageBuffer('jpeg');
     await uploadPage.uploadImageBuffer(testImageBuffer, 'test-image.jpg', 'image/jpeg');
+    await uploadPage.confirmCrop();
     await uploadPage.verifyStyleButtonsVisible();
 
     // Verify data stored
@@ -254,6 +262,7 @@ test.describe('Custom Pattern Flow - Happy Path', () => {
     await uploadPage.goto();
     const testImageBuffer = getTestImageBuffer('jpeg');
     await uploadPage.uploadImageBuffer(testImageBuffer, 'test-image.jpg', 'image/jpeg');
+    await uploadPage.confirmCrop();
     await uploadPage.verifyStyleButtonsVisible();
     await uploadPage.selectRealisticStyle();
 

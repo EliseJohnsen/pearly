@@ -29,6 +29,7 @@ test.describe('Custom Pattern Flow - Edge Cases', () => {
     await uploadPage.goto();
     const testImageBuffer = getTestImageBuffer('jpeg');
     await uploadPage.uploadImageBuffer(testImageBuffer, 'test-image.jpg', 'image/jpeg');
+    await uploadPage.confirmCrop();
     await uploadPage.verifyStyleButtonsVisible();
     await uploadPage.selectRealisticStyle();
 
@@ -76,6 +77,7 @@ test.describe('Custom Pattern Flow - Edge Cases', () => {
     await uploadPage.goto();
     const testImageBuffer = getTestImageBuffer('jpeg');
     await uploadPage.uploadImageBuffer(testImageBuffer, 'test-image.jpg', 'image/jpeg');
+    await uploadPage.confirmCrop();
     await uploadPage.verifyStyleButtonsVisible();
     await uploadPage.selectRealisticStyle();
 
@@ -119,6 +121,7 @@ test.describe('Custom Pattern Flow - Edge Cases', () => {
     await uploadPage.goto();
     const testImageBuffer = getTestImageBuffer('jpeg');
     await uploadPage.uploadImageBuffer(testImageBuffer, 'test-image.jpg', 'image/jpeg');
+    await uploadPage.confirmCrop();
     await uploadPage.verifyStyleButtonsVisible();
     await uploadPage.selectRealisticStyle();
 
@@ -159,6 +162,7 @@ test.describe('Custom Pattern Flow - Edge Cases', () => {
     await uploadPage.goto();
     const testImageBuffer = getTestImageBuffer('jpeg');
     await uploadPage.uploadImageBuffer(testImageBuffer, 'test-image.jpg', 'image/jpeg');
+    await uploadPage.confirmCrop();
     await uploadPage.verifyStyleButtonsVisible();
     await uploadPage.selectRealisticStyle();
 
@@ -193,6 +197,7 @@ test.describe('Custom Pattern Flow - Edge Cases', () => {
     await uploadPage.goto();
     const testImageBuffer = getTestImageBuffer('jpeg');
     await uploadPage.uploadImageBuffer(testImageBuffer, 'test-image.jpg', 'image/jpeg');
+    await uploadPage.confirmCrop();
     await uploadPage.verifyStyleButtonsVisible();
     await uploadPage.selectRealisticStyle();
 
@@ -267,6 +272,7 @@ test.describe('Custom Pattern Flow - Edge Cases', () => {
     await uploadPage.goto();
     const testImageBuffer = getTestImageBuffer('jpeg');
     await uploadPage.uploadImageBuffer(testImageBuffer, 'test-image.jpg', 'image/jpeg');
+    await uploadPage.confirmCrop();
     await uploadPage.verifyStyleButtonsVisible();
     await uploadPage.selectRealisticStyle();
 
@@ -307,6 +313,7 @@ test.describe('Custom Pattern Flow - Edge Cases', () => {
     await uploadPage.goto();
     const testImageBuffer = getTestImageBuffer('jpeg');
     await uploadPage.uploadImageBuffer(testImageBuffer, 'test-image.jpg', 'image/jpeg');
+    await uploadPage.confirmCrop();
     await uploadPage.verifyStyleButtonsVisible();
     await uploadPage.selectRealisticStyle();
 
