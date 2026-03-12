@@ -33,7 +33,7 @@ export default function ProductCarousel({ heading, products, viewMoreLink }: Pro
 
   return (
     <section className="py-12">
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="max-w-6xl mx-auto px-4">
         {heading && (
           <h2 className="text-2xl font-semibold text-dark-purple mb-6">
             {heading}
@@ -43,7 +43,7 @@ export default function ProductCarousel({ heading, products, viewMoreLink }: Pro
           {products.map((product) => (
             <div
               key={product._id}
-              className="flex-shrink-0 w-[65vw] md:w-[calc(33.33%-1rem)] snap-start"
+              className="flex-shrink-0 w-[58vw] md:w-[calc(33.33%-1rem)] snap-start"
             >
               <ProductCard product={product} />
             </div>
