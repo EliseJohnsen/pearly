@@ -11,12 +11,12 @@ export default function ProductSection({ data }: ProductSectionProps = {}) {
     <section className="py-12">
         <div className="max-w-7xl mx-auto px-4">
         {data.sectionTitle && (
-            <h2 className="text-4xl md:text-5xl font-semibold text-left text-dark-purple mb-4 pl-4">
+            <h2 className="text-4xl md:text-5xl font-semibold text-left text-dark-purple mb-4">
             {data.sectionTitle}
             </h2>
         )}
         {data.sectionSubtitle && (
-            <p className="text-left text-base text-gray-700 mb-8 max-w-xl pl-4">
+            <p className="text-left text-base text-gray-700 mb-8 max-w-xl">
             {data.sectionSubtitle}
             </p>
         )}
