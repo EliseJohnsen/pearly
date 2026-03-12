@@ -8,7 +8,7 @@
 
 :root {
   /* Bakgrunnsfarger */
-  --background: #F5EDE8;
+  --background: #FFFFFF;
   --background-secondary: #FDFBF9;
   --foreground: #111827;
 
@@ -24,6 +24,7 @@
   --primary-neon-green: #DEF46B;
   
   --lavender-pink: #F9D1EE;
+  --footer-text: #F2D4E8;
   --purple: #BA7EB9;
   --dark-purple: #673154;
 
@@ -67,6 +68,9 @@
   /* Fonter */
   --font-sans: var(--font-quicksand);
 
+  /* Egendefinerte brekkpunkter */
+  --breakpoint-tablet: 933px;
+
   /* Bakgrunnsfarger - bruk som bg-background, bg-card osv. */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -85,6 +89,7 @@
   --color-purple: var(--purple);
   --color-dark-purple: var(--dark-purple);
   --color-lavender-pink: var(--lavender-pink);
+  --color-footer-text: var(--footer-text);
 
   /* Sekundærfarger - bruk som bg-success, hover:bg-success-hover */
   --color-success: var(--success);
@@ -101,8 +106,28 @@
   --color-border-subtle: var(--border-subtle);
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-quicksand), sans-serif;
 }
+
+/* Hide scrollbar but keep functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+

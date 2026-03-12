@@ -144,6 +144,7 @@ export default defineType({
         {type: 'content'},
         {type: 'imageCarousel'},
         {type: 'collapsableCards'},
+        {type: 'productCarousel'},
         {
           type: 'object',
           name: 'productsSection',

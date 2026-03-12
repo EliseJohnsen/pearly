@@ -73,12 +73,14 @@ export default function ProductCard({
   const cardContent = (
     <div className="flex flex-col" style={{ aspectRatio: '1 / 1.3' }}>
       {cardImageUrl && (
-        <div className="flex-1 overflow-hidden bg-primary-pink relative flex items-center justify-center py-8 px-4">
-          <img
-            src={cardImageUrl}
-            alt={cardImageAlt || cardTitle || 'Product image'}
-            className="max-w-full max-h-full object-contain"
-          />
+        <div className="overflow-hidden bg-primary-pink relative aspect-[3/4]">
+          <div className="absolute inset-0">
+            <img
+              src={cardImageUrl}
+              alt={cardImageAlt || cardTitle || 'Product image'}
+              className="w-full h-full object-cover"
+            />
+          </div>
           {imageOverlay}
         </div>
       )}

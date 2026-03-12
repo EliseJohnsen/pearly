@@ -183,13 +183,7 @@ export default defineType({
     defineField({
       name: 'recommendedAddOns',
       title: 'Relaterte produkter',
-      type: 'array',
-      of: [
-        {
-          type: 'reference',
-          to: [{type: 'products'}],
-        },
-      ],
+      type: 'productCarousel',
       description: 'Produkter som anbefales sammen med dette produktet',
     }),
     defineField({

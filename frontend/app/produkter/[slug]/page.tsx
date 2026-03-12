@@ -9,13 +9,15 @@ import Footer from "@/app/components/Footer";
 import { PortableText } from "@portabletext/react";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
 import { useCart } from "@/app/contexts/CartContext";
-import { CheckIcon, MinusIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { ArrowUturnLeftIcon, CheckIcon, GiftIcon, MinusIcon, PlusIcon, QuestionMarkCircleIcon, TrashIcon } from "@heroicons/react/24/outline";
 import VippsCheckoutButton, { OrderLine } from "@/app/components/VippsCheckoutButton";
 import CollapsableCard from "@/app/components/CollapsableCard";
+import PerlebrettIcon from "@/app/components/icons/PerlebrettIcon";
 import { useUIString, useUIStringWithVars } from "@/app/hooks/useSanityData";
 import ProductCard from "@/app/components/ProductCard";
 import { formatPrice } from "@/app/utils/priceFormatter";
 import ImageCarousel from "@/app/components/ImageCarousel";
+import ProductCarousel from '@/app/components/ProductCarousel'
 import PearlyButton from "@/app/components/PearlyButton";
 
 interface ProductVariant {
@@ -76,7 +78,10 @@ interface Product {
   images?: ProductImage[];
   image?: ProductImage;
   variants?: ProductVariant[];
-  recommendedAddOns?: Product[];
+  recommendedAddOns?: {
+    heading?: string;
+    products?: Product[];
+  };
   requiresParent?: boolean;
   seo?: {
     metaTitle?: string;
@@ -119,6 +124,8 @@ export default function ProductDetailPage({
   const bytteOgReturText = useUIString("bytte_og_retur_tekst");
   const leveringHeader = useUIString("levering_header");
   const leveringText = useUIString("levering_tekst");
+  const perlebrettHeader = useUIString("perlebrett_header");
+  const perlebrettText = useUIString("perlebrett_tekst");
   const innholdHeader = useUIString("innhold_header");
   const innholdText = useUIString("innhold_tekst");
   const dimensjonText = useUIStringWithVars("dimensjon_tekst", {
@@ -369,7 +376,7 @@ export default function ProductDetailPage({
 
           <div className="space-y-4">
             <div>
-              <h1 className="text-5xl text-dark-purple font-bold mb-2">{product.title}</h1>
+              <h1 className="text-5xl text-dark-purple font-semibold mb-2">{product.title}</h1>
             </div>
 
             {product.description && (
@@ -482,7 +489,7 @@ export default function ProductDetailPage({
               currency={product.currency}
             /> */}
 
-            <CollapsableCard header={innholdHeader} defaultExpanded={false} className="">
+            <CollapsableCard header={<div className="flex items-center gap-4"><QuestionMarkCircleIcon className="w-6 h-6 text-dark-purple flex-shrink-0" /><h3 className="text-left text-xl font-medium">{innholdHeader}</h3></div>} defaultExpanded={false} className="">
               {product.longDescription && (
                 <div className="pt-6">
                   <div className="prose prose-sm max-w-none text-gray-700">
@@ -510,26 +517,25 @@ export default function ProductDetailPage({
               )}
 
             </CollapsableCard>
-            <CollapsableCard header={leveringHeader} defaultExpanded={false} className="border-t border-purple">
+            <CollapsableCard header={<div className="flex items-center gap-4"><PerlebrettIcon className="w-6 h-6 text-dark-purple flex-shrink-0" /><h3 className="text-left text-xl font-medium">{perlebrettHeader}</h3></div>} defaultExpanded={false} className="border-t border-purple">
+              {perlebrettText}
+            </CollapsableCard>
+            <CollapsableCard header={<div className="flex items-center gap-4"><GiftIcon className="w-6 h-6 text-dark-purple flex-shrink-0" /><h3 className="text-left text-xl font-medium">{leveringHeader}</h3></div>} defaultExpanded={false} className="border-t border-purple">
               {leveringText}
             </CollapsableCard>
-            <CollapsableCard header={bytteOgReturHeader} defaultExpanded={false} className="border-y border-purple">
+            <CollapsableCard header={<div className="flex items-center gap-4"><ArrowUturnLeftIcon className="w-6 h-6 text-dark-purple flex-shrink-0" /><h3 className="text-left text-xl font-medium">{bytteOgReturHeader}</h3></div>} defaultExpanded={false} className="border-y border-purple">
               {bytteOgReturText}
             </CollapsableCard>
           </div>
         </div>
 
         {/* Recommended Add-ons Section */}
-        {product.recommendedAddOns && product.recommendedAddOns.length > 0 && (
-          <div className="mt-16">
-            <h2 className="text-2xl font-bold mb-4 text-dark-purple">
-              Har du sjekket ut disse?
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {product.recommendedAddOns.map((addon) => (
-                <ProductCard key={addon._id} product={addon} />
-              ))}
-            </div>
+        {product.recommendedAddOns?.products && product.recommendedAddOns.products.length > 0 && (
+          <div className="mt-8">
+            <ProductCarousel
+              heading={product.recommendedAddOns.heading}
+              products={product.recommendedAddOns.products}
+            />
           </div>
         )}
       </main>
