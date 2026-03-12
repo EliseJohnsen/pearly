@@ -79,6 +79,7 @@ const pageQuery = groq`*[_type == "page" && slug.current == $slug][0]{
           isPrimary
         },
         category,
+        requiredBoards,
       },
       showFeaturedOnly
     },

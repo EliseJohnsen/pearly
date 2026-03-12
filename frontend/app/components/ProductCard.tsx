@@ -20,6 +20,7 @@ interface ProductCardProps {
     images?: ProductImage[];
     image?: ProductImage;
     price?: number;
+    requiredBoards?: number;
   };
   // Pattern-specific props
   title?: string;
@@ -64,42 +65,43 @@ export default function ProductCard({
   const cardHref = isProductCard ? `/produkter/${product.slug.current}` : href;
 
   // Base classes
-  const baseClasses = "rounded-lg p-4 transition-all text-left hover:z-10 cursor-pointer";
+  const baseClasses = "rounded-lg overflow-hidden transition-all text-left hover:z-10 cursor-pointer";
   const selectedClasses = isSelected
     ? "border-[#6B4E71] bg-[#F5F0F6] shadow-lg"
     : "border-[#C4B5C7] bg-white hover:border-[#6B4E71]";
 
-  // Content wrapper
   const cardContent = (
-    <>
+    <div className="flex flex-col" style={{ aspectRatio: '1 / 1.3' }}>
       {cardImageUrl && (
-        <div className="overflow-hidden bg-primary-pink relative aspect-square">
-          <div className="absolute inset-0 flex items-center justify-center p-6">
-            <img
-              src={cardImageUrl}
-              alt={cardImageAlt || cardTitle || 'Product image'}
-              className="max-w-full max-h-full object-contain"
-            />
-          </div>
+        <div className="flex-1 overflow-hidden bg-primary-pink relative flex items-center justify-center py-8 px-4">
+          <img
+            src={cardImageUrl}
+            alt={cardImageAlt || cardTitle || 'Product image'}
+            className="max-w-full max-h-full object-contain"
+          />
           {imageOverlay}
         </div>
       )}
       {(cardTitle || children) && (
-        <div className="py-2">
+        <div className="p-4 bg-inherit">
           {cardTitle && (
             <h3 className="text-lg font-bold text-[#6B4E71] mb-1">
               {cardTitle}
             </h3>
           )}
-          {isProductCard && product.price && (
+          {isProductCard && product.price && product.requiredBoards ? (
             <p className="text-sm">
-              {formatPrice(product.price, "NOK")}
+              {formatPrice(product.price + (product.requiredBoards * 12), "NOK")}
             </p>
-          )}
+          ) : isProductCard && product.price ? (
+            <p className="text-sm">
+              fra {formatPrice(product.price, "NOK")}
+            </p>
+          ) : null}
           {children}
         </div>
       )}
-    </>
+    </div>
   );
 
   // If there's an onClick handler, render as button

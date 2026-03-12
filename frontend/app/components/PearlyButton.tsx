@@ -1,7 +1,10 @@
 'use client'
 
+import { ReactNode } from 'react';
+
 interface PearlyButtonProps {
-  label: string;
+  label?: string;
+  children?: ReactNode;
   skin?: 'default' | 'primary' | 'secondary' | 'success' | 'danger' | 'outline' | 'ghost';
   onClick?: () => void;
   disabled?: boolean;
@@ -11,6 +14,7 @@ interface PearlyButtonProps {
 
 export default function PearlyButton({
   label,
+  children,
   skin = 'default',
   onClick,
   disabled = false,
@@ -45,7 +49,7 @@ export default function PearlyButton({
       disabled={disabled}
       className={`flex items-center justify-center gap-2 px-4 py-2 my-4 border rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${getSkinClasses(skin)} ${className}`}
     >
-      {label}
+      {children || label}
     </button>
   )
 }
