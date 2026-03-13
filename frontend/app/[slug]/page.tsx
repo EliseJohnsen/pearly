@@ -9,6 +9,7 @@ import Footer from "../components/Footer";
 import Banner from "../components/Banner";
 import HowItWorks from "../components/HowItWorks";
 import CTA from "../components/CTA";
+import HeroForside from "../components/HeroForside";
 import Content from "../components/Content";
 import ProductSection from "../components/ProductSection";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -164,12 +165,14 @@ export default function DynamicPage({
 
   return (
     <div className="min-h-screen bg-[var(--background)]">
-      <Header />
+      <Header startTransparent={slug === 'home'} />
       <main className="min-h-screen">
         {page.sections?.map((section: any, index: number) => {
           switch (section._type) {
             case "hero":
-              return <CTA key={index} data={section} />;
+              return slug === "home"
+                ? <HeroForside key={index} data={section} />
+                : <CTA key={index} data={section} />;
             case "banner":
                 return <Banner key={index} data={section} />;
             case "howItWorks":

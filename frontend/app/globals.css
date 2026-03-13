@@ -67,6 +67,7 @@
 @theme inline {
   /* Fonter */
   --font-sans: var(--font-quicksand);
+  --font-playfair: var(--font-playfair);
 
   /* Egendefinerte brekkpunkter */
   --breakpoint-tablet: 933px;

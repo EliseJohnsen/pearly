@@ -35,10 +35,14 @@ export default function CTA({ data }: CTAProps = {}) {
 
   // Use Sanity image if available, otherwise fallback
   const imageSrc = hero.image?.asset?.url
-    ? urlFor(hero.image).width(2432).height(1442).url()
+    ? urlFor(hero.image).url()
     : null
 
   const imageAlt = hero.image?.alt || 'Hero image'
+  const hotspot = hero.image?.hotspot
+  const objectPosition = hotspot
+    ? `${hotspot.x * 100}% ${hotspot.y * 100}%`
+    : 'center'
 
   const getImageWidth = () => {
     if (hero && hero.imageWidth) {
@@ -48,40 +52,32 @@ export default function CTA({ data }: CTAProps = {}) {
   }
 
   return (
-    <div className="overflow-hidden bg-background">
-      <div className="">
-        <div className="lg:max-w-none">
-          <div className="relative">
-            <div className="absolute top-1/2 left-12 -translate-y-1/4 bg-primary-pink p-8 rounded-xl shadow-2xl max-w-md">
-              <p className="text-3xl md:text-5xl lg:text-7xl font-semibold tracking-tight text-primary-red leading-tight">
-                {hero.heading}
-              </p>
-              {hero.subheading && (
-                <p className="mt-4 text-lg text-gray-700">
-                  {hero.subheading}
-                </p>
-              )}
-              {hero.ctaButton && (
-                <a
-                  href={hero.ctaButton.href}
-                  className="mt-6 inline-block rounded-md bg-primary px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-primary/90 transition-colors"
-                >
-                  {hero.ctaButton.text}
-                </a>
-              )}
-            </div>
-            {imageSrc && 
-              <Image
-                alt={imageAlt}
-                src={imageSrc}
-                width={2432}
-                height={1442}
-                className="justify-self-end max-w-none shadow-xl"
-                style={{ width: getImageWidth() }}
-              />
-            }
-          </div>
-        </div>
+    <div className="relative w-full aspect-[9/4] overflow-hidden bg-background">
+      {imageSrc &&
+        <Image
+          alt={imageAlt}
+          src={imageSrc}
+          fill
+          className="object-cover"
+          style={{ objectPosition }}
+        />
+      }
+      <div className="absolute bottom-0 left-0 right-0 h-1/2 pointer-events-none"
+        style={{ background: 'linear-gradient(to top, var(--dark-purple), transparent)' }}
+      />
+      <div className="absolute bottom-14 left-0 right-0">
+      <div className="max-w-[95rem] mx-auto px-4 lg:px-8">
+      <div className="max-w-[620px]">
+        <p className="font-playfair text-3xl md:text-5xl lg:text-9xl font-extrabold tracking-tight text-white leading-tight">
+          {hero.heading}
+        </p>
+        {hero.subheading && (
+          <p className="mt-4 text-lg text-white">
+            {hero.subheading}
+          </p>
+        )}
+      </div>
+      </div>
       </div>
     </div>
   )

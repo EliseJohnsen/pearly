@@ -16,15 +16,21 @@ import {
 import { useCart } from '@/app/contexts/CartContext'
 import { useNavigationByType, useUIString } from '@/app/hooks/useSanityData'
 
-export default function Header() {
+interface HeaderProps {
+  startTransparent?: boolean
+}
+
+export default function Header({ startTransparent = false }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [visible, setVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
   const [scrollUpDistance, setScrollUpDistance] = useState(0)
+  const [atTop, setAtTop] = useState(true)
 
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY
+      setAtTop(currentScrollY < 10)
       if (currentScrollY < 10) {
         setVisible(true)
         setScrollUpDistance(0)
@@ -51,7 +57,7 @@ export default function Header() {
 
   return (
     <>
-    <header className={`fixed top-0 left-0 right-0 z-50 bg-primary transition-transform duration-300 ${visible ? 'translate-y-0' : '-translate-y-full'}`}>
+    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${visible ? 'translate-y-0' : '-translate-y-full'} ${startTransparent && atTop ? 'bg-transparent' : 'bg-primary'}`}>
       <nav aria-label="Global" className="mx-auto max-w-[95rem] px-4 py-2 md:py-0 md:h-[74px] lg:px-8">
         <div className="flex items-center justify-between md:justify-start md:gap-8 md:h-full">
           {/* Hamburger/Close button - mobile only, far left */}
@@ -150,7 +156,7 @@ export default function Header() {
         </DialogPanel>
       </Dialog>
     </header>
-    <div className="h-16 md:h-[74px]" />
+    {!startTransparent && <div className="h-16 md:h-[74px]" />}
     </>
   )
 }
