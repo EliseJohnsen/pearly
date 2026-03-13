@@ -17,38 +17,33 @@ export default function HowItWorks({ data }: HowItWorksProps = {}) {
     if (howItWorks && howItWorks.backgroundColor) {
       return howItWorks.backgroundColor
     } else
-      return '#F5B0DF'
+      return '#FBE7F5'
   }
 
   const getHowItWorksFontColor = () => {
     if (howItWorks && howItWorks.fontColor) {
       return howItWorks.fontColor
     } else
-      return '#BA7EB9'
+      return '#673154'
   }
 
   const getHowItWorksStepIcon = (index: number) => {
     switch (index) {
       case 0:
-        return <ArrowUpTrayIcon aria-hidden="true" className="size-12 text-white" style={{color: getHowItWorksFontColor()}} />
+        return <ArrowUpTrayIcon aria-hidden="true" className="size-12 text-white" style={{color: '#BA7EB9'}} />
       case 1:
-        return <GiftIcon aria-hidden="true" className="size-12 text-white" style={{color: getHowItWorksFontColor()}} />
+        return <GiftIcon aria-hidden="true" className="size-12 text-white" style={{color: '#BA7EB9'}} />
       case 2:
-        return <PhotoIcon aria-hidden="true" className="size-12 text-white" style={{color: getHowItWorksFontColor()}} />
+        return <PhotoIcon aria-hidden="true" className="size-12 text-white" style={{color: '#BA7EB9'}} />
       default:
-        return <GiftIcon aria-hidden="true" className="size-12 text-white" style={{color: getHowItWorksFontColor()}} />
+        return <GiftIcon aria-hidden="true" className="size-12 text-white" style={{color: '#BA7EB9'}} />
     }
   }
 
   return (
-    <main className="container mx-auto px-4 py-10">
-      <div className="text-center mb-12">
-        <p className="font-display text-3xl md:text-4xl leading-none my-2" style={{color: getHowItWorksFontColor()}}>
-          {howItWorksLoading
-            ? 'Hvordan funker det?'
-            : howItWorks?.sectionTitle || 'Hvordan funker det?'}
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto mt-4">
+    <main className="container mx-auto px-4 pt-16 pb-2">
+      <div className="text-center mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto mt-10">
           {howItWorksLoading ? (
             <>
               <div key="skeleton-1" className="bg-white rounded-lg shadow-lg p-8 animate-pulse">
@@ -71,9 +66,9 @@ export default function HowItWorks({ data }: HowItWorksProps = {}) {
                   style={{backgroundColor: getHowItWorksBgColor()}}>
                     {getHowItWorksStepIcon(index)}
               </div>
-              <div className="p-8" style={{color: getHowItWorksFontColor()}}>
-                <h3 className="text-2xl font-bold mb-4">{step.title}</h3>
-                <p className="text-xl">{step.description}</p>
+              <div className="p-8">
+                <h3 className="text-2xl font-bold mb-2 text-purple">{step.title}</h3>
+                <p className="text-base">{step.description}</p>
               </div>
             </div>
             ))

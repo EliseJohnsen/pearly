@@ -31,7 +31,7 @@ export default function Footer({ data, footerPages }: FooterProps = {}) {
     };
 
     return (
-        <footer className="bg-dark-purple shadow-lg p-8 text-footer-text">
+        <footer className="bg-dark-purple p-8 text-footer-text">
             <div className="flex flex-col tablet:flex-row tablet:flex-wrap tablet:justify-between mb-0 tablet:mb-8">
                 <div className="mb-6 tablet:mb-0">
                     <Link href="/">
@@ -139,6 +139,7 @@ export default function Footer({ data, footerPages }: FooterProps = {}) {
 
                 </div>
             </div>
+            <div className="my-4 w-full bg-footer-text" style={{ height: '0.5px' }} />
             {footer && footer.companyInfo && (
                 <div className="flex flex-col tablet:flex-row tablet:justify-between">
                     <div className="order-2 tablet:order-1">
