@@ -3,7 +3,7 @@
 import { client } from "@/lib/sanity";
 import { groq } from "next-sanity";
 import { notFound } from "next/navigation";
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useState, Suspense } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Banner from "../components/Banner";
@@ -80,7 +80,7 @@ const pageQuery = groq`*[_type == "page" && slug.current == $slug][0]{
           alt,
           isPrimary
         },
-        category,
+        category->{_id, name, slug, parent->{_id, slug}},
         requiredBoards,
       },
       showFeaturedOnly
@@ -218,7 +218,7 @@ export default function DynamicPage({
           result.push(<Content key={i} data={section} />);
           break;
         case "productsSection":
-          result.push(<ProductSection key={i} data={section} />);
+          result.push(<Suspense key={i} fallback={null}><ProductSection data={section} /></Suspense>);
           break;
         case "imageCarousel":
           result.push(<ImageCarousel key={i} data={section} />);

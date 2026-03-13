@@ -37,11 +37,51 @@ export default function TestKnapper() {
   const [selectedStyle, setSelectedStyle] = useState<'realistic' | 'ai' | null>(null)
   const [selectedRatio, setSelectedRatio] = useState<'3:4' | '1:1' | '4:3'>('3:4')
   const [selectedSize, setSelectedSize] = useState<'S' | 'M' | 'L' | null>(null)
+  const [activeFilter, setActiveFilter] = useState<string>('alle')
 
   return (
     <main className="max-w-3xl mx-auto px-6 py-16">
       <h1 className="text-3xl font-semibold text-dark-purple mb-2">Knapper</h1>
       <p className="text-gray-500 mb-12">Oversikt over alle knapper og states brukt på nettsiden.</p>
+
+      {/* ─── Filter pills ─── */}
+      <Section title="Kategori-filter" description="Vises på perlepakker-siden over produktlisten. Interaktiv demo nedenfor.">
+        <Labeled label="Rest">
+          <button className="px-5 py-2 rounded-lg border border-primary-pink text-dark-purple font-medium">
+            Kategori
+          </button>
+        </Labeled>
+        <Labeled label="Active / valgt">
+          <button className="px-5 py-2 rounded-lg border border-dark-purple text-dark-purple font-medium">
+            Kategori
+          </button>
+        </Labeled>
+        <Labeled label="Hover">
+          <button className="px-5 py-2 rounded-lg border border-purple text-dark-purple font-medium">
+            Kategori
+          </button>
+        </Labeled>
+      </Section>
+
+      <Section title="Kategori-filter — interaktiv demo" description="Klikk for å bytte aktiv kategori.">
+        <div className="flex items-center gap-3 flex-wrap">
+          {(['alle', 'Botanikk', 'Dyreriket', 'Portretter', 'Verdensrommet'] as const).map((cat, i) => (
+            <span key={cat}>
+              {i === 1 && <span className="w-px h-6 bg-primary-pink inline-block align-middle mr-3" />}
+              <button
+                onClick={() => setActiveFilter(cat)}
+                className={`px-5 py-2 rounded-lg border font-medium transition-colors ${
+                  activeFilter === cat
+                    ? 'border-dark-purple text-dark-purple'
+                    : 'border-primary-pink text-dark-purple hover:border-purple'
+                }`}
+              >
+                {cat === 'alle' ? 'Alle' : cat}
+              </button>
+            </span>
+          ))}
+        </div>
+      </Section>
 
       {/* ─── PearlyButton skins ─── */}
       <Section title="PearlyButton — primary" description="Brukes til hovedhandlingen på produktsider (legg i handlekurv).">
