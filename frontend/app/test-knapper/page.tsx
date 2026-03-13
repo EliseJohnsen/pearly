@@ -16,7 +16,7 @@ import {
 function Section({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
   return (
     <div className="mb-14">
-      <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1 border-b border-pink-100 pb-2">{title}</h2>
+      <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1 border-b border-primary-pink pb-2">{title}</h2>
       {description && <p className="text-sm text-gray-400 mb-5">{description}</p>}
       <div className="flex flex-wrap gap-6 items-start mt-5">{children}</div>
     </div>
@@ -281,7 +281,7 @@ export default function TestKnapper() {
 
       {/* ─── Fargepalett ─── */}
       <div className="mb-14">
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1 border-b border-pink-100 pb-2">Fargepalett</h2>
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1 border-b border-primary-pink pb-2">Fargepalett</h2>
         <p className="text-sm text-gray-400 mb-8">Alle farger definert i globals.css.</p>
 
         {[
@@ -335,7 +335,7 @@ export default function TestKnapper() {
             <div className="flex flex-wrap gap-4">
               {colors.map(({ label, bg, hex, border }: { label: string; bg: string; hex: string; border?: boolean }) => (
                 <div key={label} className="flex items-center gap-3">
-                  <div className={`w-12 h-12 rounded-lg flex-shrink-0 ${bg} ${border ? 'border border-pink-100' : ''}`} />
+                  <div className={`w-12 h-12 rounded-lg flex-shrink-0 ${bg} ${border ? 'border border-primary-pink' : ''}`} />
                   <div>
                     <p className="text-sm font-medium text-dark-purple">{label}</p>
                     <p className="text-xs text-gray-400 font-mono">{hex}</p>

@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import { urlFor } from "@/lib/sanity";
-import Link from "next/link";
+import PearlyButton from "./PearlyButton";
 
 interface ImageCarouselProps {
   data: {
@@ -33,10 +33,12 @@ interface ImageCarouselProps {
     isActive?: boolean;
     aspectRatio?: "square" | "portrait";
   };
+  carouselOnly?: boolean;
 }
 
-export default function ImageCarousel({ data }: ImageCarouselProps) {
+export default function ImageCarousel({ data, carouselOnly = false }: ImageCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const touchStartX = useRef<number | null>(null);
 
   const goToNext = useCallback(() => {
     setCurrentIndex((prevIndex) =>
@@ -87,9 +89,9 @@ export default function ImageCarousel({ data }: ImageCarouselProps) {
   };
 
   return (
-    <section className="container max-w-4xl mx-auto p-4">
-      {/* Header */}
-      {data.heading && (
+    <section className="w-full md:p-4">
+      {/* Header — hidden in carouselOnly mode */}
+      {!carouselOnly && data.heading && (
         <div className="mb-8">
           <h2 className="text-3xl font-semibold text-dark-purple mb-4">
             {data.heading}
@@ -106,7 +108,16 @@ export default function ImageCarousel({ data }: ImageCarouselProps) {
       <div className="relative mx-auto">
         {/* Main Image + Navigation Arrows */}
         <div className="relative">
-          <div className={`${aspectClass} bg-pink-100 rounded-md overflow-hidden`}>
+          <div
+            className={`${aspectClass} bg-primary-pink md:rounded-md overflow-hidden`}
+            onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
+            onTouchEnd={(e) => {
+              if (touchStartX.current === null) return;
+              const diff = touchStartX.current - e.changedTouches[0].clientX;
+              if (Math.abs(diff) > 40) diff > 0 ? goToNext() : goToPrevious();
+              touchStartX.current = null;
+            }}
+          >
             {data.images.map((image, index) => (
               <div
                 key={image.asset._id}
@@ -125,30 +136,49 @@ export default function ImageCarousel({ data }: ImageCarouselProps) {
                 />
               </div>
             ))}
+            {/* Dot indicators — mobile only, overlaid at bottom */}
+            {data.images.length > 1 && (
+              <div className="md:hidden absolute bottom-[1.5%] left-0 right-0 flex justify-center z-10">
+                <div className="flex items-center gap-2 bg-dark-purple/40 rounded-full px-3 py-2">
+                  {data.images.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => goToSlide(index)}
+                      aria-label={`Gå til bilde ${index + 1}`}
+                      className={`rounded-full transition-all ${
+                        index === currentIndex
+                          ? 'w-2.5 h-2.5 bg-white'
+                          : 'w-2 h-2 bg-white/50'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
           <button
             onClick={goToPrevious}
-            className="absolute -left-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors z-10"
+            className="hidden md:flex absolute -left-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full shadow-lg items-center justify-center hover:bg-gray-50 transition-colors z-10"
             aria-label="Forrige bilde"
           >
             <ChevronLeftIcon className="w-6 h-6 text-gray-900" />
           </button>
           <button
             onClick={goToNext}
-            className="absolute -right-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors z-10"
+            className="hidden md:flex absolute -right-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full shadow-lg items-center justify-center hover:bg-gray-50 transition-colors z-10"
             aria-label="Neste bilde"
           >
             <ChevronRightIcon className="w-6 h-6 text-gray-900" />
           </button>
         </div>
 
-        {/* Thumbnails */}
-        <div className="flex gap-2 md:gap-4 mt-4 justify-center pb-2">
+        {/* Thumbnails — hidden on mobile */}
+        <div className="hidden md:flex gap-4 mt-4 justify-center pb-2">
           {data.images.map((image, index) => (
             <button
               key={image.asset._id}
               onClick={() => goToSlide(index)}
-              className={`relative flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-md overflow-hidden transition-all ${
+              className={`relative flex-shrink-0 w-20 h-20 rounded-md overflow-hidden transition-all ${
                 index === currentIndex
                   ? "opacity-100"
                   : "opacity-60 hover:opacity-80"
@@ -166,15 +196,12 @@ export default function ImageCarousel({ data }: ImageCarouselProps) {
         </div>
       </div>
 
-      {/* CTA Button */}
-      {data.ctaButton && (
-        <div className="text-center mt-8">
-          <Link
-            href={data.ctaButton.href}
-            className="inline-block px-8 py-4 bg-dark-purple text-white text-lg font-semibold rounded-full hover:bg-purple-800 transition-colors"
-          >
+      {/* CTA Button — hidden in carouselOnly mode */}
+      {!carouselOnly && data.ctaButton && (
+        <div className="flex justify-center">
+          <PearlyButton skin="primary" href={data.ctaButton.href}>
             {data.ctaButton.text}
-          </Link>
+          </PearlyButton>
         </div>
       )}
     </section>
