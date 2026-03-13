@@ -20,13 +20,6 @@ export default function HowItWorks({ data }: HowItWorksProps = {}) {
       return '#FBE7F5'
   }
 
-  const getHowItWorksFontColor = () => {
-    if (howItWorks && howItWorks.fontColor) {
-      return howItWorks.fontColor
-    } else
-      return '#673154'
-  }
-
   const getHowItWorksStepIcon = (index: number) => {
     switch (index) {
       case 0:
@@ -64,13 +57,13 @@ export default function HowItWorks({ data }: HowItWorksProps = {}) {
               <div key={index} className="justify-items-center">
                 <div className="w-32 h-32 rounded-full flex items-center justify-center"
                   style={{backgroundColor: getHowItWorksBgColor()}}>
-                    {getHowItWorksStepIcon(index)}
+                  {getHowItWorksStepIcon(index)}
+                </div>
+                <div className="p-8">
+                  <h3 className="text-2xl font-bold mb-2 text-purple">{step.title}</h3>
+                  <p className="text-base">{step.description}</p>
+                </div>
               </div>
-              <div className="p-8">
-                <h3 className="text-2xl font-bold mb-2 text-purple">{step.title}</h3>
-                <p className="text-base">{step.description}</p>
-              </div>
-            </div>
             ))
           ) : (
             // Fallback to hardcoded content
