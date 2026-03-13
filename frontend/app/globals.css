@@ -67,7 +67,7 @@
 @theme inline {
   /* Fonter */
   --font-sans: var(--font-quicksand);
-  --font-playfair: var(--font-playfair);
+  --font-display: var(--font-display);
 
   /* Egendefinerte brekkpunkter */
   --breakpoint-tablet: 933px;
@@ -121,6 +121,11 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-quicksand), sans-serif;
+}
+
+.font-dmserif {
+  font-kerning: normal;
+  font-feature-settings: "kern" 1;
 }
 
 /* Hide scrollbar but keep functionality */

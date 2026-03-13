@@ -30,11 +30,11 @@ export default function SplitSection({ data }: SplitSectionProps) {
       className="w-full"
       style={{ backgroundColor: data.backgroundColor || 'var(--background)' }}
     >
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="max-w-7xl mx-auto px-4 py-7 md:py-14">
       <div className={`flex flex-col ${imageRight ? 'md:flex-row-reverse' : 'md:flex-row'}`}>
-        {/* Image — full width on mobile, 50% on desktop */}
-        <div className="w-full md:w-1/2 aspect-[4/3] relative rounded-lg overflow-hidden">
-          {imageSrc ? (
+        {/* Image — only rendered if imageSrc exists */}
+        {imageSrc && (
+          <div className="w-full md:w-1/2 aspect-[4/3] relative rounded-lg overflow-hidden">
             <Image
               src={imageSrc}
               alt={imageAlt}
@@ -42,15 +42,13 @@ export default function SplitSection({ data }: SplitSectionProps) {
               className="object-cover"
               style={{ objectPosition }}
             />
-          ) : (
-            <div className="w-full h-full bg-primary-light" />
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Text */}
-        <div className="w-full md:w-1/2 flex items-center px-8 pt-8 pb-2 md:py-12 md:px-16 lg:px-20">
-          <div className="max-w-lg">
-            <h2 className="font-playfair text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight text-app-primary leading-tight">
+        <div className={`flex items-center pt-8 pb-2 md:py-12 ${imageSrc ? 'w-full md:w-1/2 px-8 md:px-16 lg:px-20' : 'w-full'}`}>
+          <div className={imageSrc ? 'max-w-lg' : 'max-w-2xl'}>
+            <h2 className="font-display text-3xl md:text-4xl lg:text-5xl text-app-primary leading-none">
               {data.heading}
             </h2>
             {data.body && (

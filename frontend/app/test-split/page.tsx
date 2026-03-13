@@ -20,15 +20,11 @@ export default function TestSplitPage() {
   return (
     <div className="min-h-screen bg-[var(--background)]">
       <Header />
-      <div className="pt-8">
-        <p className="text-center text-sm text-app-muted mb-8">— Bilde til venstre —</p>
+      <div>
         <SplitSection data={testData} />
-
-        <p className="text-center text-sm text-app-muted mt-12 mb-8">— Bilde til høyre —</p>
         <SplitSection data={{ ...testData, imagePosition: 'right' }} />
-
-        <p className="text-center text-sm text-app-muted mt-12 mb-8">— Uten knapp —</p>
         <SplitSection data={{ ...testData, button: undefined, imagePosition: 'left' }} />
+        <SplitSection data={{ ...testData, image: undefined, imagePosition: 'right' }} />
       </div>
     </div>
   )

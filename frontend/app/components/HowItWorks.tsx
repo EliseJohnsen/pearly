@@ -43,7 +43,7 @@ export default function HowItWorks({ data }: HowItWorksProps = {}) {
   return (
     <main className="container mx-auto px-4 py-10">
       <div className="text-center mb-12">
-        <p className="text-3xl md:text-4xl my-2" style={{color: getHowItWorksFontColor()}}>
+        <p className="font-display text-3xl md:text-4xl leading-none my-2" style={{color: getHowItWorksFontColor()}}>
           {howItWorksLoading
             ? 'Hvordan funker det?'
             : howItWorks?.sectionTitle || 'Hvordan funker det?'}
@@ -72,7 +72,7 @@ export default function HowItWorks({ data }: HowItWorksProps = {}) {
                     {getHowItWorksStepIcon(index)}
               </div>
               <div className="p-8" style={{color: getHowItWorksFontColor()}}>
-                <h2 className="text-2xl font-bold mb-4">{step.title}</h2>
+                <h3 className="text-2xl font-bold mb-4">{step.title}</h3>
                 <p className="text-xl">{step.description}</p>
               </div>
             </div>
@@ -81,15 +81,15 @@ export default function HowItWorks({ data }: HowItWorksProps = {}) {
             // Fallback to hardcoded content
             <>
               <div className="bg-white rounded-lg shadow-lg p-8">
-                <h2 className="text-2xl font-bold">Last opp ditt bilde</h2>
+                <h3 className="text-2xl font-bold">Last opp ditt bilde</h3>
                 <p>Velg et bilde eller tegning, og velg hvor stort du vil at din ferdig perling skal bli</p>
               </div>
               <div className="bg-white rounded-lg shadow-lg p-8">
-                <h2 className="text-2xl font-bold">Motta perlepakke</h2>
+                <h3 className="text-2xl font-bold">Motta perlepakke</h3>
                 <p>Du får ditt skreddersydde mønster og alle perlene du trenger tilsendt i posten</p>
               </div>
               <div className="bg-white rounded-lg shadow-lg p-8">
-                <h2 className="text-2xl font-bold">Lag ditt mesterverk!</h2>
+                <h3 className="text-2xl font-bold">Lag ditt mesterverk!</h3>
                 <p>Følg mønsteret og kos deg med å lage din egen perlemønster</p>
               </div>
             </>

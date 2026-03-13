@@ -28,7 +28,7 @@ export default function HeroForside({ data }: HeroForsideProps = {}) {
     : 'center'
 
   return (
-    <div className="relative w-full overflow-hidden bg-background" style={{ height: 'calc(100vw * 4 / 9 + 74px)' }}>
+    <div className="relative w-full overflow-hidden bg-background" style={{ height: 'max(90vh, calc(100vw * 4 / 9 + 74px))' }}>
       {imageSrc &&
         <Image
           alt={imageAlt}
@@ -47,7 +47,7 @@ export default function HeroForside({ data }: HeroForsideProps = {}) {
       <div className="absolute bottom-14 left-0 right-0">
         <div className="max-w-[95rem] mx-auto px-4 lg:px-8">
           <div className="max-w-[620px]">
-            <p className="font-playfair text-3xl md:text-5xl lg:text-9xl font-extrabold tracking-tight text-white leading-tight">
+            <p className="font-display text-5xl lg:text-9xl text-white leading-none">
               {hero.heading}
             </p>
             {hero.subheading && (

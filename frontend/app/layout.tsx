@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Quicksand, Playfair_Display } from "next/font/google";
+import { Quicksand, Lora } from "next/font/google";
 import "./globals.css";
 import {LocaleProvider} from "./contexts/LocaleContext";
 import { CartProvider } from "./contexts/CartContext";
@@ -15,10 +15,10 @@ const quicksand = Quicksand({
   weight: ["300", "400", "500", "600", "700"],
 });
 
-const playfair = Playfair_Display({
-  variable: "--font-playfair",
+const dmSerif = Lora({
+  variable: "--font-display",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
+  weight: ["700"],
 });
 
 // Fetch metadata from Sanity
@@ -75,7 +75,7 @@ export default async function RootLayout({
 
   return (
     <html lang="no">
-      <body className={`${quicksand.variable} ${playfair.variable} antialiased`}>
+      <body className={`${quicksand.variable} ${dmSerif.variable} antialiased`}>
         <LocaleProvider>
           <CartProvider>
             {children}

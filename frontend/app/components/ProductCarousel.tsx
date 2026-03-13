@@ -35,7 +35,7 @@ export default function ProductCarousel({ heading, products, viewMoreLink }: Pro
     <section className="py-12">
       <div className="max-w-7xl mx-auto px-4">
         {heading && (
-          <h2 className="text-2xl font-semibold text-dark-purple mb-6 pl-4">
+          <h2 className="font-display text-4xl leading-none text-dark-purple mb-6 pl-4">
             {heading}
           </h2>
         )}

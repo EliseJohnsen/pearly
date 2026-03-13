@@ -376,7 +376,7 @@ export default function ProductDetailPage({
 
           <div className="space-y-4">
             <div>
-              <h1 className="text-5xl text-dark-purple font-semibold mb-2">{product.title}</h1>
+              <h1 className="font-display text-5xl leading-none text-dark-purple mb-2">{product.title}</h1>
             </div>
 
             {product.description && (
