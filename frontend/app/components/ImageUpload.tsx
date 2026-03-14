@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import LoadingSpinner from "./LoadingSpinner";
+import PearlyButton from "./PearlyButton";
 import { useUIString } from '@/app/hooks/useSanityData';
 import { getSessionToken } from "@/lib/auth";
 
@@ -547,13 +548,14 @@ export default function ImageUpload({ onPatternGenerated, onUploadStatusChange }
         </div>
       )}
 
-      <button
+      <PearlyButton
+        skin="primary"
         onClick={handleGeneratePattern}
         disabled={!preview || uploading || !sizeOptions}
-        className="w-full bg-primary hover:bg-primary-dark-pink disabled:bg-disabled disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+        className="w-full"
       >
         {uploading ? 'Genererer...' : 'Generer perlemønster'}
-      </button>
+      </PearlyButton>
     </div>
   );
 }

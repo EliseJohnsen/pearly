@@ -143,6 +143,7 @@ export const productQuery = groq`*[_type == "products" && slug.current == $slug]
   originalPrice,
   "recommendedAddOns": {
     "heading": recommendedAddOns.heading,
+    "viewMoreLink": recommendedAddOns.viewMoreLink,
     "products": recommendedAddOns.products[]->{
       _id,
       title,
