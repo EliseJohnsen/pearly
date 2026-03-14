@@ -12,6 +12,13 @@ export default defineType({
       description: 'Overskrift for produktkarusellen',
     }),
     defineField({
+      name: 'description',
+      title: 'Beskrivelse',
+      type: 'text',
+      rows: 3,
+      description: 'Valgfri tekst som vises mellom overskriften og karusellen',
+    }),
+    defineField({
       name: 'products',
       title: 'Produkter',
       type: 'array',

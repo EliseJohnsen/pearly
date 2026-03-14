@@ -22,6 +22,7 @@ interface CarouselProduct {
 
 interface ProductCarouselProps {
   heading?: string
+  description?: string
   products: CarouselProduct[]
   viewMoreLink?: {
     text?: string
@@ -29,7 +30,7 @@ interface ProductCarouselProps {
   }
 }
 
-export default function ProductCarousel({ heading, products, viewMoreLink }: ProductCarouselProps) {
+export default function ProductCarousel({ heading, description, products, viewMoreLink }: ProductCarouselProps) {
   if (!products || products.length === 0) return null
 
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -80,9 +81,12 @@ export default function ProductCarousel({ heading, products, viewMoreLink }: Pro
     <section className="py-12">
       <div className="max-w-6xl mx-auto px-4">
         {heading && (
-          <h2 className="text-2xl font-semibold text-dark-purple mb-6">
+          <h2 className="font-display text-2xl md:text-3xl leading-none text-dark-purple mb-6">
             {heading}
           </h2>
+        )}
+        {description && (
+          <p className="text-left text-base text-gray-700 mb-8 max-w-xl">{description}</p>
         )}
         <div className="relative">
           {canScrollLeft && (
