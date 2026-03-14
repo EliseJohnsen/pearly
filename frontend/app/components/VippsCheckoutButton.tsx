@@ -89,7 +89,7 @@ export default function VippsCheckoutButton({
         disabled={isCheckingOut || orderLines.length === 0 || disabled}
         className={
           className ||
-          "w-full bg-primary text-white py-4 px-6 rounded-lg font-semibold cursor-pointer hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+          "w-full bg-primary text-white py-4 px-6 rounded-lg font-semibold cursor-pointer enabled:hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         }
       >
         {isCheckingOut ? "Starter Vipps..." : buttonText || "Kjøp nå med Vipps"}

@@ -81,6 +81,7 @@ interface Product {
   recommendedAddOns?: {
     heading?: string;
     products?: Product[];
+    viewMoreLink?: { text?: string; href?: string };
   };
   requiresParent?: boolean;
   seo?: {
@@ -359,24 +360,35 @@ export default function ProductDetailPage({
   return (
     <div className="min-h-screen bg-[var(--background)]">
       <Header />
-      <main className="max-w-7xl mx-auto px-4 py-12 min-h-screen">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+      <main className="max-w-6xl mx-auto md:px-4 md:py-12 min-h-screen">
+        <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-7">
           {/* Image Gallery */}
-          <div className="space-y-4">
+          <div className="space-y-4 md:sticky md:top-4 md:self-start">
             {carouselImages.length > 0 && (
               <ImageCarousel
                 data={{
                   images: carouselImages,
                   autoRotate: false,
-                  aspectRatio: "portrait",
+                  aspectRatio: "square",
                 }}
               />
             )}
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-4 pt-4 px-4 md:px-0">
             <div>
-              <h1 className="text-5xl text-dark-purple font-semibold mb-2">{product.title}</h1>
+              {product.productType === 'kit' && (
+                <div className="flex items-center gap-3 mb-3">
+                  <p className="text-sm font-semibold uppercase tracking-widest text-purple">Perlepakke</p>
+                  {product.status === "coming_soon" && (
+                    <span className="text-xs font-semibold uppercase tracking-wide bg-yellow-100 text-yellow-800 border border-yellow-200 px-2 py-0.5 rounded-full">Kommer snart</span>
+                  )}
+                </div>
+              )}
+              {product.productType !== 'kit' && product.status === "coming_soon" && (
+                <span className="inline-block text-xs font-semibold uppercase tracking-wide bg-yellow-100 text-yellow-800 border border-yellow-200 px-2 py-0.5 rounded-full mb-3">Kommer snart</span>
+              )}
+              <h1 className="text-4xl md:text-5xl font-semibold text-left text-dark-purple mb-4">{product.title}</h1>
             </div>
 
             {product.description && (
@@ -388,12 +400,6 @@ export default function ProductDetailPage({
               <p>
                 {customPatternText}
               </p>
-            )}
-
-            {product.status === "coming_soon" && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <p className="text-yellow-800 font-medium">Kommer snart!</p>
-              </div>
             )}
 
             {strukturprodukter && strukturprodukter.length > 0 && (
@@ -463,6 +469,7 @@ export default function ProductDetailPage({
               </div>
             )}
 
+            <div className="!mt-8">
             <PearlyButton
               skin={addedToCart ? "success" : "primary"}
               onClick={handleAddToCart}
@@ -482,6 +489,7 @@ export default function ProductDetailPage({
                 </>
               )}
             </PearlyButton>
+            </div>
 
             {/* <VippsCheckoutButton
               disabled={product.status !== "in_stock" || addedToCart}
@@ -517,13 +525,13 @@ export default function ProductDetailPage({
               )}
 
             </CollapsableCard>
-            <CollapsableCard header={<div className="flex items-center gap-4"><PerlebrettIcon className="w-6 h-6 text-dark-purple flex-shrink-0" /><h3 className="text-left text-xl font-medium">{perlebrettHeader}</h3></div>} defaultExpanded={false} className="border-t border-purple">
+            <CollapsableCard header={<div className="flex items-center gap-4"><PerlebrettIcon className="w-6 h-6 text-dark-purple flex-shrink-0" /><h3 className="text-left text-xl font-medium">{perlebrettHeader}</h3></div>} defaultExpanded={false} className="border-t border-primary-pink">
               {perlebrettText}
             </CollapsableCard>
-            <CollapsableCard header={<div className="flex items-center gap-4"><GiftIcon className="w-6 h-6 text-dark-purple flex-shrink-0" /><h3 className="text-left text-xl font-medium">{leveringHeader}</h3></div>} defaultExpanded={false} className="border-t border-purple">
+            <CollapsableCard header={<div className="flex items-center gap-4"><GiftIcon className="w-6 h-6 text-dark-purple flex-shrink-0" /><h3 className="text-left text-xl font-medium">{leveringHeader}</h3></div>} defaultExpanded={false} className="border-t border-primary-pink">
               {leveringText}
             </CollapsableCard>
-            <CollapsableCard header={<div className="flex items-center gap-4"><ArrowUturnLeftIcon className="w-6 h-6 text-dark-purple flex-shrink-0" /><h3 className="text-left text-xl font-medium">{bytteOgReturHeader}</h3></div>} defaultExpanded={false} className="border-y border-purple">
+            <CollapsableCard header={<div className="flex items-center gap-4"><ArrowUturnLeftIcon className="w-6 h-6 text-dark-purple flex-shrink-0" /><h3 className="text-left text-xl font-medium">{bytteOgReturHeader}</h3></div>} defaultExpanded={false} className="border-y border-primary-pink">
               {bytteOgReturText}
             </CollapsableCard>
           </div>
@@ -535,6 +543,7 @@ export default function ProductDetailPage({
             <ProductCarousel
               heading={product.recommendedAddOns.heading}
               products={product.recommendedAddOns.products}
+              viewMoreLink={product.recommendedAddOns.viewMoreLink}
             />
           </div>
         )}

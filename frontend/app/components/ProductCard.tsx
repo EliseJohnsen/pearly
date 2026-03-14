@@ -65,7 +65,7 @@ export default function ProductCard({
   const cardHref = isProductCard ? `/produkter/${product.slug.current}` : href;
 
   // Base classes
-  const baseClasses = "rounded-lg overflow-hidden transition-all text-left hover:z-10 cursor-pointer";
+  const baseClasses = "group rounded-lg overflow-hidden transition-all text-left hover:z-10 cursor-pointer";
   const selectedClasses = isSelected
     ? "border-[#6B4E71] bg-[#F5F0F6] shadow-lg"
     : "border-[#C4B5C7] bg-white hover:border-[#6B4E71]";
@@ -78,7 +78,7 @@ export default function ProductCard({
             <img
               src={cardImageUrl}
               alt={cardImageAlt || cardTitle || 'Product image'}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
             />
           </div>
           {imageOverlay}
@@ -87,7 +87,7 @@ export default function ProductCard({
       {(cardTitle || children) && (
         <div className="p-4 bg-inherit">
           {cardTitle && (
-            <h3 className="text-lg font-bold text-[#6B4E71] mb-1">
+            <h3 className="text-base font-bold mb-1 uppercase">
               {cardTitle}
             </h3>
           )}
@@ -123,10 +123,7 @@ export default function ProductCard({
   // If there's an href, render as link
   if (cardHref) {
     return (
-      <a
-        href={cardHref}
-        className={`${baseClasses} hover:shadow-lg block ${className}`}
-      >
+      <a href={cardHref} className={`${baseClasses} hover:shadow-lg block ${className}`}>
         {cardContent}
       </a>
     );

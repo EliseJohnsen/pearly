@@ -426,7 +426,7 @@ export default function UploadImage({ onImageSelected, initialPreview }: UploadI
                 <div className="flex flex-col gap-3 pt-2">
                   <button
                     onClick={handleConfirmCrop}
-                    className="flex-1 py-3 px-6 bg-dark-purple text-white font-semibold rounded-full hover:bg-dark-purple/90 transition-colors"
+                    className="flex-1 py-3 px-6 bg-dark-purple text-white font-semibold rounded-full hover:bg-purple-extra-dark transition-colors"
                   >
                     {applyCropText}
                   </button>

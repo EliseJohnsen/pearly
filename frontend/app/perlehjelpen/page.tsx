@@ -12,10 +12,10 @@ export default function Perlehjelpen() {
       <section className="relative overflow-hidden">
         <div className="py-12">
           <div className="max-w-7xl mx-auto px-4">
-            <h1 className="text-4xl md:text-5xl font-semibold text-left text-dark-purple mb-4 leading-tight max-w-xl pl-4">
+            <h1 className="text-4xl md:text-5xl font-semibold text-left text-dark-purple mb-4 leading-tight max-w-xl">
               Perlehjelpen - for et vellykket perlebilde
             </h1>
-            <p className="text-left text-base text-gray-700 mb-8 max-w-xl pl-4">
+            <p className="text-left text-base text-gray-700 mb-8 max-w-xl">
               Ta det i ditt eget tempo. Her finner du enkel veiledning som gjør
               det smidig å lage et fint perlebilde — selv om du aldri har perlet
               med mønster før.
