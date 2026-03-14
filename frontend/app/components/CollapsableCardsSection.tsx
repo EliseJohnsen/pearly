@@ -46,7 +46,7 @@ export default function CollapsableCardsSection({
     <section className={compact ? "" : "container max-w-3xl mx-auto px-4 py-10 md:py-16"}>
       {/* Section Title */}
       <div className={compact ? "mb-4" : "mb-8"}>
-        <h2 className="font-display text-3xl md:text-4xl leading-none text-dark-purple">
+        <h2 className="font-sans text-lg font-bold leading-none text-dark-purple uppercase">
           {data.sectionTitle}
         </h2>
       </div>

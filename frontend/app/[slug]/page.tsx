@@ -112,6 +112,7 @@ const pageQuery = groq`*[_type == "page" && slug.current == $slug][0]{
     },
     _type == "productCarousel" => {
       heading,
+      description,
       products[]->{
         _id,
         title,
@@ -200,7 +201,7 @@ export default function DynamicPage({
               <div className="px-4 md:px-0 space-y-4 pt-6 md:pt-4">
                 <p className="text-sm font-semibold uppercase tracking-widest text-purple">Personlig motiv</p>
                 {section.heading && (
-                  <h2 className="text-4xl md:text-5xl font-semibold text-left text-dark-purple mb-4">{section.heading}</h2>
+                  <h2 className="font-display text-4xl md:text-5xl leading-none text-left text-dark-purple mb-4">{section.heading}</h2>
                 )}
                 {section.description && (
                   <p className="text-lg text-gray-700">{section.description}</p>
@@ -246,7 +247,7 @@ export default function DynamicPage({
           result.push(<CollapsableCardsSection key={i} data={section} />);
           break;
         case "productCarousel":
-          result.push(<ProductCarousel key={i} heading={section.heading} products={section.products || []} viewMoreLink={section.viewMoreLink} />);
+          result.push(<ProductCarousel key={i} heading={section.heading} description={section.description} products={section.products || []} viewMoreLink={section.viewMoreLink} />);
           break;
         case "splitSection":
           result.push(<SplitSection key={i} data={section} />);
