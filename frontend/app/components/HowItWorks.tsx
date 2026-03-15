@@ -1,7 +1,7 @@
 "use client";
 
 import {useHowItWorks} from "../hooks/useSanityData";
-import { ArrowUpTrayIcon, GiftIcon, PhotoIcon } from "@heroicons/react/24/outline";
+import { HeartIcon, GiftIcon, PhotoIcon } from "@heroicons/react/24/outline";
 
 interface HowItWorksProps {
   data?: any
@@ -23,7 +23,7 @@ export default function HowItWorks({ data }: HowItWorksProps = {}) {
   const getHowItWorksStepIcon = (index: number) => {
     switch (index) {
       case 0:
-        return <ArrowUpTrayIcon aria-hidden="true" className="size-12 text-white" style={{color: '#BA7EB9'}} />
+        return <HeartIcon aria-hidden="true" className="size-12 text-white" style={{color: '#BA7EB9'}} />
       case 1:
         return <GiftIcon aria-hidden="true" className="size-12 text-white" style={{color: '#BA7EB9'}} />
       case 2:
