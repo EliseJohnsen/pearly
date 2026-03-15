@@ -79,11 +79,11 @@ export default function LastOppBildePage() {
     <div className="min-h-screen bg-[var(--background)]">
       <Header />
       <main className="min-h-screen bg-background py-4">
-        <PatternFlowStepper currentStep={0} />
+        <PatternFlowStepper currentStep={imageSelected ? 1 : 0} />
 
         <div className="max-w-2xl mx-auto px-4 pb-12">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-[#6B4E71] mb-3">
+            <h1 className="text-3xl font-semibold text-[#6B4E71] mb-3">
               {uploadImageHeader}
             </h1>
             <p className="text-[#6B4E71] text-base">
@@ -129,6 +129,7 @@ export default function LastOppBildePage() {
                   {wpapStyleDescription}{" "}
                   <a
                     href="/ai-policy"
+                    target="_blank"
                     className="underline hover:text-[#5A3E5F]"
                     onClick={(e) => e.stopPropagation()}
                   >

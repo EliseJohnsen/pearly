@@ -6,7 +6,7 @@ export const navigationQuery = groq`*[_type == "navigation"]|order(order asc){_i
 export const navigationByTypeQuery = (type: string) => groq`*[_type == "navigation" && type == "${type}"]|order(order asc){_id,title,"href": "/" + page->slug.current,order,type,variant}`
 
 // Hero/CTA query
-export const heroQuery = groq`*[_type == "hero" && isActive == true][0]{_id,heading,subheading,image{asset->{_id,url,metadata{lqip,dimensions{width,height}}},alt,hotspot},ctaButton{text,href},isActive}`
+export const heroQuery = groq`*[_type == "hero" && isActive == true][0]{_id,heading,subheading,image{asset->{_id,url,metadata{lqip,dimensions{width,height}}},alt,hotspot,crop},ctaButton{text,href},isActive}`
 
 // Banner query
 export const bannerQuery = groq`*[_type == "banner" && isActive == true][0]{_id,text,backgroundColor,isActive,link{text,href}}`
@@ -40,7 +40,7 @@ export const pageBySlugQuery = (slug: string) => groq`*[_type == "page" && slug.
     _type == "hero" => {
       heading,
       subheading,
-      image{asset->{_id,url,metadata{lqip,dimensions{width,height}}},alt,hotspot},
+      image{asset->{_id,url,metadata{lqip,dimensions{width,height}}},alt,hotspot,crop},
       imageWidth,
       ctaButton{text,href},
       isActive
@@ -141,21 +141,25 @@ export const productQuery = groq`*[_type == "products" && slug.current == $slug]
   image{asset->{_id,url,metadata{lqip,dimensions{width,height}}},alt},
   price,
   originalPrice,
-  "recommendedAddOns": recommendedAddOns[]->{
-    _id,
-    title,
-    slug,
-    description,
-    price,
-    originalPrice,
-    currency,
-    productType,
-    status,
-    requiresParent,
-    "images": images[]{
-      asset->{_id, url, metadata{lqip, dimensions{width, height}}},
-      alt,
-      isPrimary
+  "recommendedAddOns": {
+    "heading": recommendedAddOns.heading,
+    "viewMoreLink": recommendedAddOns.viewMoreLink,
+    "products": recommendedAddOns.products[]->{
+      _id,
+      title,
+      slug,
+      description,
+      price,
+      originalPrice,
+      currency,
+      productType,
+      status,
+      requiresParent,
+      "images": images[]{
+        asset->{_id, url, metadata{lqip, dimensions{width, height}}},
+        alt,
+        isPrimary
+      }
     }
   },
   seo{

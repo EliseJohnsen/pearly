@@ -17,6 +17,7 @@ interface CollapsableCardsSectionProps {
     }>;
     isActive?: boolean;
   };
+  compact?: boolean;
 }
 
 // Helper function to get icon component from Heroicons
@@ -34,6 +35,7 @@ function getIconComponent(iconName: string) {
 
 export default function CollapsableCardsSection({
   data,
+  compact = false,
 }: CollapsableCardsSectionProps) {
   if (data.isActive === false) return null;
 
@@ -41,10 +43,10 @@ export default function CollapsableCardsSection({
   const sortedCards = [...data.cards].sort((a, b) => a.order - b.order);
 
   return (
-    <section className="container max-w-3xl mx-auto px-4 py-10 md:py-16">
+    <section className={compact ? "" : "container max-w-3xl mx-auto px-4 py-10 md:py-16"}>
       {/* Section Title */}
-      <div className="mb-8">
-        <h2 className="text-3xl md:text-4xl font-bold text-dark-purple">
+      <div className={compact ? "mb-4" : "mb-8"}>
+        <h2 className="font-sans text-lg font-bold leading-none text-dark-purple uppercase">
           {data.sectionTitle}
         </h2>
       </div>
@@ -60,9 +62,9 @@ export default function CollapsableCardsSection({
           // All items except first get top border, last item also gets bottom border
           let borderClass = "";
           if (!isFirst) {
-            borderClass = isLast ? "border-y border-purple" : "border-t border-purple";
+            borderClass = isLast ? "border-y border-primary-pink" : "border-t border-primary-pink";
           } else if (isLast) {
-            borderClass = "border-b border-purple";
+            borderClass = "border-b border-primary-pink";
           }
 
           return (

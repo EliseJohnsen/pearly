@@ -8,27 +8,33 @@
 
 :root {
   /* Bakgrunnsfarger */
-  --background: #F5EDE8;
+  --background: #FFFFFF;
   --background-secondary: #FDFBF9;
   --foreground: #111827;
 
   /* Primærfarger */
   --primary: #F05A41;
-  --primary-hover: #1d4ed8;
+  --orange-dark: #DD3F25;
+  --primary-hover: var(--orange-dark);
   --primary-light: #EECED5;
   --primary-dark: #1e3a8a;
   --primary-pink: #FBE7F5;
   --primary-dark-pink: #F5B0DF;
   --primary-light-pink: #FbF2F8;
   --primary-red: #AC0D2E;
+  --red-dark: #8D0E2C;
+  --red-extra-dark: #4F0213;
   --primary-neon-green: #DEF46B;
   
   --lavender-pink: #F9D1EE;
+  --footer-text: #F2D4E8;
   --purple: #BA7EB9;
   --dark-purple: #673154;
+  --purple-extra-dark: #391E36;
 
   /* Sekundærfarger */
   --success: #9fcd81;
+  --green-dark: #609653;
   --success-hover: #15803d;
 
   /* Tekstfarger */
@@ -55,7 +61,7 @@
   --input-border: #d1d5db;
 
   /* Disabled states */
-  --disabled-bg: #EAD8EA;
+  --disabled-bg: #ECDDED;
   --disabled-text: #BA7EB9;
 
   /* Gradient bakgrunn */
@@ -66,6 +72,10 @@
 @theme inline {
   /* Fonter */
   --font-sans: var(--font-quicksand);
+  --font-display: var(--font-display);
+
+  /* Egendefinerte brekkpunkter */
+  --breakpoint-tablet: 933px;
 
   /* Bakgrunnsfarger - bruk som bg-background, bg-card osv. */
   --color-background: var(--background);
@@ -75,19 +85,25 @@
 
   /* Primærfarger - bruk som bg-primary, hover:bg-primary-hover */
   --color-primary: var(--primary);
+  --color-orange-dark: var(--orange-dark);
   --color-primary-hover: var(--primary-hover);
   --color-primary-light: var(--primary-light);
   --color-primary-pink: var(--primary-pink);
   --color-primary-dark-pink: var(--primary-dark-pink);
   --color-primary-light-pink: var(--primary-light-pink);
   --color-primary-red: var(--primary-red);
+  --color-red-dark: var(--red-dark);
+  --color-red-extra-dark: var(--red-extra-dark);
 
   --color-purple: var(--purple);
   --color-dark-purple: var(--dark-purple);
+  --color-purple-extra-dark: var(--purple-extra-dark);
   --color-lavender-pink: var(--lavender-pink);
+  --color-footer-text: var(--footer-text);
 
   /* Sekundærfarger - bruk som bg-success, hover:bg-success-hover */
   --color-success: var(--success);
+  --color-green-dark: var(--green-dark);
   --color-success-hover: var(--success-hover);
 
   /* Tekstfarger - bruk som text-app-primary, text-app-secondary */
@@ -101,8 +117,34 @@
   --color-border-subtle: var(--border-subtle);
 }
 
+html {
+  scroll-behavior: smooth;
+  background-color: #673154;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-quicksand), sans-serif;
 }
+
+.font-dmserif {
+  font-kerning: normal;
+  font-feature-settings: "kern" 1;
+}
+
+/* Hide scrollbar but keep functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
