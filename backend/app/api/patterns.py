@@ -64,7 +64,7 @@ class GenerateMockupResponse(BaseModel):
     mockupBase64: str
 
 @router.post("/patterns/generate-three-sizes", response_model=GenerateThreeSizesResponse)
-async def generate_three_sizes(request: GenerateThreeSizesRequest):
+async def generate_three_sizes(request: GenerateThreeSizesRequest, db: Session = Depends(get_db)):
     """
     Generate patterns in three sizes (small, medium, large).
     Runs generation in parallel for faster response.
@@ -131,6 +131,7 @@ async def generate_three_sizes(request: GenerateThreeSizesRequest):
                     await ai_service.transform_and_download(
                         image_path=temp_original.name,
                         save_path=temp_styled.name,
+                        db=db,
                         style="wpap",  # Use WPAP style for bead patterns
                         model="google/nano-banana",
                         optimize_for_beads=True
@@ -453,6 +454,7 @@ async def upload_image_with_style(
     boards_height: int = 1,
     model: str = "google/nano-banana",
     prompt_strength: float = 0.5,
+    db: Session = Depends(get_db),
     admin: AdminUser = Depends(get_current_admin)
 ):
     """
@@ -505,6 +507,7 @@ async def upload_image_with_style(
         _, transformation_metadata = await ai_service.transform_and_download(
             image_path=temp_original.name,
             save_path=temp_styled.name,
+            db=db,
             style=style,
             model=model,
             prompt_strength=prompt_strength,

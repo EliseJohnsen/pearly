@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { authenticatedFetch } from "@/lib/auth";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
 import { PencilIcon, TrashIcon, XMarkIcon, CheckIcon, PlusIcon } from "@heroicons/react/24/outline";
+import AIStylesSection from "./AIStylesSection";
 
 interface Color {
   name: string;
@@ -224,9 +225,18 @@ export default function SettingsPage() {
   return (
     <div className="min-h-screen bg-background py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-6">
+        <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Innstillinger</h1>
-          <p className="mt-2 text-gray-600">Administrer perlefarger</p>
+          <p className="mt-2 text-gray-600">Administrer perlefarger og AI-stiler</p>
+        </div>
+
+        {/* AI Generation Styles Section */}
+        <AIStylesSection />
+
+        {/* Perle Colors Section */}
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Perlefarger</h2>
+          <p className="text-gray-600">Administrer fargepaletten for perler</p>
         </div>
 
         {error && (

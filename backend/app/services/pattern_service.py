@@ -34,12 +34,16 @@ def save_custom_pattern(db: Session, pattern_data: dict, colors_used: list) -> i
         height = pattern_data.get("height", 0)
         grid_size = width * height
 
+        # Extract style_code from pattern_data if it's an AI-styled pattern
+        style_code = pattern_data.get("style") if pattern_data.get("styled") else None
+
         # Create pattern record
         db_pattern = Pattern(
             uuid=str(uuid_lib.uuid4()),
             pattern_data=pattern_data,
             grid_size=grid_size,
             colors_used=colors_used,
+            style_code=style_code,
         )
         db.add(db_pattern)
         db.flush()  # Get the ID without committing

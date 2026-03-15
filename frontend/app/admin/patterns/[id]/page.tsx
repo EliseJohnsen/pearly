@@ -101,11 +101,18 @@ export default function PatternDetailPage() {
   };
 
   const getBeadWeight = (beadCount: number) => {
-    const adjustedCount = beadCount < 100
-      ? beadCount + 5
-      : beadCount + 20;
+    let adjustedCount: number;
+
+    if (beadCount < 100) {
+      adjustedCount = beadCount + 7;
+    } else if (beadCount <= 700) {
+      adjustedCount = beadCount + 35;
+    } else {
+      adjustedCount = beadCount + 50;
+    }
+
     const value = (adjustedCount / 1000 * 60)
-    return Math.round(value * 10) / 10;
+    return Math.ceil(Math.round(value * 10) / 10);
   }
 
   const toggleColorCheck = (colorCode: string) => {
