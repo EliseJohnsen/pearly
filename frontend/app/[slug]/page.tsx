@@ -9,12 +9,14 @@ import Footer from "../components/Footer";
 import Banner from "../components/Banner";
 import HowItWorks from "../components/HowItWorks";
 import CTA from "../components/CTA";
+import HeroForside from "../components/HeroForside";
 import Content from "../components/Content";
 import ProductSection from "../components/ProductSection";
 import LoadingSpinner from "../components/LoadingSpinner";
 import ImageCarousel from "../components/ImageCarousel";
 import CollapsableCardsSection from "../components/CollapsableCardsSection";
 import ProductCarousel from '../components/ProductCarousel';
+import SplitSection from '../components/SplitSection';
 import PearlyButton from "../components/PearlyButton";
 
 // Define the page query
@@ -110,6 +112,7 @@ const pageQuery = groq`*[_type == "page" && slug.current == $slug][0]{
     },
     _type == "productCarousel" => {
       heading,
+      description,
       products[]->{
         _id,
         title,
@@ -122,6 +125,19 @@ const pageQuery = groq`*[_type == "page" && slug.current == $slug][0]{
         },
       },
       viewMoreLink{text, href},
+      isActive
+    },
+    _type == "splitSection" => {
+      heading,
+      body,
+      button{text, href},
+      image{
+        asset->{_id, url, metadata{lqip, dimensions{width, height}}},
+        alt,
+        hotspot
+      },
+      imagePosition,
+      backgroundColor,
       isActive
     }
   },
@@ -187,7 +203,7 @@ export default function DynamicPage({
               <div className="px-4 md:px-0 space-y-4 pt-6 md:pt-4">
                 <p className="text-sm font-semibold uppercase tracking-widest text-purple">Personlig motiv</p>
                 {section.heading && (
-                  <h2 className="text-4xl md:text-5xl font-semibold text-left text-dark-purple mb-4">{section.heading as string}</h2>
+                  <h2 className="font-display text-4xl md:text-5xl leading-none text-left text-dark-purple mb-4">{section.heading as string}</h2>
                 )}
                 {section.description && (
                   <p className="text-lg text-gray-700">{section.description as string}</p>
@@ -208,7 +224,7 @@ export default function DynamicPage({
 
       switch (section._type) {
         case "hero":
-          result.push(<CTA key={i} data={section as never} />);
+          result.push(<CTA key={i} data={section} />);
           break;
         case "banner":
           result.push(<Banner key={i} data={section as never} />);
@@ -229,7 +245,7 @@ export default function DynamicPage({
           result.push(<CollapsableCardsSection key={i} data={section as never} />);
           break;
         case "productCarousel":
-          result.push(<ProductCarousel key={i} heading={section.heading as string} products={(section.products as never) || []} viewMoreLink={section.viewMoreLink as never} />);
+          result.push(<ProductCarousel key={i} heading={section.heading} products={section.products || []} viewMoreLink={section.viewMoreLink} />);
           break;
       }
       i++;
@@ -239,7 +255,7 @@ export default function DynamicPage({
 
   return (
     <div className="min-h-screen bg-[var(--background)]">
-      <Header />
+      <Header startTransparent={slug === 'home'} />
       <main className="min-h-screen">
         {renderSections()}
       </main>

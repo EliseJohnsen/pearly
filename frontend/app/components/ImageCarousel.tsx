@@ -136,7 +136,7 @@ export default function ImageCarousel({ data, carouselOnly = false }: ImageCarou
       {/* Header — hidden in carouselOnly mode */}
       {!carouselOnly && data.heading && (
         <div className="mb-8">
-          <h2 className="text-3xl font-semibold text-dark-purple mb-4">{data.heading}</h2>
+          <h2 className="font-display text-3xl leading-none text-dark-purple mb-4">{data.heading}</h2>
           {data.description && (
             <p className="text-lg md:text-xl text-gray-900">{data.description}</p>
           )}

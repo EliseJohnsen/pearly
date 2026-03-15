@@ -388,7 +388,7 @@ export default function ProductDetailPage({
               {product.productType !== 'kit' && product.status === "coming_soon" && (
                 <span className="inline-block text-xs font-semibold uppercase tracking-wide bg-yellow-100 text-yellow-800 border border-yellow-200 px-2 py-0.5 rounded-full mb-3">Kommer snart</span>
               )}
-              <h1 className="text-4xl md:text-5xl font-semibold text-left text-dark-purple mb-4">{product.title}</h1>
+              <h1 className="font-display text-5xl leading-none text-dark-purple mb-2">{product.title}</h1>
             </div>
 
             {product.description && (
