@@ -17,6 +17,7 @@ import roomTemplate from './roomTemplate'
 import imageCarousel from './imageCarousel'
 import collapsableCards from './collapsableCards'
 import productCarousel from './productCarousel'
+import splitSection from './splitSection'
 
 export const schemaTypes = [
   page,
@@ -38,4 +39,5 @@ export const schemaTypes = [
   imageCarousel,
   collapsableCards,
   productCarousel,
+  splitSection,
 ]

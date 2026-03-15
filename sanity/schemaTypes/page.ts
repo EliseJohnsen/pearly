@@ -145,6 +145,7 @@ export default defineType({
         {type: 'imageCarousel'},
         {type: 'collapsableCards'},
         {type: 'productCarousel'},
+        {type: 'splitSection'},
         {
           type: 'object',
           name: 'productsSection',
