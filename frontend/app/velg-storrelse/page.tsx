@@ -70,19 +70,59 @@ export default function VelgStorrelsePage() {
   const startOverButtonLabel = useUIString("start_paa_nytt_knapp");
   const generate_pattern_description = useUIString("hama_generate_pattern_description");
 
-  const fetchCustomKits = async () => {
+  const fetchCustomKits = async (retryCount = 0, abortSignal?: AbortSignal): Promise<void> => {
+    const maxRetries = 3;
+    const retryDelay = Math.min(1000 * Math.pow(2, retryCount), 5000); // Exponential backoff: 1s, 2s, 4s
+
     try {
-      const response = await fetch(`${API_URL}/api/products/custom-kits`);
+      const response = await fetch(`${API_URL}/api/products/custom-kits`, {
+        signal: abortSignal, // Use the signal from useEffect cleanup
+      });
+
       if (!response.ok) {
-        throw new Error("Failed to fetch custom kits");
+        throw new Error(`Failed to fetch custom kits: ${response.status}`);
       }
+
       const result = await response.json();
       setCustomKits(result.kits);
+      console.log(`Successfully fetched ${result.kits.length} custom kits`);
     } catch (err) {
-      console.error("Error fetching custom kits:", err);
-      // Don't show error to user - prices will just not display
+      // Ignore AbortError - this happens when component unmounts or in React Strict Mode
+      if (err instanceof Error && err.name === 'AbortError') {
+        console.log('Custom kits fetch was cancelled (component unmounted or strict mode)');
+        return;
+      }
+
+      console.error(`Error fetching custom kits (attempt ${retryCount + 1}/${maxRetries + 1}):`, err);
+
+      // Don't retry if aborted
+      if (abortSignal?.aborted) {
+        return;
+      }
+
+      // Retry if we haven't exceeded max retries
+      if (retryCount < maxRetries) {
+        console.log(`Retrying in ${retryDelay}ms...`);
+        setTimeout(() => {
+          fetchCustomKits(retryCount + 1, abortSignal);
+        }, retryDelay);
+      } else {
+        console.error("Failed to fetch custom kits after all retries - prices will not display");
+        // Don't show error to user - prices will just not display
+      }
     }
   };
+
+  // Fetch custom kits early (as soon as component mounts)
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchCustomKits(0, controller.signal);
+
+    // Cleanup: abort the fetch if component unmounts
+    return () => {
+      controller.abort();
+    };
+  }, []);
 
   // Load data from localStorage and generate patterns
   useEffect(() => {
@@ -96,7 +136,6 @@ export default function VelgStorrelsePage() {
         }
         setFlowData(data);
         generatePatterns(data);
-        fetchCustomKits();
       } catch (e) {
         console.error("Failed to parse stored flow data", e);
         router.push("/last-opp-bilde");
