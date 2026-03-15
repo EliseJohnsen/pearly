@@ -62,14 +62,20 @@ function CartItemRow({
               />
             )}
             <div className="flex-1">
-              <Link
-                href={`/produkter/${item.slug}`}
-                className={`font-semibold hover:text-primary transition-colors ${
-                  isChild ? "text-sm" : ""
-                }`}
-              >
-                {item.title}
-              </Link>
+              {item.productType === "kit" ? (
+                <Link
+                  href={`/produkter/${item.slug}`}
+                  className={`font-semibold hover:text-primary transition-colors ${
+                    isChild ? "text-sm" : ""
+                  }`}
+                >
+                  {item.title}
+                </Link>
+              ) : (
+                <span className={`font-semibold ${isChild ? "text-sm" : ""}`}>
+                  {item.title}
+                </span>
+              )}
               <p className={`mt-1 ${isChild ? "text-sm" : ""}`}>
                 {formatPrice(item.price, item.currency)}
               </p>
@@ -122,14 +128,20 @@ function CartItemRow({
                 className="w-16 h-16 object-cover rounded-lg"
               />
             )}
-            <Link
-              href={`/produkter/${item.slug}`}
-              className={`font-semibold hover:text-primary transition-colors ${
-                isChild ? "text-sm pl-10" : ""
-              }`}
-            >
-              {item.title}
-            </Link>
+            {item.productType === "kit" ? (
+              <Link
+                href={`/produkter/${item.slug}`}
+                className={`font-semibold hover:text-primary transition-colors ${
+                  isChild ? "text-sm pl-10" : ""
+                }`}
+              >
+                {item.title}
+              </Link>
+            ) : (
+              <span className={`font-semibold ${isChild ? "text-sm pl-10" : ""}`}>
+                {item.title}
+              </span>
+            )}
           </div>
           <div className="col-span-2 text-center">
             {formatPrice(item.price, item.currency)}
@@ -189,7 +201,7 @@ function CartItemRow({
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, clearCart, totalPrice } = useCart();
-  const shipping = 99;
+  const shipping = 59;
 
   const formatPrice = (price: number, currency: string = "NOK") => {
     return new Intl.NumberFormat("nb-NO", {
