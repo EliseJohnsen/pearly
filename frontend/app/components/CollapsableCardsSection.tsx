@@ -11,7 +11,7 @@ interface CollapsableCardsSectionProps {
     cards: Array<{
       header: string;
       icon: string;
-      content: any; // Portable Text blocks
+      content: unknown; // Portable Text blocks
       defaultExpanded?: boolean;
       order: number;
     }>;
@@ -22,7 +22,7 @@ interface CollapsableCardsSectionProps {
 
 // Helper function to get icon component from Heroicons
 function getIconComponent(iconName: string) {
-  // @ts-ignore - Dynamic icon access
+  // @ts-expect-error - Dynamic icon access
   const IconComponent = HeroIcons[iconName];
 
   if (!IconComponent) {

@@ -46,7 +46,7 @@ export interface PatternData {
     created_at: string;
     boards_width?: number;
     boards_height?: number;
-    pattern_data?: any;
+    pattern_data?: unknown;
     pattern_image_base64?: string;
     styled_image_base64?: string;
 }

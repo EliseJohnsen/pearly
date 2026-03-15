@@ -6,8 +6,27 @@ import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
 import { useFooter, useFooterPages, useUIString } from "../hooks/useSanityData";
 
 interface FooterProps {
-    data?: any,
-    footerPages?: any
+    data?: {
+        logo?: { asset?: { url?: string } };
+        socialLinks?: Array<{ platform?: string; url?: string }>;
+        newsletter?: { enabled?: boolean };
+        companyInfo?: {
+            email?: string;
+            name?: string;
+            companyName?: string;
+            address?: string;
+            orgNumber?: string;
+        };
+        additionalText?: string;
+    };
+    footerPages?: Array<{
+        _id?: string;
+        title?: string;
+        slug?: { current?: string };
+        showInFooter?: boolean;
+        footerColumn?: number;
+        footerOrder?: number;
+    }>;
 }
 
 export default function Footer({ data, footerPages }: FooterProps = {}) {
@@ -59,9 +78,9 @@ export default function Footer({ data, footerPages }: FooterProps = {}) {
                             <p className="hidden tablet:block text-base my-2">{column1Header}</p>
                         )}
                         <ul className={`text-white pb-3 tablet:pb-0 ${openSection === 0 ? 'block' : 'hidden'} tablet:block`}>
-                            {pages?.filter((page: any) => page.footerOrder > 10 && page.footerOrder < 20).map((page: any) => (
+                            {pages?.filter((page) => (page.footerOrder ?? 0) > 10 && (page.footerOrder ?? 0) < 20).map((page) => (
                                 <li key={page._id}>
-                                    <Link href={`/${page.slug.current}`} className="hover:text-primary transition-colors">
+                                    <Link href={`/${page.slug?.current}`} className="hover:text-primary transition-colors">
                                         {page.title}
                                     </Link>
                                 </li>
@@ -82,9 +101,9 @@ export default function Footer({ data, footerPages }: FooterProps = {}) {
                             <p className="hidden tablet:block text-base my-2">{column2Header}</p>
                         )}
                         <ul className={`text-white pb-3 tablet:pb-0 ${openSection === 1 ? 'block' : 'hidden'} tablet:block`}>
-                            {pages?.filter((page: any) => page.footerOrder > 20 && page.footerOrder < 30).map((page: any) => (
+                            {pages?.filter((page) => (page.footerOrder ?? 0) > 20 && (page.footerOrder ?? 0) < 30).map((page) => (
                                 <li key={page._id}>
-                                    <Link href={`/${page.slug.current}`} className="hover:text-primary transition-colors">
+                                    <Link href={`/${page.slug?.current}`} className="hover:text-primary transition-colors">
                                         {page.title}
                                     </Link>
                                 </li>
@@ -129,7 +148,7 @@ export default function Footer({ data, footerPages }: FooterProps = {}) {
                             </li>
                             {pages?.filter((page: any) => page.footerOrder > 30 && page.footerOrder < 40).map((page: any) => (
                                 <li key={page._id}>
-                                    <Link href={`/${page.slug.current}`} className="hover:text-primary transition-colors">
+                                    <Link href={`/${page.slug?.current}`} className="hover:text-primary transition-colors">
                                         {page.title}
                                     </Link>
                                 </li>

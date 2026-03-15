@@ -10,8 +10,8 @@ export interface OrderLine {
   product_type?: string;
   children?: OrderLine[];
   custom_pattern?: {
-    patternData: any;
-    colorsUsed: any[];
+    patternData: unknown;
+    colorsUsed: unknown[];
   };
 }
 

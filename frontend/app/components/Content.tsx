@@ -1,8 +1,14 @@
 import { PortableText } from "next-sanity"
 import { portableTextComponents } from "./PortableTextComponents"
 
+interface ContentData {
+  body?: unknown[];
+  title?: string;
+  backgroundColor?: string;
+}
+
 interface ContentProps {
-  data?: any
+  data?: ContentData;
 }
 
 export default function Content({ data }: ContentProps) {

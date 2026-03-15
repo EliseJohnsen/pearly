@@ -161,14 +161,20 @@ export default function PatternDetailPage() {
 
         <CollapsableCard header="Produkter knyttet til dette mønsteret">
           <div className="grid grid-cols-3 gap-2 bg-primary-pink">
-            {products?.map((product: any) => (
+            {products?.map((product: {
+              _id: string;
+              slug: { current: string };
+              images?: Array<{ isPrimary?: boolean; asset: { url: string }; alt?: string }>;
+              title: string;
+              description?: string;
+            }) => (
               <a
                   key={product._id}
                   href={`/produkter/${product.slug.current}`}
                   className="rounded-lg p-4 hover:shadow-lg transition block w-75"
               >
                   {product.images && product.images.length > 0 && (() => {
-                    const primaryImage = product.images.find((img: any) => img.isPrimary) || product.images[0]
+                    const primaryImage = product.images.find((img) => img.isPrimary) || product.images[0]
                     return (
                       <img
                         src={primaryImage.asset.url}

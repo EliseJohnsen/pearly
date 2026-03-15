@@ -4,8 +4,24 @@ import Image from 'next/image'
 import {useHero} from '@/app/hooks/useSanityData'
 import {urlFor} from '@/lib/sanity'
 
+interface CTAData {
+  image?: {
+    asset?: {
+      url?: string;
+    };
+    alt?: string;
+  };
+  imageWidth?: string;
+  heading?: string;
+  subheading?: string;
+  ctaButton?: {
+    href: string;
+    text: string;
+  };
+}
+
 interface CTAProps {
-  data?: any
+  data?: CTAData;
 }
 
 export default function CTA({ data }: CTAProps = {}) {

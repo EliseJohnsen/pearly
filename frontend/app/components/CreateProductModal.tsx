@@ -38,7 +38,7 @@ export default function CreateProductModal({
           imageBase64 = await renderGridToBase64(pattern.id);
         } else {
           // Fallback: use existing base64 or fetch from URL
-          let rawBase64 = pattern.pattern_image_base64 || await convertImageToBase64(pattern.pattern_image_url);
+          const rawBase64 = pattern.pattern_image_base64 || await convertImageToBase64(pattern.pattern_image_url);
           // Strip data URI prefix if present to avoid double-prefixing
           imageBase64 = rawBase64.includes(',') ? rawBase64.split(',')[1] : rawBase64;
         }
@@ -130,7 +130,7 @@ export default function CreateProductModal({
         patternImageBase64 = await renderGridToBase64(pattern.id);
       } else {
         // Fallback: use existing base64 or fetch from URL
-        let rawBase64 = pattern.pattern_image_base64 || await convertImageToBase64(pattern.pattern_image_url);
+        const rawBase64 = pattern.pattern_image_base64 || await convertImageToBase64(pattern.pattern_image_url);
         // Strip data URI prefix if present
         patternImageBase64 = rawBase64.includes(',') ? rawBase64.split(',')[1] : rawBase64;
       }

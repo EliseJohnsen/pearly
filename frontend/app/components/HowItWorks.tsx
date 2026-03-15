@@ -4,7 +4,18 @@ import {useHowItWorks} from "../hooks/useSanityData";
 import { ArrowUpTrayIcon, GiftIcon, PhotoIcon } from "@heroicons/react/24/outline";
 
 interface HowItWorksProps {
-  data?: any
+  data?: {
+    backgroundColor?: string;
+    fontColor?: string;
+    sectionTitle?: string;
+    sectionSubtitle?: string;
+    steps?: Array<{
+      title?: string;
+      description?: string;
+      icon?: string;
+      image?: { asset?: { url?: string }; alt?: string };
+    }>;
+  };
 }
 
 export default function HowItWorks({ data }: HowItWorksProps = {}) {
@@ -65,7 +76,7 @@ export default function HowItWorks({ data }: HowItWorksProps = {}) {
               </div>
             </>
           ) : howItWorks?.steps && howItWorks.steps.length > 0 ? (
-            howItWorks.steps.map((step: any, index: number) => (
+            howItWorks.steps.map((step, index: number) => (
               <div key={index} className="justify-items-center">
                 <div className="w-32 h-32 rounded-full flex items-center justify-center"
                   style={{backgroundColor: getHowItWorksBgColor()}}>

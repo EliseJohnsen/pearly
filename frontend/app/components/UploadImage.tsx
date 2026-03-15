@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import Cropper from "react-easy-crop";
 import { Area } from "react-easy-crop";
 import { useUIString } from "../hooks/useSanityData";
@@ -86,6 +86,17 @@ export default function UploadImage({ onImageSelected, initialPreview }: UploadI
   const [originalImage, setOriginalImage] = useState<string | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
 
+  // Cancel crop and return to upload state
+  const handleCancelCrop = useCallback(() => {
+    setShowCropper(false);
+    setOriginalImage(null);
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }, []);
+
   // Handle focus trap and escape key
   useEffect(() => {
     if (!showCropper) return;
@@ -124,7 +135,7 @@ export default function UploadImage({ onImageSelected, initialPreview }: UploadI
       document.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "unset";
     };
-  }, [showCropper]);
+  }, [showCropper, handleCancelCrop]);
 
   const handleFileChange = (file: File) => {
     const reader = new FileReader();
@@ -144,17 +155,6 @@ export default function UploadImage({ onImageSelected, initialPreview }: UploadI
         return 4 / 3;
       case "1:1":
         return 1;
-    }
-  };
-
-  // Cancel crop and return to upload state
-  const handleCancelCrop = () => {
-    setShowCropper(false);
-    setOriginalImage(null);
-    setCrop({ x: 0, y: 0 });
-    setZoom(1);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
     }
   };
 

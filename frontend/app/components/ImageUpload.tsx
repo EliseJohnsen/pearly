@@ -6,8 +6,13 @@ import PearlyButton from "./PearlyButton";
 import { useUIString } from '@/app/hooks/useSanityData';
 import { getSessionToken } from "@/lib/auth";
 
+interface PatternData {
+  uuid?: string;
+  [key: string]: unknown;
+}
+
 interface ImageUploadProps {
-  onPatternGenerated: (data: any) => void;
+  onPatternGenerated: (data: PatternData) => void;
   onUploadStatusChange?: (isUploading: boolean) => void;
 }
 

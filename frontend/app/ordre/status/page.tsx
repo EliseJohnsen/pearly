@@ -195,7 +195,7 @@ function OrderStatusContent() {
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
               <p className="text-blue-800 text-sm">
                 💡 <strong>Tips:</strong> Refresh denne siden for å sjekke oppdatert status.
-                Hvis du har betalt men statusen fortsatt viser "venter", kan det ta noen minutter
+                Hvis du har betalt men statusen fortsatt viser &quot;venter&quot;, kan det ta noen minutter
                 før betalingen blir registrert.
               </p>
             </div>

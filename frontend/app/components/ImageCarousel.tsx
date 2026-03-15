@@ -126,7 +126,7 @@ export default function ImageCarousel({ data, carouselOnly = false }: ImageCarou
   const isBase64OrDirectUrl = (url: string) =>
     url.startsWith("data:") || url.startsWith("http");
 
-  const getImageUrl = (image: any, width: number) => {
+  const getImageUrl = (image: { asset: { url: string } }, width: number) => {
     if (isBase64OrDirectUrl(image.asset.url)) return image.asset.url;
     return urlFor(image).width(width).quality(85).auto("format").url();
   };
