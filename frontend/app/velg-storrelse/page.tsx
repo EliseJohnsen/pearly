@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
@@ -63,6 +63,9 @@ export default function VelgStorrelsePage() {
   const [hoveredPattern, setHoveredPattern] = useState<string | null>(null);
   const [showGhostCards, setShowGhostCards] = useState(false);
   const [loadingStage, setLoadingStage] = useState<'ai-generation' | 'pattern-generation'>('ai-generation');
+
+  // Ref to prevent double execution of pattern generation
+  const patternsGeneratedRef = useRef(false);
   const chooseSizeHeader = useUIString("velg_storrelse_header");
   const chooseSizeText = useUIString("velg_storrelse_tekst");
   const startOverHeader = useUIString("start_paa_nytt_header");
@@ -126,6 +129,11 @@ export default function VelgStorrelsePage() {
 
   // Load data from localStorage and generate patterns
   useEffect(() => {
+    // Prevent double execution (React Strict Mode triggers useEffect twice)
+    if (patternsGeneratedRef.current) {
+      return;
+    }
+
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       try {
@@ -136,6 +144,7 @@ export default function VelgStorrelsePage() {
         }
         setFlowData(data);
         generatePatterns(data);
+        patternsGeneratedRef.current = true; // Mark as generated
       } catch (e) {
         console.error("Failed to parse stored flow data", e);
         router.push("/last-opp-bilde");
@@ -143,7 +152,7 @@ export default function VelgStorrelsePage() {
     } else {
       router.push("/last-opp-bilde");
     }
-  }, [router]);
+  }, []); // Empty dependency array - only run on mount
 
   const generatePatterns = async (data: PatternFlowData) => {
     setIsLoading(true);
@@ -157,7 +166,7 @@ export default function VelgStorrelsePage() {
       setLoadingStage('pattern-generation');
     }
 
-    // Show ghost cards after 8 seconds
+    // Show ghost cards after 9 seconds
     const ghostCardTimer = setTimeout(() => {
       setShowGhostCards(true);
     }, 9000);
@@ -167,7 +176,7 @@ export default function VelgStorrelsePage() {
     if (data.style === 'ai-style') {
       stageTimer = setTimeout(() => {
         setLoadingStage('pattern-generation');
-      }, 5000);
+      }, 4500);
     }
 
     try {
