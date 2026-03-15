@@ -269,10 +269,13 @@ def _draw_cover_page(
     c.drawCentredString(page_width / 2, important_y - line_spacing,
                        "Det er disse vingene du skal hekte neste brett på.")
 
+    footer_y = 3 * cm
+
     # Draw QR code in original size, centered on page
     qr_image_path = get_pdf_image_path("perlehjelpen_qr.png")
 
     if qr_image_path:
+        footer_y = 4 * cm
         try:
             # Get original image dimensions
             with Image.open(qr_image_path) as img:
@@ -285,12 +288,12 @@ def _draw_cover_page(
             # Center the QR code horizontally
             qr_x = (page_width - qr_width) / 2
             # Position below all instructions (6 lines with spacing)
-            qr_y = important_y - line_spacing - 1.25 * cm - qr_height
+            qr_y = footer_y - line_spacing - 1.25 * cm - qr_height
 
             c.drawImage(
                 qr_image_path,
                 qr_x,
-                qr_y,
+                footer_y,
                 width=qr_width,
                 height=qr_height,
                 preserveAspectRatio=True,
@@ -301,12 +304,12 @@ def _draw_cover_page(
             logger.error(f"Failed to draw QR image: {e}.")
             qr_image_path = None
 
-    footer_y = 3 * cm
+    footer_text_y = footer_y - line_spacing - 0.5 * cm
     c.setFont(_get_font('bold'), 10)
-    c.drawCentredString(page_width / 2, footer_y, "For å sikre et godt resultat, les vår Perlehjelp.")
+    c.drawCentredString(page_width / 2, footer_text_y, "For å sikre et godt resultat, les vår Perlehjelp.")
     c.setFont(_get_font('regular'), 10)
-    c.drawCentredString(page_width / 2, footer_y - 1 * line_spacing, "Scan QR-koden, eller besøk")
-    c.drawCentredString(page_width / 2, footer_y - 2 * line_spacing, "www.feelpearly.no/perlehjelpen")
+    c.drawCentredString(page_width / 2, footer_text_y - 1 * line_spacing, "Scan QR-koden, eller besøk")
+    c.drawCentredString(page_width / 2, footer_text_y - 2 * line_spacing, "www.feelpearly.no/perlehjelpen")
 
 
 def generate_pattern_pdf(
