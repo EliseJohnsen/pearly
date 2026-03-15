@@ -339,6 +339,7 @@ export default function TestKnapper() {
             group: 'Lilla',
             colors: [
               { label: 'disabled', bg: 'bg-disabled', hex: '#ECDDED' },
+              { label: 'purple-light', bg: 'bg-purple-light', hex: '#DFC1E0' },
               { label: 'purple', bg: 'bg-purple', hex: '#BA7EB9' },
               { label: 'dark-purple', bg: 'bg-dark-purple', hex: '#673154' },
               { label: 'purple-extra-dark', bg: 'bg-purple-extra-dark', hex: '#391E36' },
