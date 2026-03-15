@@ -34,9 +34,9 @@ export default function HowItWorks({ data }: HowItWorksProps = {}) {
   }
 
   return (
-    <main className="container mx-auto px-4 pt-16 pb-2">
-      <div className="text-center mb-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto mt-10">
+    <main className="container mx-auto px-4 pt-16 pb-12">
+      <div className="text-center">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto">
           {howItWorksLoading ? (
             <>
               <div key="skeleton-1" className="bg-white rounded-lg shadow-lg p-8 animate-pulse">
