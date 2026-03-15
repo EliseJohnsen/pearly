@@ -4,6 +4,8 @@ Separate from image_processing.py to keep AI generation logic isolated.
 """
 
 from typing import Optional, Dict
+from sqlalchemy.orm import Session
+from fastapi import HTTPException, status
 import replicate
 from PIL import Image
 import requests
@@ -23,31 +25,6 @@ class AIGenerationService:
 
     IMAGE_TO_IMAGE_MODELS = {
         "google/nano-banana": "google/nano-banana",
-        "sdxl-img2img": "stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b",
-        "flux-dev": "black-forest-labs/flux-kontext-pro",
-    }
-
-    STYLE_PRESETS = {
-        "pop-art": {
-            "style_prompt": "in pop art style, bold vibrant colors, high contrast, flat design, Andy Warhol inspired, colorful illustration, keep the subject recognizable",
-            "negative_prompt": "realistic photo, blurry, low quality, completely different subject, unrecognizable, abstract mess",
-        },
-        "wpap": {
-            "style_prompt": "do not change motive, create modern pop art illustration, flat geometric shapes, hard sharp edges, no gradients, no shading, replace existing colors with bold high-contrast colors, poster art style, abstract planes, colorful angular shapes, motive constructed from flat single-colored polygons, strong color separation, replace details with abstract shapes",
-            "negative_prompt": "realistic photo, smooth gradients, curved lines, photographic, detailed textures, different subject",
-        },
-        "geometric": {
-            "style_prompt": "in geometric art style, bold shapes, colorful polygons, modern art, simplified forms, preserve main subject",
-            "negative_prompt": "organic details, curved lines, realistic, photographic, completely abstract, lose subject identity",
-        },
-        "pixel-art": {
-            "style_prompt": "in pixel art style, 8-bit retro gaming aesthetic, chunky pixels, limited color palette, keep subject clear",
-            "negative_prompt": "realistic, high resolution, smooth, photographic, detailed, unrecognizable subject",
-        },
-        "cartoon": {
-            "style_prompt": "in cartoon style, bold outlines, flat colors, simple shapes, animation style, maintain subject features",
-            "negative_prompt": "realistic, photographic, detailed textures, 3d render, completely different subject",
-        }
     }
 
     def __init__(self, api_token: Optional[str] = None):
@@ -105,6 +82,39 @@ class AIGenerationService:
 
         return palette_prompt
 
+    def _get_style_from_db(self, db: Session, style_code: str) -> Dict[str, str]:
+        """
+        Fetch AI generation style configuration from database.
+
+        Args:
+            db: Database session
+            style_code: Unique style code (e.g., 'wpap')
+
+        Returns:
+            Dict with 'style_prompt' and 'negative_prompt' keys
+
+        Raises:
+            HTTPException: If style not found or inactive
+        """
+        from app.models.ai_generation_style import AIGenerationStyle
+
+        style = (
+            db.query(AIGenerationStyle)
+            .filter(AIGenerationStyle.code == style_code, AIGenerationStyle.is_active == True)
+            .first()
+        )
+
+        if not style:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"AI generation style '{style_code}' not found or is inactive"
+            )
+
+        return {
+            "style_prompt": style.style_prompt,
+            "negative_prompt": style.negative_prompt,
+        }
+
     def _get_closest_aspect_ratio(self, width: int, height: int) -> str:
         """
         Calculate the closest valid aspect ratio for the given image dimensions.
@@ -137,44 +147,11 @@ class AIGenerationService:
 
         return closest_ratio[0]
 
-    # def _build_prompt(
-    #     self,
-    #     subject: str,
-    #     style: str = "cartoon",
-    #     additional_details: str = "",
-    #     optimize_for_beads: bool = True
-    # ) -> tuple[str, str]:
-    #     """
-    #     Builds optimized prompts for bead pattern generation.
-
-    #     Args:
-    #         subject: Main subject of the image (e.g., "cat", "flower", "portrait")
-    #         style: Style preset to use
-    #         additional_details: Extra details to add to prompt
-    #         optimize_for_beads: Add bead-pattern specific optimizations
-
-    #     Returns:
-    #         Tuple of (positive_prompt, negative_prompt)
-    #     """
-    #     style_config = self.STYLE_PRESETS.get("pixel-art")
-
-    #     prompt_parts = [subject]
-    #     prompt_parts.append(style_config["style_prompt"])
-
-    #     if optimize_for_beads:
-    #         prompt_parts.append("bold outlines, clear shapes, vivid colors, strong composition")
-
-    #     if additional_details:
-    #         prompt_parts.append(additional_details)
-
-    #     positive_prompt = ", ".join(prompt_parts)
-
-    #     logger.info(f"Built prompt - Style: {style}, Subject: {subject}")
-    #     return positive_prompt
 
     async def transform_image(
         self,
         image_path: str,
+        db: Session,
         style: str = "wpap",
         model: str = "google/nano-banana",
         prompt_strength: float = 0.5,
@@ -186,7 +163,8 @@ class AIGenerationService:
 
         Args:
             image_path: Path to the input image file
-            style: Style preset ("pop-art", "wpap", "geometric", "pixel-art", "cartoon")
+            db: Database session for looking up style configuration
+            style: Style code (e.g., "wpap")
             model: Model to use ("sdxl-img2img", "flux-dev-img2img")
             prompt_strength: How much to transform the image (0.0-1.0, higher = more transformation)
             additional_details: Additional prompt details
@@ -196,16 +174,15 @@ class AIGenerationService:
             Dict with 'url' key containing the transformed image URL
 
         Raises:
-            ValueError: If model or style is invalid
+            ValueError: If model is invalid
+            HTTPException: If style not found or inactive
             Exception: If transformation fails
         """
         if model not in self.IMAGE_TO_IMAGE_MODELS:
             raise ValueError(f"Model '{model}' not supported for image-to-image. Choose from: {list(self.IMAGE_TO_IMAGE_MODELS.keys())}")
 
-        if style not in self.STYLE_PRESETS:
-            raise ValueError(f"Style '{style}' not supported. Choose from: {list(self.STYLE_PRESETS.keys())}")
-
-        style_config = self.STYLE_PRESETS.get(style)
+        # Fetch style configuration from database
+        style_config = self._get_style_from_db(db, style)
 
         positive_prompt = f"{style_config['style_prompt']}. {self.color_palette_prompt}"
 
@@ -298,8 +275,9 @@ class AIGenerationService:
         self,
         image_path: str,
         save_path: str,
-        style: str = "pop-art",
-        model: str = "sdxl-img2img",
+        db: Session,
+        style: str = "wpap",
+        model: str = "google/nano-banana",
         **kwargs
     ) -> tuple[str, Dict]:
         """
@@ -308,7 +286,8 @@ class AIGenerationService:
         Args:
             image_path: Path to input image
             save_path: Where to save the transformed image
-            style: Style preset
+            db: Database session for looking up style configuration
+            style: Style code
             model: Model to use
             **kwargs: Additional arguments passed to transform_image
 
@@ -317,6 +296,7 @@ class AIGenerationService:
         """
         result = await self.transform_image(
             image_path=image_path,
+            db=db,
             style=style,
             model=model,
             **kwargs

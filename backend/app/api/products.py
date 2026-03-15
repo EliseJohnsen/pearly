@@ -222,11 +222,15 @@ async def create_product_from_pattern_data(
 
     grid_size = product_data.pattern_data.get("width", 29)
 
+    # Extract style_code from pattern_data if it's an AI-styled pattern
+    style_code = product_data.pattern_data.get("style") if product_data.pattern_data.get("styled") else None
+
     db_pattern = Pattern(
         uuid=pattern_uuid,
         pattern_data=product_data.pattern_data,
         grid_size=grid_size,
         colors_used=product_data.colors_used,
+        style_code=style_code,
     )
     db.add(db_pattern)
     db.flush()  # Get the pattern ID

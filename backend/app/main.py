@@ -5,7 +5,7 @@ from fastapi.exceptions import RequestValidationError
 from contextlib import asynccontextmanager
 from app.core.config import settings
 from app.core.database import engine, Base
-from app.api import patterns, products, auth, orders, checkout, webhooks, colors
+from app.api import patterns, products, auth, orders, checkout, webhooks, colors, ai_styles
 import logging
 
 # Configure logging
@@ -212,6 +212,7 @@ app.include_router(orders.router, prefix="/api", tags=["orders"])
 app.include_router(checkout.router, prefix="/api", tags=["checkout"])
 app.include_router(webhooks.router, prefix="/api", tags=["webhooks"])
 app.include_router(colors.router, prefix="/api", tags=["colors"])
+app.include_router(ai_styles.router, prefix="/api", tags=["ai-styles"])
 app.include_router(auth.router)
 
 @app.get("/")
