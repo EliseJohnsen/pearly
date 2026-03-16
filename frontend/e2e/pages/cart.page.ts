@@ -80,8 +80,12 @@ export class CartPage {
    * Works for both link and non-link products (e.g., custom patterns)
    */
   async verifyProductInCart(productName: string) {
-    // Check for product name in either a link or a span
-    const productLocator = this.page.locator(`a:has-text("${productName}"), span:has-text("${productName}")`).first();
+    // Check for product name in either a link or a span within cart items
+    // Use :visible pseudo-class to ensure we get the visible element (mobile or desktop layout)
+    const productLocator = this.page
+      .locator('[data-testid="cart-item"]')
+      .filter({ hasText: productName })
+      .first();
     await expect(productLocator).toBeVisible();
   }
 
