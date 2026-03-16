@@ -413,7 +413,9 @@ class SanityService:
 
         params = {"query": query}
 
-        async with httpx.AsyncClient(timeout=10.0) as client:
+        # Use longer timeout and retries for better reliability
+        timeout_config = httpx.Timeout(30.0, connect=10.0)
+        async with httpx.AsyncClient(timeout=timeout_config) as client:
             try:
                 response = await client.get(url, params=params)
                 response.raise_for_status()
@@ -426,11 +428,17 @@ class SanityService:
                     logger.warning(f"Custom kit product not found for size {product_size}")
 
                 return product
+            except httpx.TimeoutException as e:
+                logger.error(f"Timeout fetching custom_kit for size {product_size}: {str(e)}")
+                raise Exception(f"Sanity query timeout: Request took too long")
             except httpx.HTTPStatusError as e:
-                logger.error(f"Failed to fetch custom_kit from Sanity: {e.response.text}")
-                raise Exception(f"Sanity query failed: {e.response.text}")
+                logger.error(f"HTTP error fetching custom_kit from Sanity: {e.response.status_code} - {e.response.text}")
+                raise Exception(f"Sanity query failed with status {e.response.status_code}: {e.response.text}")
+            except httpx.RequestError as e:
+                logger.error(f"Network error fetching custom_kit from Sanity: {str(e)}")
+                raise Exception(f"Sanity network error: {str(e)}")
             except Exception as e:
-                logger.error(f"Error fetching custom_kit from Sanity: {str(e)}")
+                logger.error(f"Unexpected error fetching custom_kit from Sanity: {str(e)}", exc_info=True)
                 raise
 
     async def get_products_by_ids(self, product_ids: List[str]) -> List[Dict[str, Any]]:

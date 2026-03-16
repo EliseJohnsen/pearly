@@ -4,12 +4,14 @@ from reportlab.pdfgen import canvas
 from reportlab.lib import colors as reportlab_colors
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-from typing import List, Dict, Tuple
+from reportlab.lib.utils import ImageReader
+from typing import List, Dict, Tuple, Optional
 from PIL import Image
 import io
 import os
 
 from .color_service import code_to_hex
+from .pattern_generator import render_grid_to_image
 import logging
 
 logger = logging.getLogger(__name__)
@@ -109,18 +111,136 @@ def get_pdf_image_path(file_name: str) -> str:
     logger.warning(f"pdf image not found: {image_path}.")
     return None
 
-def _draw_cover_page(
+def _draw_title_page(
     c: canvas.Canvas,
     page_width: float,
     page_height: float,
     boards_width: int,
     boards_height: int,
+    grid: List[List[str]],
+    storage_version: int,
     pattern_width: int,
     pattern_height: int
 ) -> None:
     """
-    Draws a cover page showing the layout of boards.
+    Draws the title page (page 1) with logo, and pattern image.
+
+    Args:
+        c: ReportLab canvas
+        page_width: Page width in points
+        page_height: Page height in points
+        grid: Pattern grid data
+        storage_version: Storage version (1 for hex, 2 for codes)
+    """
+    # Draw logo at the top
+    logo_image_path = get_pdf_image_path("pearly_black.png")
+
+    if logo_image_path:
+        try:
+            with Image.open(logo_image_path) as img:
+                logo_width_pixels, logo_height_pixels = img.size
+
+            # Convert pixels to points (assuming 72 DPI)
+            logo_width = (logo_width_pixels * 72 / 96)
+            logo_height = (logo_height_pixels * 72 / 96)
+
+            # Center the logo horizontally at top of page
+            logo_x = (page_width - logo_width) / 2
+            logo_y = page_height - 2 * cm - logo_height
+
+            c.drawImage(
+                logo_image_path,
+                logo_x,
+                logo_y,
+                width=logo_width,
+                height=logo_height,
+                preserveAspectRatio=True,
+                mask='auto'
+            )
+            logger.info(f"Title page - Using logo image: {logo_image_path}")
+
+            # Position content below logo
+            content_y = logo_y - 1 * cm
+        except Exception as e:
+            logger.error(f"Failed to draw logo on title page: {e}")
+            content_y = page_height - 4 * cm
+    else:
+        content_y = page_height - 4 * cm
+
+    c.setFont(_get_font('regular'), 12)
+    info_y = content_y
+    c.drawCentredString(page_width / 2, info_y, f"{pattern_width} × {pattern_height} perler   -   {boards_width} × {boards_height} brett")
+
+    # Render pattern image from grid
+    try:
+        # Use smaller bead size for overview image
+        pattern_image = render_grid_to_image(
+            grid=grid,
+            bead_size=10,
+            storage_version=storage_version
+        )
+
+        # Convert PIL Image to reportlab format
+        img_buffer = io.BytesIO()
+        pattern_image.save(img_buffer, format='PNG')
+        img_buffer.seek(0)
+
+        # Calculate dimensions to fit on page while maintaining aspect ratio
+        max_width = 14 * cm
+        max_height = 16 * cm
+
+        img_width, img_height = pattern_image.size
+        aspect_ratio = img_width / img_height
+
+        if img_width > img_height:
+            # Landscape orientation
+            display_width = min(max_width, img_width * 72 / 96)
+            display_height = display_width / aspect_ratio
+            if display_height > max_height:
+                display_height = max_height
+                display_width = display_height * aspect_ratio
+        else:
+            # Portrait or square orientation
+            display_height = min(max_height, img_height * 72 / 96)
+            display_width = display_height * aspect_ratio
+            if display_width > max_width:
+                display_width = max_width
+                display_height = display_width / aspect_ratio
+
+        # Center the pattern image
+        img_x = (page_width - display_width) / 2
+        img_y = info_y - display_height - 1 * cm
+
+        c.drawImage(
+            ImageReader(img_buffer),
+            img_x,
+            img_y,
+            width=display_width,
+            height=display_height,
+            preserveAspectRatio=True
+        )
+
+        logger.info(f"Title page - Pattern image rendered successfully")
+
+    except Exception as e:
+        logger.error(f"Failed to render pattern image on title page: {e}")
+        # Draw error message
+        c.setFont(_get_font('regular'), 10)
+        c.drawCentredString(page_width / 2, info_y - 2 * cm,
+                          "Kunne ikke laste mønsterbilde")
+
+
+def _draw_instructions_page(
+    c: canvas.Canvas,
+    page_width: float,
+    page_height: float,
+    boards_width: int,
+    boards_height: int
+) -> None:
+    """
+    Draws the instructions page showing the layout of boards.
     Each board is represented as a labeled square in a grid.
+    This is page 2 of the PDF.
     """
     # Draw logo at the top of the page
     logo_image_path = get_pdf_image_path("pearly_black.png")
@@ -164,10 +284,6 @@ def _draw_cover_page(
         # No logo, use standard title position
         title_y = page_height - 3 * cm
 
-    c.setFont(_get_font('regular'), 12)
-    info_y = title_y
-    c.drawCentredString(page_width / 2, info_y, f"{pattern_width} × {pattern_height} perler   -   {boards_width} × {boards_height} brett")
-
     max_grid_width = 12 * cm
     max_grid_height = 12 * cm
 
@@ -181,7 +297,7 @@ def _draw_cover_page(
     total_grid_height = boards_height * board_square_size
     # Center the grid
     grid_start_x = (page_width - total_grid_width) / 2
-    grid_start_y = info_y - 1 * cm - total_grid_height
+    grid_start_y = title_y - 1 * cm - total_grid_height
     # Try to use grid image first, fall back to drawing if not available
     grid_image_path = get_grid_image_path(boards_width, boards_height)
 
@@ -269,10 +385,13 @@ def _draw_cover_page(
     c.drawCentredString(page_width / 2, important_y - line_spacing,
                        "Det er disse vingene du skal hekte neste brett på.")
 
+    footer_y = 3 * cm
+
     # Draw QR code in original size, centered on page
     qr_image_path = get_pdf_image_path("perlehjelpen_qr.png")
 
     if qr_image_path:
+        footer_y = 4 * cm
         try:
             # Get original image dimensions
             with Image.open(qr_image_path) as img:
@@ -285,12 +404,12 @@ def _draw_cover_page(
             # Center the QR code horizontally
             qr_x = (page_width - qr_width) / 2
             # Position below all instructions (6 lines with spacing)
-            qr_y = important_y - line_spacing - 1.25 * cm - qr_height
+            qr_y = footer_y - line_spacing - 1.25 * cm - qr_height
 
             c.drawImage(
                 qr_image_path,
                 qr_x,
-                qr_y,
+                footer_y,
                 width=qr_width,
                 height=qr_height,
                 preserveAspectRatio=True,
@@ -301,27 +420,31 @@ def _draw_cover_page(
             logger.error(f"Failed to draw QR image: {e}.")
             qr_image_path = None
 
-    footer_y = 3 * cm
+    footer_text_y = footer_y - line_spacing - 0.5 * cm
     c.setFont(_get_font('bold'), 10)
-    c.drawCentredString(page_width / 2, footer_y, "For å sikre et godt resultat, les vår Perlehjelp.")
+    c.drawCentredString(page_width / 2, footer_text_y, "For å sikre et godt resultat, les vår Perlehjelp.")
     c.setFont(_get_font('regular'), 10)
-    c.drawCentredString(page_width / 2, footer_y - 1 * line_spacing, "Scan QR-koden, eller besøk")
-    c.drawCentredString(page_width / 2, footer_y - 2 * line_spacing, "www.feelpearly.no/perlehjelpen")
+    c.drawCentredString(page_width / 2, footer_text_y - 1 * line_spacing, "Scan QR-koden, eller besøk")
+    c.drawCentredString(page_width / 2, footer_text_y - 2 * line_spacing, "www.feelpearly.no/perlehjelpen")
 
 
 def generate_pattern_pdf(
     pattern_data: Dict,
     colors_used: List[Dict],
-    output_path: str = None
+    output_path: str = None,
+    product_title: Optional[str] = None
 ) -> bytes:
     """
     Generates a PDF with the bead pattern distributed across multiple pages.
-    Each page represents one 29x29 board.
+    Page 1: Title page with logo, product title, and pattern image
+    Page 2: Board layout and assembly instructions
+    Page 3+: Individual board pages (one per 29x29 board)
 
     Args:
         pattern_data: Dictionary containing grid, width, height, boards_width, boards_height
         colors_used: List of color dictionaries with hex, name, code, and count
         output_path: Optional path to save the PDF file
+        product_title: Optional product title to display on cover page
 
     Returns:
         PDF content as bytes
@@ -391,7 +514,12 @@ def generate_pattern_pdf(
     margin_left = (page_width - pattern_cm_size * cm) / 2
     margin_top = (page_height - pattern_cm_size * cm) / 2
 
-    _draw_cover_page(c, page_width, page_height, boards_width, boards_height, pattern_width, pattern_height)
+    # Page 1: Title page with logo, product title, and pattern image
+    _draw_title_page(c, page_width, page_height, boards_width, boards_height, grid, storage_version, pattern_width, pattern_height)
+    c.showPage()
+
+    # Page 2: Instructions page with board layout and assembly instructions
+    _draw_instructions_page(c, page_width, page_height, boards_width, boards_height)
     c.showPage()
     for board_y in range(boards_height):
         for board_x in range(boards_width):

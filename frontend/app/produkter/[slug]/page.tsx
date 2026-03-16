@@ -499,10 +499,8 @@ export default function ProductDetailPage({
 
             <CollapsableCard header={<div className="flex items-center gap-4"><QuestionMarkCircleIcon className="w-6 h-6 text-dark-purple flex-shrink-0" /><h3 className="text-left text-xl font-medium">{innholdHeader}</h3></div>} defaultExpanded={false} className="">
               {product.longDescription && (
-                <div className="pt-6">
-                  <div className="prose prose-sm max-w-none text-gray-700">
-                    <PortableText value={product.longDescription} />
-                  </div>
+                <div className="prose prose-sm max-w-none text-gray-700">
+                  <PortableText value={product.longDescription} />
                 </div>
               )}
               <p>

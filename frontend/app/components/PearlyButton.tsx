@@ -6,7 +6,7 @@ import Link from 'next/link';
 interface PearlyButtonProps {
   label?: string;
   children?: ReactNode;
-  skin?: 'default' | 'primary' | 'secondary' | 'success' | 'danger' | 'outline' | 'ghost';
+  skin?: 'primary' | 'success' | 'danger' | 'outline' | 'ghost';
   onClick?: () => void;
   disabled?: boolean;
   className?: string;
@@ -17,7 +17,7 @@ interface PearlyButtonProps {
 export default function PearlyButton({
   label,
   children,
-  skin = 'default',
+  skin = 'primary',
   onClick,
   disabled = false,
   className = '',
@@ -30,8 +30,6 @@ export default function PearlyButton({
     switch (skin) {
       case 'primary':
         return `bg-dark-purple text-white ${h}bg-purple-extra-dark border-dark-purple`;
-      case 'secondary':
-        return `bg-primary-dark-pink text-dark-purple ${h}bg-primary-light border-primary-dark-pink`;
       case 'success':
         return 'bg-success text-white border-success';
       case 'danger':
@@ -40,9 +38,8 @@ export default function PearlyButton({
         return `bg-transparent border-dark-purple text-dark-purple ${h}bg-disabled`;
       case 'ghost':
         return `bg-transparent border-transparent text-dark-purple ${h}bg-primary-light`;
-      case 'default':
       default:
-        return `bg-background-secondary border-default text-app-primary ${h}bg-primary-light`;
+        return `bg-dark-purple text-white ${h}bg-purple-extra-dark border-dark-purple`;
     }
   };
 
