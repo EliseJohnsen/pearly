@@ -1,5 +1,5 @@
 "use client";
-import { getAuthHeaders } from "@/lib/auth";
+import { authenticatedFetch } from "@/lib/auth";
 
 import { useState, useEffect } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
@@ -95,7 +95,7 @@ export default function CreateProductModal({
 
   const renderGridToBase64 = async (patternId: string): Promise<string> => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-    const response = await fetch(`${apiUrl}/api/patterns/${patternId}/render-grid`);
+    const response = await authenticatedFetch(`${apiUrl}/api/patterns/${patternId}/render-grid`);
 
     if (!response.ok) {
       throw new Error("Failed to render grid to image");
@@ -169,15 +169,13 @@ export default function CreateProductModal({
         category_ids: [],
       };
 
-      const response = await fetch(
+      const response = await authenticatedFetch(
         `${apiUrl}/api/products/create-from-pattern-data`,
         {
           method: "POST",
           headers: {
-            ...getAuthHeaders(),
             "Content-Type": "application/json",
           },
-          credentials: 'include',
           body: JSON.stringify(productData),
         }
       );

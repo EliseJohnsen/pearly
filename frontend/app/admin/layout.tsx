@@ -1,4 +1,5 @@
 import AdminHeader from './components/AdminHeader'
+import AuthProtection from './components/AuthProtection'
 
 export default function AdminLayout({
   children,
@@ -6,9 +7,11 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <AdminHeader />
-      <main>{children}</main>
-    </div>
+    <AuthProtection>
+      <div className="min-h-screen bg-gray-50">
+        <AdminHeader />
+        <main>{children}</main>
+      </div>
+    </AuthProtection>
   )
 }

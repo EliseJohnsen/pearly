@@ -51,24 +51,41 @@ async def get_all_custom_kits():
         List of custom kit products with size mapping (small, medium, large)
     """
     try:
-        sanity_service = SanityService()
+        # Initialize Sanity service with validation
+        try:
+            sanity_service = SanityService()
+        except ValueError as e:
+            logger.error(f"Sanity configuration error: {str(e)}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Sanity configuration error: {str(e)}"
+            )
+
         kits = []
 
         # Map size numbers to size names
         size_map = {1: "small", 2: "medium", 3: "large"}
 
         for size_num, size_name in size_map.items():
-            product = await sanity_service.get_custom_kit_by_size(size_num)
-            if product:
-                # Add size name to product data
-                product["sizeName"] = size_name
-                kits.append(product)
-            else:
-                logger.warning(f"No custom kit found for size {size_num} ({size_name})")
+            try:
+                product = await sanity_service.get_custom_kit_by_size(size_num)
+                if product:
+                    # Add size name to product data
+                    product["sizeName"] = size_name
+                    kits.append(product)
+                else:
+                    logger.warning(f"No custom kit found for size {size_num} ({size_name})")
+            except Exception as size_error:
+                logger.error(f"Error fetching custom kit for size {size_num}: {str(size_error)}", exc_info=True)
+                # Continue with other sizes even if one fails
+                continue
 
+        logger.info(f"Successfully fetched {len(kits)} custom kits")
         return {"kits": kits}
+    except HTTPException:
+        raise  # Re-raise HTTP exceptions
     except Exception as e:
-        logger.error(f"Error fetching custom kits: {str(e)}", exc_info=True)
+        logger.error(f"Unexpected error fetching custom kits: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error fetching custom kits: {str(e)}")
 
 

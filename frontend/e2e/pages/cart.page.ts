@@ -77,9 +77,16 @@ export class CartPage {
 
   /**
    * Verify cart contains specific product
+   * Works for both link and non-link products (e.g., custom patterns)
    */
   async verifyProductInCart(productName: string) {
-    await expect(this.page.getByRole('link', { name: productName })).toBeVisible();
+    // Check for product name in either a link or a span within cart items
+    // Use :visible pseudo-class to ensure we get the visible element (mobile or desktop layout)
+    const productLocator = this.page
+      .locator('[data-testid="cart-item"]')
+      .filter({ hasText: productName })
+      .first();
+    await expect(productLocator).toBeVisible();
   }
 
   /**
