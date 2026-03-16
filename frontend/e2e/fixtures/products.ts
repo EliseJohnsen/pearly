@@ -11,6 +11,7 @@ export const testProducts = {
     imageUrl: '/test-images/product-1.jpg',
     slug: 'test-perlepakke-standard',
     currency: 'NOK',
+    productType: 'kit',
   },
 
   premiumPakke: {
@@ -21,6 +22,7 @@ export const testProducts = {
     imageUrl: '/test-images/product-2.jpg',
     slug: 'test-perlepakke-premium',
     currency: 'NOK',
+    productType: 'kit',
   },
 
   starterKit: {
@@ -31,6 +33,7 @@ export const testProducts = {
     imageUrl: '/test-images/product-3.jpg',
     slug: 'test-starter-kit',
     currency: 'NOK',
+    productType: 'kit',
   },
 };
 
