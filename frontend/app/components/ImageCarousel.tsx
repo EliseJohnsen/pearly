@@ -218,20 +218,24 @@ export default function ImageCarousel({ data, carouselOnly = false }: ImageCarou
           </div>
 
           {/* Desktop chevrons */}
-          <button
-            onClick={goToPrevious}
-            className="hidden md:flex absolute -left-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full shadow-lg items-center justify-center hover:bg-gray-50 transition-colors z-10"
-            aria-label="Forrige bilde"
-          >
-            <ChevronLeftIcon className="w-6 h-6 text-gray-900" />
-          </button>
-          <button
-            onClick={goToNext}
-            className="hidden md:flex absolute -right-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full shadow-lg items-center justify-center hover:bg-gray-50 transition-colors z-10"
-            aria-label="Neste bilde"
-          >
-            <ChevronRightIcon className="w-6 h-6 text-gray-900" />
-          </button>
+          {realIndex > 0 && (
+            <button
+              onClick={goToPrevious}
+              className="hidden md:flex absolute -left-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full shadow-lg items-center justify-center hover:bg-gray-50 transition-colors z-10"
+              aria-label="Forrige bilde"
+            >
+              <ChevronLeftIcon className="w-6 h-6 text-gray-900" />
+            </button>
+          )}
+          {realIndex < count - 1 && (
+            <button
+              onClick={goToNext}
+              className="hidden md:flex absolute -right-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full shadow-lg items-center justify-center hover:bg-gray-50 transition-colors z-10"
+              aria-label="Neste bilde"
+            >
+              <ChevronRightIcon className="w-6 h-6 text-gray-900" />
+            </button>
+          )}
         </div>
 
         {/* Thumbnails — desktop only */}

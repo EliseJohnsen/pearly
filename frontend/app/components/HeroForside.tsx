@@ -42,7 +42,7 @@ export default function HeroForside({ data }: HeroForsideProps = {}) {
         style={{ background: 'linear-gradient(to bottom, black, transparent)' }}
       />
       <div className="absolute bottom-0 left-0 right-0 h-1/2 pointer-events-none"
-        style={{ background: 'linear-gradient(to top, var(--dark-purple), transparent)' }}
+        style={{ background: 'linear-gradient(to top, var(--purple-extra-dark), transparent)' }}
       />
       <div className="absolute bottom-14 left-0 right-0">
         <div className="max-w-[95rem] mx-auto px-4 lg:px-8">

@@ -18,6 +18,7 @@ import imageCarousel from './imageCarousel'
 import collapsableCards from './collapsableCards'
 import productCarousel from './productCarousel'
 import splitSection from './splitSection'
+import kampanjebanner from './kampanjebanner'
 
 export const schemaTypes = [
   page,
@@ -40,4 +41,5 @@ export const schemaTypes = [
   collapsableCards,
   productCarousel,
   splitSection,
+  kampanjebanner,
 ]

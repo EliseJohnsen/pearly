@@ -28,6 +28,7 @@
   
   --lavender-pink: #F9D1EE;
   --footer-text: #F2D4E8;
+  --purple-light: #DFC1E0;
   --purple: #BA7EB9;
   --dark-purple: #673154;
   --purple-extra-dark: #391E36;
@@ -95,6 +96,7 @@
   --color-red-dark: var(--red-dark);
   --color-red-extra-dark: var(--red-extra-dark);
 
+  --color-purple-light: var(--purple-light);
   --color-purple: var(--purple);
   --color-dark-purple: var(--dark-purple);
   --color-purple-extra-dark: var(--purple-extra-dark);
