@@ -439,6 +439,7 @@ export default function VelgStorrelsePage() {
                       }}
                       onMouseLeave={() => setHoveredPattern(null)}
                       className="h-full"
+                      squareImageWithPadding={true}
                     >
                       {customKit?.price && (
                         <p className="text-lg font-bold text-[#6B4E71] mt-2">

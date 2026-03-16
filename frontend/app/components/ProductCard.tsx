@@ -34,6 +34,7 @@ interface ProductCardProps {
   href?: string;
   children?: ReactNode; // Main content below the image
   className?: string;
+  squareImageWithPadding?: boolean; // If true, displays square images with white padding instead of filling the space
 }
 
 export default function ProductCard({
@@ -49,6 +50,7 @@ export default function ProductCard({
   href,
   children,
   className = '',
+  squareImageWithPadding = false,
 }: ProductCardProps) {
   // Determine if this is a product card or custom card
   const isProductCard = !!product;
@@ -73,12 +75,12 @@ export default function ProductCard({
   const cardContent = (
     <div className="flex flex-col" style={{ aspectRatio: '1 / 1.3' }}>
       {cardImageUrl && (
-        <div className="overflow-hidden bg-primary-pink relative aspect-[3/4]">
+        <div className="overflow-hidden bg-white relative aspect-[3/4]">
           <div className="absolute inset-0">
             <img
               src={cardImageUrl}
               alt={cardImageAlt || cardTitle || 'Product image'}
-              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+              className={`w-full h-full ${squareImageWithPadding ? 'object-contain' : 'object-cover'} transition-transform duration-300 group-hover:scale-[1.02]`}
             />
           </div>
           {imageOverlay}
