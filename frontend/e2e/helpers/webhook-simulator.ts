@@ -51,7 +51,7 @@ export class WebhookSimulator {
       country: 'NO',
       phoneNumber: '+4712345678',
       shippingMethodId: 'posten-servicepakke',
-      amount: { value: 9900, currency: 'NOK' },
+      amount: { value: 5900, currency: 'NOK' },
     };
 
     const payload = {

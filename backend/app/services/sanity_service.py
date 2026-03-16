@@ -387,25 +387,30 @@ class SanityService:
                 logger.error(f"Error fetching product from Sanity: {str(e)}")
                 raise
 
-    async def get_custom_kit_by_size(self, product_size: int) -> Optional[Dict[str, Any]]:
+    async def get_custom_kit_by_size(self, product_size: int, dimension: Optional[str] = None) -> Optional[Dict[str, Any]]:
         """
-        Fetch custom_kit product from Sanity by product size.
+        Fetch custom_kit product from Sanity by product size and optional dimension.
 
         Args:
             product_size: Product size (1=small, 2=medium, 3=large)
+            dimension: Optional aspect ratio (e.g., "3:4", "4:3", "1:1")
 
         Returns:
             Dict with product data including slug, price, etc. or None if not found
         """
         url = f"https://{self.project_id}.api.sanity.io/v{self.api_version}/data/query/{self.dataset}"
 
-        # GROQ query to fetch custom_kit product with specific productSize
-        query = f'''*[_type == "products" && productType == "custom_kit" && productSize == {product_size}][0]{{
+        # Build query with optional dimension filter
+        dimension_filter = f' && gridSize == "{dimension}"' if dimension else ''
+
+        # GROQ query to fetch custom_kit product with specific productSize and optional dimension
+        query = f'''*[_type == "products" && productType == "custom_kit" && productSize == {product_size}{dimension_filter}][0]{{
             _id,
             title,
             "slug": slug.current,
             productType,
             productSize,
+            gridSize,
             status,
             price,
             description

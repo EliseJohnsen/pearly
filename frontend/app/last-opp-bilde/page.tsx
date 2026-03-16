@@ -38,15 +38,21 @@ export default function LastOppBildePage() {
   const wpapStyleDescription = useUIString("wpap_stil_beskrivelse");
   const readAIPolicy = useUIString("les_om_ai_policy");
 
-  // Load existing data from localStorage on mount
+  // Load existing data from localStorage on mount and clear all pattern data
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        localStorage.clear();
-      } catch (e) {
-        console.error("Failed clear stored flow data", e);
-      }
+    try {
+      // Clear pattern flow data
+      localStorage.removeItem(STORAGE_KEY);
+      // Clear generated patterns
+      localStorage.removeItem("custom_patterns_all");
+      localStorage.removeItem("custom_pattern");
+      localStorage.removeItem("custom_kit");
+      // Clear pattern images from sessionStorage
+      sessionStorage.removeItem("custom_patterns_images");
+      sessionStorage.removeItem("custom_pattern_images");
+      console.log("Cleared all pattern data - starting fresh");
+    } catch (e) {
+      console.error("Failed to clear stored flow data", e);
     }
   }, []);
 

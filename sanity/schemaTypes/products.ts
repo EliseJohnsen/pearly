@@ -44,6 +44,7 @@ export default defineType({
       name: 'productSize',
       title: 'Produktstørrelse',
       type: 'number',
+      description: 'Størrelse på egne motiver - 1 = liten, 2 = medium, 3 = stor',
       hidden: ({document}) => document?.productType !== 'custom_kit',
       validation: (Rule) => Rule.integer().min(1).max(3)
     },
@@ -190,8 +191,9 @@ export default defineType({
       name: 'gridSize',
       title: 'Dimensjon',
       type: 'string',
-      description: 'F.eks. "29x29" eller "1x1 brett"',
-      hidden: ({document}) => document?.productType !== 'kit',
+      description: 'F.eks. "4x4" (brett) for perlepakker eller "3:4" (aspect ratio) for egne motiver"',
+      hidden: ({document}) =>
+        document?.productType !== 'kit' && document?.productType !== 'custom_kit',
     }),
     defineField({
       name: 'width',
