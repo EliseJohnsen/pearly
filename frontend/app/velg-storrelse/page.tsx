@@ -143,8 +143,66 @@ export default function VelgStorrelsePage() {
           return;
         }
         setFlowData(data);
-        generatePatterns(data);
-        patternsGeneratedRef.current = true; // Mark as generated
+
+        // Check if patterns already exist in localStorage
+        const storedPatternsAll = localStorage.getItem("custom_patterns_all");
+        if (storedPatternsAll) {
+          // Patterns already generated - load from storage instead of regenerating
+          try {
+            const patternsData = JSON.parse(storedPatternsAll);
+
+            // Try to get images from sessionStorage
+            let imagesData: Array<{ size: string; patternBase64: string; mockupBase64: string | null }> = [];
+            try {
+              const storedImages = sessionStorage.getItem("custom_patterns_images");
+              if (storedImages) {
+                imagesData = JSON.parse(storedImages);
+              }
+            } catch (e) {
+              console.warn("Could not load pattern images from sessionStorage:", e);
+            }
+
+            // Reconstruct all patterns with stored data
+            const reconstructedPatterns: PatternSize[] = patternsData.map((patternData: any) => {
+              const imageData = imagesData.find(img => img.size === patternData.size);
+              return {
+                size: patternData.size,
+                boardsWidth: patternData.boardsWidth,
+                boardsHeight: patternData.boardsHeight,
+                patternData: patternData.patternData,
+                colorsUsed: patternData.colorsUsed,
+                beadCount: patternData.beadCount,
+                patternBase64: imageData?.patternBase64 || "",
+                mockupBase64: imageData?.mockupBase64 || null,
+              };
+            });
+
+            // If we have the patterns but not the images, we'll need to regenerate
+            if (reconstructedPatterns.length === 0 || !reconstructedPatterns[0].patternBase64) {
+              console.log("Pattern data found but images missing - regenerating patterns");
+              generatePatterns(data);
+            } else {
+              console.log("Loaded patterns from storage - skipping generation");
+              setPatterns(reconstructedPatterns);
+
+              // Load mockups for patterns that don't have them yet
+              for (const pattern of reconstructedPatterns) {
+                if (!pattern.mockupBase64) {
+                  loadMockup(pattern);
+                }
+              }
+            }
+          } catch (e) {
+            console.error("Failed to parse stored pattern data - regenerating:", e);
+            generatePatterns(data);
+          }
+        } else {
+          // No stored patterns - generate new ones
+          console.log("No stored patterns found - generating new patterns");
+          generatePatterns(data);
+        }
+
+        patternsGeneratedRef.current = true; // Mark as processed
       } catch (e) {
         console.error("Failed to parse stored flow data", e);
         router.push("/last-opp-bilde");
@@ -197,6 +255,30 @@ export default function VelgStorrelsePage() {
 
       const result = await response.json();
       setPatterns(result.patterns);
+
+      // Store all patterns in localStorage for later retrieval
+      try {
+        const patternsForStorage = result.patterns.map((p: PatternSize) => ({
+          size: p.size,
+          boardsWidth: p.boardsWidth,
+          boardsHeight: p.boardsHeight,
+          patternData: p.patternData,
+          colorsUsed: p.colorsUsed,
+          beadCount: p.beadCount,
+        }));
+        localStorage.setItem("custom_patterns_all", JSON.stringify(patternsForStorage));
+
+        // Store images in sessionStorage (larger limit)
+        const imagesForStorage = result.patterns.map((p: PatternSize) => ({
+          size: p.size,
+          patternBase64: p.patternBase64,
+          mockupBase64: p.mockupBase64,
+        }));
+        sessionStorage.setItem("custom_patterns_images", JSON.stringify(imagesForStorage));
+      } catch (e) {
+        console.warn("Could not store generated patterns:", e);
+      }
+
       for (const pattern of result.patterns) {
         loadMockup(pattern);
       }
@@ -245,6 +327,20 @@ export default function VelgStorrelsePage() {
           p.size === pattern.size ? { ...p, mockupBase64: result.mockupBase64 } : p
         )
       );
+
+      // Update the mockup in sessionStorage so it persists
+      try {
+        const storedImages = sessionStorage.getItem("custom_patterns_images");
+        if (storedImages) {
+          const imagesData = JSON.parse(storedImages);
+          const updatedImages = imagesData.map((img: any) =>
+            img.size === pattern.size ? { ...img, mockupBase64: result.mockupBase64 } : img
+          );
+          sessionStorage.setItem("custom_patterns_images", JSON.stringify(updatedImages));
+        }
+      } catch (e) {
+        console.warn("Could not update mockup in sessionStorage:", e);
+      }
     } catch (err) {
       console.error(`Error generating mockup for ${pattern.size}:`, err);
       // Don't show error to user - just continue without mockup
