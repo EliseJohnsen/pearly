@@ -73,12 +73,18 @@ export default function VelgStorrelsePage() {
   const startOverButtonLabel = useUIString("start_paa_nytt_knapp");
   const generate_pattern_description = useUIString("hama_generate_pattern_description");
 
-  const fetchCustomKits = async (retryCount = 0, abortSignal?: AbortSignal): Promise<void> => {
+  const fetchCustomKits = async (retryCount = 0, abortSignal?: AbortSignal, aspectRatio?: string | null): Promise<void> => {
     const maxRetries = 3;
     const retryDelay = Math.min(1000 * Math.pow(2, retryCount), 5000); // Exponential backoff: 1s, 2s, 4s
 
     try {
-      const response = await fetch(`${API_URL}/api/products/custom-kits`, {
+      // Build URL with optional dimension parameter
+      let url = `${API_URL}/api/products/custom-kits`;
+      if (aspectRatio) {
+        url += `?dimension=${encodeURIComponent(aspectRatio)}`;
+      }
+
+      const response = await fetch(url, {
         signal: abortSignal, // Use the signal from useEffect cleanup
       });
 
@@ -88,7 +94,7 @@ export default function VelgStorrelsePage() {
 
       const result = await response.json();
       setCustomKits(result.kits);
-      console.log(`Successfully fetched ${result.kits.length} custom kits`);
+      console.log(`Successfully fetched ${result.kits.length} custom kits for aspect ratio ${aspectRatio || 'all'}`);
     } catch (err) {
       // Ignore AbortError - this happens when component unmounts or in React Strict Mode
       if (err instanceof Error && err.name === 'AbortError') {
@@ -107,7 +113,7 @@ export default function VelgStorrelsePage() {
       if (retryCount < maxRetries) {
         console.log(`Retrying in ${retryDelay}ms...`);
         setTimeout(() => {
-          fetchCustomKits(retryCount + 1, abortSignal);
+          fetchCustomKits(retryCount + 1, abortSignal, aspectRatio);
         }, retryDelay);
       } else {
         console.error("Failed to fetch custom kits after all retries - prices will not display");
@@ -119,7 +125,20 @@ export default function VelgStorrelsePage() {
   // Fetch custom kits early (as soon as component mounts)
   useEffect(() => {
     const controller = new AbortController();
-    fetchCustomKits(0, controller.signal);
+
+    // Get aspect ratio from localStorage
+    const stored = localStorage.getItem(STORAGE_KEY);
+    let aspectRatio: string | null = null;
+    if (stored) {
+      try {
+        const data = JSON.parse(stored);
+        aspectRatio = data.aspectRatio;
+      } catch (e) {
+        console.warn("Could not parse localStorage for aspect ratio:", e);
+      }
+    }
+
+    fetchCustomKits(0, controller.signal, aspectRatio);
 
     // Cleanup: abort the fetch if component unmounts
     return () => {
@@ -397,9 +416,14 @@ export default function VelgStorrelsePage() {
         // Fallback: fetch from API if not found in cached list
         const sizeMap: Record<string, number> = { small: 1, medium: 2, large: 3 };
         const productSize = sizeMap[size];
-        const response = await fetch(
-          `${API_URL}/api/products/custom-kit-by-size?product_size=${productSize}`
-        );
+
+        // Build URL with optional dimension parameter
+        let fetchUrl = `${API_URL}/api/products/custom-kit-by-size?product_size=${productSize}`;
+        if (flowData.aspectRatio) {
+          fetchUrl += `&dimension=${encodeURIComponent(flowData.aspectRatio)}`;
+        }
+
+        const response = await fetch(fetchUrl);
 
         if (!response.ok) {
           throw new Error("Failed to fetch custom kit product");
