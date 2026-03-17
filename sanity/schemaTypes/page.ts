@@ -146,6 +146,7 @@ export default defineType({
         {type: 'collapsableCards'},
         {type: 'productCarousel'},
         {type: 'splitSection'},
+        {type: 'kampanjebanner'},
         {
           type: 'object',
           name: 'productsSection',

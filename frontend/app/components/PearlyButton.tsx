@@ -26,20 +26,31 @@ export default function PearlyButton({
 }: PearlyButtonProps) {
 
   const getSkinClasses = (skin: string, isLink: boolean) => {
-    const h = isLink ? 'hover:' : 'enabled:hover:';
     switch (skin) {
       case 'primary':
-        return `bg-dark-purple text-white ${h}bg-purple-extra-dark border-dark-purple`;
+        return isLink
+          ? 'bg-dark-purple text-white hover:bg-purple-extra-dark border-dark-purple'
+          : 'bg-dark-purple text-white enabled:hover:bg-purple-extra-dark border-dark-purple';
       case 'success':
-        return 'bg-success text-white border-success';
+        return isLink
+          ? 'bg-success text-white border-success hover:bg-green-dark'
+          : 'bg-success text-white border-success enabled:hover:bg-green-dark';
       case 'danger':
-        return `bg-primary-red text-white ${h}bg-red-dark border-primary-red`;
+        return isLink
+          ? 'bg-primary-red text-white hover:bg-red-dark border-primary-red'
+          : 'bg-primary-red text-white enabled:hover:bg-red-dark border-primary-red';
       case 'outline':
-        return `bg-transparent border-dark-purple text-dark-purple ${h}bg-disabled`;
+        return isLink
+          ? 'bg-transparent border-purple-light text-dark-purple hover:border-dark-purple'
+          : 'bg-transparent border-purple-light text-dark-purple enabled:hover:border-dark-purple';
       case 'ghost':
-        return `bg-transparent border-transparent text-dark-purple ${h}bg-primary-light`;
+        return isLink
+          ? 'bg-transparent border-transparent text-dark-purple hover:bg-primary-light'
+          : 'bg-transparent border-transparent text-dark-purple enabled:hover:bg-primary-light';
       default:
-        return `bg-dark-purple text-white ${h}bg-purple-extra-dark border-dark-purple`;
+        return isLink
+          ? 'bg-background-secondary border-default text-app-primary hover:bg-primary-light'
+          : 'bg-dark-purple text-white enabled:hover:bg-purple-extra-dark border-dark-purple';
     }
   };
 
