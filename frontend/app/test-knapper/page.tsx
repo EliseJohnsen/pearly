@@ -98,11 +98,6 @@ export default function TestKnapper() {
         </Labeled>
       </Section>
 
-      <Section title="PearlyButton — secondary">
-        <Labeled label="Normal"><PearlyButton skin="secondary">Sekundær handling</PearlyButton></Labeled>
-        <Labeled label="Disabled"><PearlyButton skin="secondary" disabled>Sekundær handling</PearlyButton></Labeled>
-      </Section>
-
       <Section title="PearlyButton — outline" description="Brukes til «Start på nytt» i velg-størrelse-flyten.">
         <Labeled label="Normal"><PearlyButton skin="outline">Start på nytt</PearlyButton></Labeled>
         <Labeled label="Disabled"><PearlyButton skin="outline" disabled>Start på nytt</PearlyButton></Labeled>
@@ -116,11 +111,6 @@ export default function TestKnapper() {
       <Section title="PearlyButton — danger">
         <Labeled label="Normal"><PearlyButton skin="danger">Slett</PearlyButton></Labeled>
         <Labeled label="Disabled"><PearlyButton skin="danger" disabled>Slett</PearlyButton></Labeled>
-      </Section>
-
-      <Section title="PearlyButton — default">
-        <Labeled label="Normal"><PearlyButton skin="default">Standard</PearlyButton></Labeled>
-        <Labeled label="Disabled"><PearlyButton skin="default" disabled>Standard</PearlyButton></Labeled>
       </Section>
 
       {/* ─── Legg i handlekurv interaktiv ─── */}

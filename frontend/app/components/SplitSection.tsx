@@ -57,9 +57,7 @@ export default function SplitSection({ data }: SplitSectionProps) {
               </p>
             )}
             {data.button?.text && data.button?.href && (
-              <Link href={data.button.href}>
-                <PearlyButton skin="outline" className="mt-6 mb-0">{data.button.text}</PearlyButton>
-              </Link>
+              <PearlyButton skin="outline" className="mt-6 mb-0" href={data.button.href}>{data.button.text}</PearlyButton>
             )}
           </div>
         </div>

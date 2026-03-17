@@ -387,25 +387,30 @@ class SanityService:
                 logger.error(f"Error fetching product from Sanity: {str(e)}")
                 raise
 
-    async def get_custom_kit_by_size(self, product_size: int) -> Optional[Dict[str, Any]]:
+    async def get_custom_kit_by_size(self, product_size: int, dimension: Optional[str] = None) -> Optional[Dict[str, Any]]:
         """
-        Fetch custom_kit product from Sanity by product size.
+        Fetch custom_kit product from Sanity by product size and optional dimension.
 
         Args:
             product_size: Product size (1=small, 2=medium, 3=large)
+            dimension: Optional aspect ratio (e.g., "3:4", "4:3", "1:1")
 
         Returns:
             Dict with product data including slug, price, etc. or None if not found
         """
         url = f"https://{self.project_id}.api.sanity.io/v{self.api_version}/data/query/{self.dataset}"
 
-        # GROQ query to fetch custom_kit product with specific productSize
-        query = f'''*[_type == "products" && productType == "custom_kit" && productSize == {product_size}][0]{{
+        # Build query with optional dimension filter
+        dimension_filter = f' && gridSize == "{dimension}"' if dimension else ''
+
+        # GROQ query to fetch custom_kit product with specific productSize and optional dimension
+        query = f'''*[_type == "products" && productType == "custom_kit" && productSize == {product_size}{dimension_filter}][0]{{
             _id,
             title,
             "slug": slug.current,
             productType,
             productSize,
+            gridSize,
             status,
             price,
             description
@@ -413,7 +418,9 @@ class SanityService:
 
         params = {"query": query}
 
-        async with httpx.AsyncClient(timeout=10.0) as client:
+        # Use longer timeout and retries for better reliability
+        timeout_config = httpx.Timeout(30.0, connect=10.0)
+        async with httpx.AsyncClient(timeout=timeout_config) as client:
             try:
                 response = await client.get(url, params=params)
                 response.raise_for_status()
@@ -426,11 +433,17 @@ class SanityService:
                     logger.warning(f"Custom kit product not found for size {product_size}")
 
                 return product
+            except httpx.TimeoutException as e:
+                logger.error(f"Timeout fetching custom_kit for size {product_size}: {str(e)}")
+                raise Exception(f"Sanity query timeout: Request took too long")
             except httpx.HTTPStatusError as e:
-                logger.error(f"Failed to fetch custom_kit from Sanity: {e.response.text}")
-                raise Exception(f"Sanity query failed: {e.response.text}")
+                logger.error(f"HTTP error fetching custom_kit from Sanity: {e.response.status_code} - {e.response.text}")
+                raise Exception(f"Sanity query failed with status {e.response.status_code}: {e.response.text}")
+            except httpx.RequestError as e:
+                logger.error(f"Network error fetching custom_kit from Sanity: {str(e)}")
+                raise Exception(f"Sanity network error: {str(e)}")
             except Exception as e:
-                logger.error(f"Error fetching custom_kit from Sanity: {str(e)}")
+                logger.error(f"Unexpected error fetching custom_kit from Sanity: {str(e)}", exc_info=True)
                 raise
 
     async def get_products_by_ids(self, product_ids: List[str]) -> List[Dict[str, Any]]:

@@ -37,7 +37,7 @@ if __name__ == "__main__":
             "city": "Oslo",
             "country": "NO",
             "shippingMethodId": "posten-servicepakke",
-            "amount": {"value": 9900, "currency": "NOK"},
+            "amount": {"value": 5900, "currency": "NOK"},
             "pickupPoint": {
                 "id": "pickup-123",
                 "name": "Coop Extra Grünerløkka",
@@ -183,7 +183,7 @@ class TestVippsWebhook:
                 "city": "Oslo",
                 "country": "NO",
                 "shippingMethodId": "posten-servicepakke",
-                "amount": {"value": 9900, "currency": "NOK"}
+                "amount": {"value": 5900, "currency": "NOK"}
             }
         }
 
@@ -202,7 +202,7 @@ class TestVippsWebhook:
         assert order.status == "paid"
         assert order.payment_status == "paid"
         assert order.shipping_method_id == "posten-servicepakke"
-        assert order.shipping_amount == 9900
+        assert order.shipping_amount == 5900
         db.close()
 
     def test_payment_terminated(self, client, test_order):

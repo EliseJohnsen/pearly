@@ -186,8 +186,8 @@ async def generate_three_sizes(request: GenerateThreeSizesRequest):
 
             return PatternSizeResult(
                 size=size_config["name"],
-                boardsWidth=boards_w,
-                boardsHeight=boards_h,
+                boardsWidth=pattern_data.get("boards_width", 0),
+                boardsHeight=pattern_data.get("boards_height", 0),
                 patternBase64=pattern_base64,
                 mockupBase64=None,  # Load separately via /patterns/generate-mockup
                 colorsUsed=colors_used,
@@ -571,11 +571,19 @@ async def upload_image_with_style(
             Path(temp_styled.name).unlink()
 
 @router.get("/patterns/{pattern_id}/pdf")
-def download_pattern_pdf(pattern_id: str, db: Session = Depends(get_db)):
+def download_pattern_pdf(
+    pattern_id: str,
+    product_title: str = None,
+    db: Session = Depends(get_db)
+):
     """
     Generates and downloads a PDF with the bead pattern.
-    Each page represents one 29x29 board with beads shown as colored circles
-    containing the color code from perle-colors.json.
+    Page 1: Title page with logo, product title, and pattern image
+    Page 2: Board layout and assembly instructions
+    Page 3+: Individual board pages with beads shown as colored circles
+
+    Query Parameters:
+        product_title: Optional product title to display on the title page
     """
     pattern = db.query(Pattern).filter(Pattern.id == pattern_id).first()
 
@@ -588,7 +596,8 @@ def download_pattern_pdf(pattern_id: str, db: Session = Depends(get_db)):
     try:
         pdf_bytes = generate_pattern_pdf(
             pattern_data=pattern.pattern_data,
-            colors_used=pattern.colors_used
+            colors_used=pattern.colors_used,
+            product_title=product_title
         )
 
         return Response(

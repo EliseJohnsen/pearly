@@ -277,9 +277,28 @@ export default function UploadImage({ onImageSelected, initialPreview }: UploadI
           >
             <div
               ref={modalRef}
-              className="w-full md:w-1/3 max-w-4xl bg-white rounded-3xl shadow-2xl flex flex-col"
+              className="w-full md:w-1/3 max-w-4xl bg-white rounded-3xl shadow-2xl flex flex-col relative"
               style={{ maxHeight: "95vh" }}
             >
+              {/* Close button X in top right corner */}
+              <button
+                onClick={handleCancelCrop}
+                className="absolute -top-4 -right-4 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-100 transition-colors z-10"
+                aria-label={cancelText}
+              >
+                <svg
+                  className="w-6 h-6 text-gray-700"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+
               {/* Scrollable content */}
               <div className="overflow-y-auto flex-1 p-6 md:p-8">
                 <div className="space-y-2">
@@ -426,15 +445,9 @@ export default function UploadImage({ onImageSelected, initialPreview }: UploadI
                 <div className="flex flex-col gap-3 pt-2">
                   <button
                     onClick={handleConfirmCrop}
-                    className="flex-1 py-3 px-6 bg-dark-purple text-white font-semibold rounded-full hover:bg-purple-extra-dark transition-colors"
+                    className="w-full py-3 px-6 bg-dark-purple text-white font-semibold rounded-full hover:bg-purple-extra-dark transition-colors"
                   >
                     {applyCropText}
-                  </button>
-                  <button
-                    onClick={handleCancelCrop}
-                    className="flex-1 py-3 px-6 bg-white border-2 border-purple text-dark-purple font-semibold rounded-full hover:border-dark-purple transition-colors"
-                  >
-                    {cancelText}
                   </button>
                 </div>
                 </div>
@@ -465,7 +478,7 @@ export default function UploadImage({ onImageSelected, initialPreview }: UploadI
           <img
             src={preview}
             alt="Preview"
-            className="w-full h-auto rounded-lg"
+            className="w-full h-auto rounded-2xl"
           />
         </div>
       ) : null}

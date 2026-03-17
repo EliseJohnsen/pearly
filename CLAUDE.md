@@ -381,6 +381,55 @@ frontend/app/
 
 ## Frontend Development Guidelines
 
+### UI Strings and Text Content
+
+**IMPORTANT:** All user-facing text strings in the frontend should be managed through Sanity CMS, not hard-coded in components.
+
+**Why use Sanity for UI strings:**
+- Content editors can update text without code changes
+- Easy to maintain consistency across the application
+- Supports multi-language content in the future
+- Changes go live immediately without deployment
+
+**How to add UI strings:**
+
+1. **Define the string in Sanity Studio** (`sanity/` directory):
+   - Add to an existing schema or create a new UI strings document type
+   - Common locations: site settings, page-specific content, reusable UI elements
+
+2. **Fetch the string in your component:**
+   ```tsx
+   import { client } from '@/utils/sanity/client';
+
+   // Fetch UI strings
+   const uiStrings = await client.fetch(`*[_type == "uiStrings"][0]`);
+
+   // Use in component
+   <button>{uiStrings.addToCartButton}</button>
+   ```
+
+3. **Use context/hooks for frequently used strings:**
+   - Consider creating a `useUIStrings()` hook for commonly used text
+   - Cache strings to avoid repeated fetches
+
+**When to hard-code text:**
+- Development/debugging messages (console.log)
+- Technical error messages for developers
+- Extremely dynamic content that changes per-user
+- Content that's tightly coupled to code logic
+
+**Examples:**
+
+```tsx
+// BAD - Hard-coded user-facing text
+<button>Legg til i handlekurv</button>
+<h1>Velkommen til Pearly</h1>
+
+// GOOD - Fetched from Sanity
+<button>{uiStrings.addToCartButton}</button>
+<h1>{pageContent.heroTitle}</h1>
+```
+
 ### Color System
 
 **IMPORTANT:** Always use the color variables defined in `frontend/app/globals.css` when creating frontend HTML/components.

@@ -307,7 +307,7 @@ const BeadPatternDisplay: React.FC<BeadPatternDisplayProps> = ({
       )}
 
       <div className="bg-white rounded-lg shadow-lg p-8">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-wrap items-center justify-between mb-4">
           <h2 className="text-2xl font-bold text-gray-900">
             Ditt perlemønster
           </h2>

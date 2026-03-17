@@ -13,6 +13,7 @@ from PIL import Image, ImageDraw
 from typing import List, Dict, Tuple
 import io
 import base64
+import math
 
 from .color_service import get_perle_colors, find_closest_color, hex_to_rgb, hex_to_code, code_to_hex
 from .image_preprocessor import enhanced_preprocess_image, basic_preprocess_image
@@ -581,8 +582,8 @@ def convert_image_to_pattern_in_memory(
         "storage_version": 2,
         "width": new_width,
         "height": new_height,
-        "boards_width": boards_width,
-        "boards_height": boards_height,
+        "boards_width": math.ceil(new_width / 29),
+        "boards_height": math.ceil(new_height / 29),
         "board_size": BOARD_SIZE
     }
 
