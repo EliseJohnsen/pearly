@@ -30,6 +30,9 @@ class Settings(BaseSettings):
     RESEND_API_KEY: str = ""
     RESEND_FROM_EMAIL: str = "hei@kontakt.feelpearly.no"
 
+    # Discord notifications
+    DISCORD_WEBHOOK_URL: str = ""  # Discord webhook URL for order notifications
+
     class Config:
         env_file = ".env"
         case_sensitive = True
