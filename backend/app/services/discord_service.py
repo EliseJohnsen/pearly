@@ -37,7 +37,7 @@ class DiscordService:
 
         # Create a nice embedded message
         embed = {
-            "title": "🎉 Ny ordre mottatt!",
+            "title": "🎉 Ny ordre mottatt! 🎉",
             "color": 0xF05A41,  # Primary color from your design system
             "fields": [
                 {
@@ -61,9 +61,6 @@ class DiscordService:
                     "inline": True
                 }
             ],
-            "footer": {
-                "text": "Feel Pearly Admin"
-            },
             "timestamp": None  # Will be set to current time by Discord
         }
 
