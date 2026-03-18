@@ -6,7 +6,6 @@ import { notFound } from "next/navigation";
 import { use, useEffect, useState, Suspense } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import Banner from "../components/Banner";
 import HowItWorks from "../components/HowItWorks";
 import CTA from "../components/CTA";
 import HeroForside from "../components/HeroForside";
@@ -142,9 +141,11 @@ const pageQuery = groq`*[_type == "page" && slug.current == $slug][0]{
       isActive
     },
     _type == "kampanjebanner" => {
+      isActive,
       title,
       body,
       backgroundColor,
+      customBackgroundColor,
       link
     }
   },
@@ -236,7 +237,7 @@ export default function DynamicPage({
           );
           break;
         case "banner":
-          result.push(<Banner key={i} data={section} />);
+          result.push(<KampanjeBanner key={i} data={section} />);
           break;
         case "howItWorks":
           result.push(<HowItWorks key={i} data={section} />);

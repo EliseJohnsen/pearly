@@ -6,6 +6,13 @@ export default defineType({
   type: 'object',
   fields: [
     defineField({
+      name: 'isActive',
+      title: 'Aktiv',
+      type: 'boolean',
+      description: 'Skru banneret av/på',
+      initialValue: true,
+    }),
+    defineField({
       name: 'title',
       title: 'Tittel',
       type: 'string',
@@ -33,14 +40,30 @@ export default defineType({
           },
         },
       ],
-      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'backgroundColor',
       title: 'Bakgrunnsfarge',
       type: 'string',
-      description: 'CSS-farge for bakgrunnen (f.eks. var(--primary-pink) eller #fff)',
+      description: 'Velg bakgrunnsfarge for banneret',
       initialValue: 'var(--background)',
+      options: {
+        list: [
+          {title: 'Mørk rosa', value: 'var(--primary-dark-pink)'},
+          {title: 'Lavendel rosa', value: 'var(--lavender-pink)'},
+          {title: 'Lilla', value: 'var(--purple)'},
+          {title: 'Mørk lilla', value: 'var(--dark-purple)'},
+          {title: 'Ekstra mørk lilla', value: 'var(--purple-extra-dark)'},
+          {title: 'Neon grønn', value: 'var(--primary-neon-green)'},
+          {title: 'Oransje/rød (primær)', value: 'var(--primary)'},
+        ],
+      },
+    }),
+    defineField({
+      name: 'customBackgroundColor',
+      title: 'Egendefinert bakgrunnsfarge (HEX)',
+      type: 'string',
+      description: 'Skriv inn en HEX-kode (f.eks. #F5EDE8) — overstyrer fargevalget over',
     }),
     defineField({
       name: 'link',

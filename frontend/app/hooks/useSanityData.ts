@@ -6,7 +6,7 @@ import {
   navigationQuery,
   navigationByTypeQuery,
   heroQuery,
-  bannerQuery,
+  kampanjeBannerQuery,
   howItWorksQuery,
   uiStringsQuery,
   uiStringsByCategoryQuery,
@@ -20,7 +20,6 @@ import {
 import type {
   Navigation,
   Hero,
-  Banner,
   HowItWorks,
   UIString,
   PageSettings,
@@ -69,9 +68,9 @@ export function useHero() {
   return useSanityQuery<Hero>(heroQuery)
 }
 
-// Banner hook
-export function useBanner() {
-  return useSanityQuery<Banner>(bannerQuery)
+// Global kampanjebanner hook
+export function useKampanjeBanner() {
+  return useSanityQuery<any>(kampanjeBannerQuery)
 }
 
 // How It Works hook
