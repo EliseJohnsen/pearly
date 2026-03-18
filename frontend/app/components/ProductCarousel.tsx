@@ -31,8 +31,6 @@ interface ProductCarouselProps {
 }
 
 export default function ProductCarousel({ heading, description, products, viewMoreLink }: ProductCarouselProps) {
-  if (!products || products.length === 0) return null
-
   const scrollRef = useRef<HTMLDivElement>(null)
   const [arrowTop, setArrowTop] = useState(206)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
@@ -76,6 +74,8 @@ export default function ProductCarousel({ heading, description, products, viewMo
     const cardWidth = scrollRef.current.offsetWidth / 4
     scrollRef.current.scrollBy({ left: direction === 'left' ? -cardWidth : cardWidth, behavior: 'smooth' })
   }
+
+  if (!products || products.length === 0) return null
 
   return (
     <section className="py-12">

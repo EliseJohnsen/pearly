@@ -6,7 +6,7 @@ import { use, useEffect, useState } from "react";
 import { productQuery, strukturprodukterByParentTypeQuery } from "@/lib/queries";
 import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
-import { PortableText } from "@portabletext/react";
+import { PortableText, PortableTextBlock } from "@portabletext/react";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
 import { useCart } from "@/app/contexts/CartContext";
 import { ArrowUturnLeftIcon, CheckIcon, GiftIcon, MinusIcon, PlusIcon, QuestionMarkCircleIcon, TrashIcon } from "@heroicons/react/24/outline";
@@ -61,7 +61,7 @@ interface Product {
   title: string;
   slug: { current: string };
   description?: string;
-  longDescription?: any;
+  longDescription?: PortableTextBlock[];
   productType: string;
   status: string;
   difficulty?: string;

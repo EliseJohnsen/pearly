@@ -211,7 +211,7 @@ export default function CartPage() {
   };
 
   const formatTotal = (price: number, currency: string = "NOK") => {
-    let sum = price + shipping;
+    const sum = price + shipping;
     return formatPrice(sum, currency);
   };
 

@@ -171,7 +171,7 @@ const ColorPickerModal: React.FC<ColorPickerModalProps> = ({
               </div>
               {pendingChanges.size > 0 && (
                 <p className="text-xs text-amber-600 mt-2 text-center">
-                  ⚠️ {pendingChanges.size} endring(er) - trykk "Lagre endringer"
+                  ⚠️ {pendingChanges.size} endring(er) - trykk &quot;Lagre endringer&quot;
                 </p>
               )}
             </>

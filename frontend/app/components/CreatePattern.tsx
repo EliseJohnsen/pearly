@@ -6,11 +6,16 @@ import BeadPatternDisplay from "./BeadPatternDisplay";
 import Header from "./Header";
 import Footer from "./Footer";
 
+interface PatternData {
+  uuid?: string;
+  [key: string]: unknown;
+}
+
 export default function Main() {
-  const [patternData, setPatternData] = useState<any>(null);
+  const [patternData, setPatternData] = useState<PatternData | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
-  const handlePatternGenerated = (data: any) => {
+  const handlePatternGenerated = (data: PatternData) => {
     setPatternData(data);
   };
 

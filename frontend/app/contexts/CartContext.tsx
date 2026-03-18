@@ -15,7 +15,7 @@ export interface CartItem {
   requiresParent?: boolean;
   requiredBoards?: number;
   children?: CartItem[];
-  customPattern?: any;
+  customPattern?: unknown;
 }
 
 interface CartContextType {
@@ -41,7 +41,7 @@ function generateLineId(): string {
 // Helper function to calculate total items (including children)
 function calculateTotalItems(items: CartItem[]): number {
   return items.reduce((sum, item) => {
-    let itemSum = item.quantity;
+    const itemSum = item.quantity;
     return sum + itemSum;
   }, 0);
 }
@@ -70,7 +70,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
         // Check if migration needed (old format has no lineId)
         if (parsed.length > 0 && !parsed[0].lineId) {
-          const migrated = parsed.map((item: any) => ({
+          const migrated = parsed.map((item: CartItem) => ({
             ...item,
             lineId: generateLineId(),
             // Keep flat structure (no children) for old items

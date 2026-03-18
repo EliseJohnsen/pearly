@@ -4,8 +4,27 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import ProductCard from './ProductCard';
 
+interface Product {
+  _id: string;
+  title: string;
+  slug: { current: string };
+  description?: string;
+  price?: number;
+  category?: {
+    _id: string;
+    name: string;
+    slug?: { current: string };
+    parent?: { slug?: { current: string } };
+  };
+  [key: string]: unknown;
+}
+
 interface ProductSectionProps {
-  data?: any
+  data?: {
+    sectionTitle?: string;
+    sectionSubtitle?: string;
+    products?: Product[];
+  };
 }
 
 export default function ProductSection({ data }: ProductSectionProps = {}) {
@@ -14,17 +33,17 @@ export default function ProductSection({ data }: ProductSectionProps = {}) {
   const activeCategory = searchParams.get('kategori') || 'alle';
 
   // Derive unique categories from products (preserving first-seen order)
-  const categories: any[] = Array.from(
+  const categories = Array.from(
     new Map(
-      (data.products ?? [])
-        .filter((p: any) => p.category && !p.category.parent)
-        .map((p: any) => [p.category._id, p.category])
+      (data?.products ?? [])
+        .filter((p) => p.category && !p.category.parent)
+        .map((p) => [p.category!._id, p.category!])
     ).values()
-  ).sort((a: any, b: any) => a.name.localeCompare(b.name, 'nb'));
+  ).sort((a, b) => a.name.localeCompare(b.name, 'nb'));
 
   const filteredProducts = activeCategory === 'alle'
-    ? data.products
-    : data.products?.filter((p: any) =>
+    ? data?.products
+    : data?.products?.filter((p) =>
         p.category?.slug?.current === activeCategory ||
         p.category?.parent?.slug?.current === activeCategory
       );
@@ -35,12 +54,12 @@ export default function ProductSection({ data }: ProductSectionProps = {}) {
   return (
     <section className="py-12">
       <div className="max-w-6xl mx-auto px-4">
-        {data.sectionTitle && (
+        {data?.sectionTitle && (
           <h2 className="font-display text-4xl md:text-5xl leading-none text-left text-dark-purple mb-4">
             {data.sectionTitle}
           </h2>
         )}
-        {data.sectionSubtitle && (
+        {data?.sectionSubtitle && (
           <p className="text-left text-base text-gray-700 mb-8 max-w-xl">
             {data.sectionSubtitle}
           </p>
@@ -66,13 +85,13 @@ export default function ProductSection({ data }: ProductSectionProps = {}) {
             <div className="flex-shrink-0 w-px h-6 bg-primary-pink" />
 
             {/* Category pills */}
-            {categories.map((cat: any) => (
+            {categories.map((cat) => (
               <Link
                 key={cat._id}
-                href={categoryHref(cat.slug.current)}
+                href={categoryHref(cat.slug?.current || '')}
                 scroll={false}
                 className={`flex-shrink-0 px-5 py-2 rounded-lg border font-medium transition-colors ${
-                  activeCategory === cat.slug.current
+                  activeCategory === cat.slug?.current
                     ? 'border-dark-purple text-dark-purple'
                     : 'border-primary-pink text-dark-purple hover:border-purple'
                 }`}
@@ -85,7 +104,7 @@ export default function ProductSection({ data }: ProductSectionProps = {}) {
 
         {/* Product grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-8">
-          {filteredProducts?.map((product: any) => (
+          {filteredProducts?.map((product) => (
             <ProductCard key={product._id} product={product} />
           ))}
         </div>

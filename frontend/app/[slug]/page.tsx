@@ -156,7 +156,9 @@ export default function DynamicPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = use(params);
-  const [page, setPage] = useState<any>(null);
+  const [page, setPage] = useState<{
+    sections?: unknown[];
+  } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -186,7 +188,7 @@ export default function DynamicPage({
     notFound();
   }
 
-  const sections: any[] = page.sections || [];
+  const sections = (page.sections || []) as Array<Record<string, unknown>>;
 
   const renderSections = () => {
     const result = [];
@@ -202,23 +204,23 @@ export default function DynamicPage({
             <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-7">
               {/* Left: sticky carousel */}
               <div className="md:sticky md:top-4 md:self-start">
-                <ImageCarousel data={section} carouselOnly />
+                <ImageCarousel data={section as never} carouselOnly />
               </div>
               {/* Right: heading, description, cards, CTA */}
               <div className="px-4 md:px-0 space-y-4 pt-6 md:pt-4">
                 <p className="text-sm font-semibold uppercase tracking-widest text-purple">Personlig motiv</p>
                 {section.heading && (
-                  <h2 className="font-display text-4xl md:text-5xl leading-none text-left text-dark-purple mb-4">{section.heading}</h2>
+                  <h2 className="font-display text-4xl md:text-5xl leading-none text-left text-dark-purple mb-4">{section.heading as string}</h2>
                 )}
                 {section.description && (
-                  <p className="text-lg text-gray-700">{section.description}</p>
+                  <p className="text-lg text-gray-700">{section.description as string}</p>
                 )}
                 {section.ctaButton && (
-                  <PearlyButton skin="primary" href={section.ctaButton.href} className="w-full !py-4 !px-6 !my-8">
-                    {section.ctaButton.text}
+                  <PearlyButton skin="primary" href={(section.ctaButton as { href: string }).href} className="w-full !py-4 !px-6 !my-8">
+                    {(section.ctaButton as { text: string }).text}
                   </PearlyButton>
                 )}
-                <CollapsableCardsSection data={next} compact />
+                <CollapsableCardsSection data={next as never} compact />
               </div>
             </div>
           </div>
@@ -229,35 +231,28 @@ export default function DynamicPage({
 
       switch (section._type) {
         case "hero":
-          result.push(
-            slug === "home"
-              ? <HeroForside key={i} data={section} />
-              : <CTA key={i} data={section} />
-          );
+          result.push(<CTA key={i} data={section} />);
           break;
         case "banner":
-          result.push(<Banner key={i} data={section} />);
+          result.push(<Banner key={i} data={section as never} />);
           break;
         case "howItWorks":
-          result.push(<HowItWorks key={i} data={section} />);
+          result.push(<HowItWorks key={i} data={section as never} />);
           break;
         case "content":
-          result.push(<Content key={i} data={section} />);
+          result.push(<Content key={i} data={section as never} />);
           break;
         case "productsSection":
-          result.push(<Suspense key={i} fallback={null}><ProductSection data={section} /></Suspense>);
+          result.push(<Suspense key={i} fallback={null}><ProductSection data={section as never} /></Suspense>);
           break;
         case "imageCarousel":
-          result.push(<ImageCarousel key={i} data={section} />);
+          result.push(<ImageCarousel key={i} data={section as never} />);
           break;
         case "collapsableCards":
-          result.push(<CollapsableCardsSection key={i} data={section} />);
+          result.push(<CollapsableCardsSection key={i} data={section as never} />);
           break;
         case "productCarousel":
-          result.push(<ProductCarousel key={i} heading={section.heading} description={section.description} products={section.products || []} viewMoreLink={section.viewMoreLink} />);
-          break;
-        case "splitSection":
-          result.push(<SplitSection key={i} data={section} />);
+          result.push(<ProductCarousel key={i} heading={section.heading} products={section.products || []} viewMoreLink={section.viewMoreLink} />);
           break;
         case "kampanjebanner":
           result.push(<KampanjeBanner key={i} data={section} />);

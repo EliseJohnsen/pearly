@@ -2,8 +2,17 @@
 
 import {useBanner} from '@/app/hooks/useSanityData'
 
+interface BannerData {
+  isActive?: boolean;
+  backgroundColor?: string;
+  text?: string;
+  link?: {
+    href: string;
+  };
+}
+
 interface BannerProps {
-  data?: any
+  data?: BannerData;
 }
 
 export default function Banner({ data }: BannerProps = {}) {

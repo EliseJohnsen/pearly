@@ -1,7 +1,7 @@
 'use client'
 
 interface StatusPillProps {
-  status?: any
+  status?: string;
 }
 
 export default function StatusPill({ status }: StatusPillProps = {}) {
