@@ -13,6 +13,7 @@ from app.models.order_log import OrderLog
 from app.models.address import Address
 from app.models.customer import Customer
 from app.services.email_service import email_service
+from app.services.discord_service import discord_service
 
 logger = logging.getLogger(__name__)
 
@@ -183,20 +184,18 @@ async def vipps_webhook(
                 )
                 logger.info(f"Queued order confirmation email to {email}")
 
-            # Send admin notification email in background (no order log needed)
+            # Send Discord notification in background
             asyncio.create_task(
-                email_service.send_email(
-                    to=settings.FEEL_PEARLY_EMAIL,
-                    template_id="we-got-an-order",
-                    variables={
-                        "order_number": order.order_number,
-                        "customer_name": name or "kunde",
-                    }
+                discord_service.send_order_notification(
+                    order_number=order.order_number,
+                    customer_name=name or "kunde",
+                    total_amount=order.total_amount,
+                    items_count=len(order.order_lines)
                 )
             )
-            logger.info(f"Queued admin notification email")
+            logger.info(f"Queued Discord notification for order {order.order_number}")
 
-            # Return immediately - emails will be sent in background
+            # Return immediately - emails and notifications will be sent in background
             return {"status": "ok"}
 
         elif session_state == "PaymentTerminated":
