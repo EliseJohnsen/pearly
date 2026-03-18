@@ -43,6 +43,7 @@
   --text-primary-light: var(--primary-pink);
   --text-secondary: #4b5563;
   --text-muted: #6b7280;
+  --text-original-price: lab(27.1134 -0.956401 -12.3224);
 
   /* Kantfarger */
   --border: #d1d5db;
@@ -113,6 +114,7 @@
   --color-app-primary: var(--text-primary);
   --color-app-secondary: var(--text-secondary);
   --color-app-muted: var(--text-muted);
+  --color-original-price: var(--text-original-price);
   --color-app-disabled: var(--disabled-text);
 
   /* Kantfarger - bruk som border-default, border-subtle */

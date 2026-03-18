@@ -20,6 +20,7 @@ interface ProductCardProps {
     images?: ProductImage[];
     image?: ProductImage;
     price?: number;
+    originalPrice?: number;
     requiredBoards?: number;
   };
   // Pattern-specific props
@@ -94,13 +95,27 @@ export default function ProductCard({
             </h3>
           )}
           {isProductCard && product.price && product.requiredBoards ? (
-            <p className="text-sm">
-              {formatPrice(product.price + (product.requiredBoards * 12), "NOK")}
-            </p>
+            <div className="flex items-baseline gap-2">
+              {product.originalPrice && (
+                <span className="text-sm text-original-price line-through">
+                  {formatPrice(product.originalPrice + (product.requiredBoards * 12), "NOK")}
+                </span>
+              )}
+              <p className={`text-sm${product.originalPrice ? ' font-semibold' : ''}`}>
+                {formatPrice(product.price + (product.requiredBoards * 12), "NOK")}
+              </p>
+            </div>
           ) : isProductCard && product.price ? (
-            <p className="text-sm">
-              fra {formatPrice(product.price, "NOK")}
-            </p>
+            <div className="flex items-baseline gap-2">
+              {product.originalPrice && (
+                <span className="text-sm text-original-price line-through">
+                  fra {formatPrice(product.originalPrice, "NOK")}
+                </span>
+              )}
+              <p className={`text-sm${product.originalPrice ? ' font-semibold' : ''}`}>
+                fra {formatPrice(product.price, "NOK")}
+              </p>
+            </div>
           ) : null}
           {children}
         </div>
