@@ -118,6 +118,7 @@ const pageQuery = groq`*[_type == "page" && slug.current == $slug][0]{
         title,
         slug,
         price,
+        requiredBoards,
         "images": images[]{
           asset->{_id, url},
           alt,
