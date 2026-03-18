@@ -134,7 +134,7 @@ class VippsClient:
                     {
                         "brand": "POSTEN",
                         "amount": {
-                            "value": 9900,
+                            "value": 5900,
                             "currency": currency,
                         },
                         "type": "PICKUP_POINT",
@@ -146,7 +146,7 @@ class VippsClient:
                     {
                         "brand": "POSTNORD",
                         "amount": {
-                            "value": 9900,
+                            "value": 5900,
                             "currency": currency,
                         },
                         "type": "PICKUP_POINT",

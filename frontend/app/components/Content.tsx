@@ -7,6 +7,14 @@ interface ContentData {
   backgroundColor?: string;
 }
 
+const contentPortableTextComponents = {
+  ...portableTextComponents,
+  block: {
+    h1: ({ children }: any) => <h1 className="font-display text-4xl md:text-5xl leading-none text-left text-dark-purple mb-4">{children}</h1>,
+    h2: ({ children }: any) => <h2 className="font-display text-2xl leading-none">{children}</h2>,
+  },
+}
+
 interface ContentProps {
   data?: ContentData;
 }
@@ -17,22 +25,14 @@ export default function Content({ data }: ContentProps) {
     return null
   }
 
-  const getBgColor = () => {
-    if (data.backgroundColor) {
-      return data.backgroundColor
-    } else {
-      return "#F6E4CC"
-    }
-  }
-
   return (
-    <section className="py-12 px-4" style={{backgroundColor: getBgColor()}}>
+    <section className="py-12 px-4" style={{backgroundColor: data.backgroundColor || 'var(--background)'}}>
       <div className="max-w-4xl mx-auto">
         {data.title && (
           <h2 className="font-display text-3xl leading-none mb-6">{data.title}</h2>
         )}
         <div className="prose prose-lg max-w-none">
-          <PortableText value={data.body} components={portableTextComponents} />
+          <PortableText value={data.body} components={contentPortableTextComponents} />
         </div>
       </div>
     </section>

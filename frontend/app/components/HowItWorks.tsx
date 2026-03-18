@@ -1,7 +1,7 @@
 "use client";
 
 import {useHowItWorks} from "../hooks/useSanityData";
-import { ArrowUpTrayIcon, GiftIcon, PhotoIcon } from "@heroicons/react/24/outline";
+import { HeartIcon, GiftIcon, PhotoIcon } from "@heroicons/react/24/outline";
 
 interface HowItWorksProps {
   data?: {
@@ -34,7 +34,7 @@ export default function HowItWorks({ data }: HowItWorksProps = {}) {
   const getHowItWorksStepIcon = (index: number) => {
     switch (index) {
       case 0:
-        return <ArrowUpTrayIcon aria-hidden="true" className="size-12 text-white" style={{color: '#BA7EB9'}} />
+        return <HeartIcon aria-hidden="true" className="size-12 text-white" style={{color: '#BA7EB9'}} />
       case 1:
         return <GiftIcon aria-hidden="true" className="size-12 text-white" style={{color: '#BA7EB9'}} />
       case 2:
@@ -45,9 +45,9 @@ export default function HowItWorks({ data }: HowItWorksProps = {}) {
   }
 
   return (
-    <main className="container mx-auto px-4 pt-16 pb-2">
-      <div className="text-center mb-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto mt-10">
+    <main className="container mx-auto px-4 pt-16 pb-12">
+      <div className="text-center">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto">
           {howItWorksLoading ? (
             <>
               <div key="skeleton-1" className="bg-white rounded-lg shadow-lg p-8 animate-pulse">

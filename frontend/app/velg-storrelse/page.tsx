@@ -73,12 +73,18 @@ export default function VelgStorrelsePage() {
   const startOverButtonLabel = useUIString("start_paa_nytt_knapp");
   const generate_pattern_description = useUIString("hama_generate_pattern_description");
 
-  const fetchCustomKits = async (retryCount = 0, abortSignal?: AbortSignal): Promise<void> => {
+  const fetchCustomKits = async (retryCount = 0, abortSignal?: AbortSignal, aspectRatio?: string | null): Promise<void> => {
     const maxRetries = 3;
     const retryDelay = Math.min(1000 * Math.pow(2, retryCount), 5000); // Exponential backoff: 1s, 2s, 4s
 
     try {
-      const response = await fetch(`${API_URL}/api/products/custom-kits`, {
+      // Build URL with optional dimension parameter
+      let url = `${API_URL}/api/products/custom-kits`;
+      if (aspectRatio) {
+        url += `?dimension=${encodeURIComponent(aspectRatio)}`;
+      }
+
+      const response = await fetch(url, {
         signal: abortSignal, // Use the signal from useEffect cleanup
       });
 
@@ -88,7 +94,7 @@ export default function VelgStorrelsePage() {
 
       const result = await response.json();
       setCustomKits(result.kits);
-      console.log(`Successfully fetched ${result.kits.length} custom kits`);
+      console.log(`Successfully fetched ${result.kits.length} custom kits for aspect ratio ${aspectRatio || 'all'}`);
     } catch (err) {
       // Ignore AbortError - this happens when component unmounts or in React Strict Mode
       if (err instanceof Error && err.name === 'AbortError') {
@@ -107,7 +113,7 @@ export default function VelgStorrelsePage() {
       if (retryCount < maxRetries) {
         console.log(`Retrying in ${retryDelay}ms...`);
         setTimeout(() => {
-          fetchCustomKits(retryCount + 1, abortSignal);
+          fetchCustomKits(retryCount + 1, abortSignal, aspectRatio);
         }, retryDelay);
       } else {
         console.error("Failed to fetch custom kits after all retries - prices will not display");
@@ -119,7 +125,20 @@ export default function VelgStorrelsePage() {
   // Fetch custom kits early (as soon as component mounts)
   useEffect(() => {
     const controller = new AbortController();
-    fetchCustomKits(0, controller.signal);
+
+    // Get aspect ratio from localStorage
+    const stored = localStorage.getItem(STORAGE_KEY);
+    let aspectRatio: string | null = null;
+    if (stored) {
+      try {
+        const data = JSON.parse(stored);
+        aspectRatio = data.aspectRatio;
+      } catch (e) {
+        console.warn("Could not parse localStorage for aspect ratio:", e);
+      }
+    }
+
+    fetchCustomKits(0, controller.signal, aspectRatio);
 
     // Cleanup: abort the fetch if component unmounts
     return () => {
@@ -143,8 +162,66 @@ export default function VelgStorrelsePage() {
           return;
         }
         setFlowData(data);
-        generatePatterns(data);
-        patternsGeneratedRef.current = true; // Mark as generated
+
+        // Check if patterns already exist in localStorage
+        const storedPatternsAll = localStorage.getItem("custom_patterns_all");
+        if (storedPatternsAll) {
+          // Patterns already generated - load from storage instead of regenerating
+          try {
+            const patternsData = JSON.parse(storedPatternsAll);
+
+            // Try to get images from sessionStorage
+            let imagesData: Array<{ size: string; patternBase64: string; mockupBase64: string | null }> = [];
+            try {
+              const storedImages = sessionStorage.getItem("custom_patterns_images");
+              if (storedImages) {
+                imagesData = JSON.parse(storedImages);
+              }
+            } catch (e) {
+              console.warn("Could not load pattern images from sessionStorage:", e);
+            }
+
+            // Reconstruct all patterns with stored data
+            const reconstructedPatterns: PatternSize[] = patternsData.map((patternData: any) => {
+              const imageData = imagesData.find(img => img.size === patternData.size);
+              return {
+                size: patternData.size,
+                boardsWidth: patternData.boardsWidth,
+                boardsHeight: patternData.boardsHeight,
+                patternData: patternData.patternData,
+                colorsUsed: patternData.colorsUsed,
+                beadCount: patternData.beadCount,
+                patternBase64: imageData?.patternBase64 || "",
+                mockupBase64: imageData?.mockupBase64 || null,
+              };
+            });
+
+            // If we have the patterns but not the images, we'll need to regenerate
+            if (reconstructedPatterns.length === 0 || !reconstructedPatterns[0].patternBase64) {
+              console.log("Pattern data found but images missing - regenerating patterns");
+              generatePatterns(data);
+            } else {
+              console.log("Loaded patterns from storage - skipping generation");
+              setPatterns(reconstructedPatterns);
+
+              // Load mockups for patterns that don't have them yet
+              for (const pattern of reconstructedPatterns) {
+                if (!pattern.mockupBase64) {
+                  loadMockup(pattern);
+                }
+              }
+            }
+          } catch (e) {
+            console.error("Failed to parse stored pattern data - regenerating:", e);
+            generatePatterns(data);
+          }
+        } else {
+          // No stored patterns - generate new ones
+          console.log("No stored patterns found - generating new patterns");
+          generatePatterns(data);
+        }
+
+        patternsGeneratedRef.current = true; // Mark as processed
       } catch (e) {
         console.error("Failed to parse stored flow data", e);
         router.push("/last-opp-bilde");
@@ -197,6 +274,30 @@ export default function VelgStorrelsePage() {
 
       const result = await response.json();
       setPatterns(result.patterns);
+
+      // Store all patterns in localStorage for later retrieval
+      try {
+        const patternsForStorage = result.patterns.map((p: PatternSize) => ({
+          size: p.size,
+          boardsWidth: p.boardsWidth,
+          boardsHeight: p.boardsHeight,
+          patternData: p.patternData,
+          colorsUsed: p.colorsUsed,
+          beadCount: p.beadCount,
+        }));
+        localStorage.setItem("custom_patterns_all", JSON.stringify(patternsForStorage));
+
+        // Store images in sessionStorage (larger limit)
+        const imagesForStorage = result.patterns.map((p: PatternSize) => ({
+          size: p.size,
+          patternBase64: p.patternBase64,
+          mockupBase64: p.mockupBase64,
+        }));
+        sessionStorage.setItem("custom_patterns_images", JSON.stringify(imagesForStorage));
+      } catch (e) {
+        console.warn("Could not store generated patterns:", e);
+      }
+
       for (const pattern of result.patterns) {
         loadMockup(pattern);
       }
@@ -245,6 +346,20 @@ export default function VelgStorrelsePage() {
           p.size === pattern.size ? { ...p, mockupBase64: result.mockupBase64 } : p
         )
       );
+
+      // Update the mockup in sessionStorage so it persists
+      try {
+        const storedImages = sessionStorage.getItem("custom_patterns_images");
+        if (storedImages) {
+          const imagesData = JSON.parse(storedImages);
+          const updatedImages = imagesData.map((img: any) =>
+            img.size === pattern.size ? { ...img, mockupBase64: result.mockupBase64 } : img
+          );
+          sessionStorage.setItem("custom_patterns_images", JSON.stringify(updatedImages));
+        }
+      } catch (e) {
+        console.warn("Could not update mockup in sessionStorage:", e);
+      }
     } catch (err) {
       console.error(`Error generating mockup for ${pattern.size}:`, err);
       // Don't show error to user - just continue without mockup
@@ -301,9 +416,14 @@ export default function VelgStorrelsePage() {
         // Fallback: fetch from API if not found in cached list
         const sizeMap: Record<string, number> = { small: 1, medium: 2, large: 3 };
         const productSize = sizeMap[size];
-        const response = await fetch(
-          `${API_URL}/api/products/custom-kit-by-size?product_size=${productSize}`
-        );
+
+        // Build URL with optional dimension parameter
+        let fetchUrl = `${API_URL}/api/products/custom-kit-by-size?product_size=${productSize}`;
+        if (flowData.aspectRatio) {
+          fetchUrl += `&dimension=${encodeURIComponent(flowData.aspectRatio)}`;
+        }
+
+        const response = await fetch(fetchUrl);
 
         if (!response.ok) {
           throw new Error("Failed to fetch custom kit product");
@@ -439,6 +559,7 @@ export default function VelgStorrelsePage() {
                       }}
                       onMouseLeave={() => setHoveredPattern(null)}
                       className="h-full"
+                      squareImageWithPadding={true}
                     >
                       {customKit?.price && (
                         <p className="text-lg font-bold text-[#6B4E71] mt-2">

@@ -43,9 +43,12 @@ def ensure_colors_have_hex(colors_used: list) -> list:
 
 
 @router.get("/products/custom-kits")
-async def get_all_custom_kits():
+async def get_all_custom_kits(dimension: str = None):
     """
-    Get all custom kit products from Sanity (all sizes).
+    Get all custom kit products from Sanity (all sizes) with optional dimension filter.
+
+    Args:
+        dimension: Optional aspect ratio filter (e.g., "3:4", "4:3", "1:1")
 
     Returns:
         List of custom kit products with size mapping (small, medium, large)
@@ -68,19 +71,19 @@ async def get_all_custom_kits():
 
         for size_num, size_name in size_map.items():
             try:
-                product = await sanity_service.get_custom_kit_by_size(size_num)
+                product = await sanity_service.get_custom_kit_by_size(size_num, dimension)
                 if product:
                     # Add size name to product data
                     product["sizeName"] = size_name
                     kits.append(product)
                 else:
-                    logger.warning(f"No custom kit found for size {size_num} ({size_name})")
+                    logger.warning(f"No custom kit found for size {size_num} ({size_name}) with dimension {dimension}")
             except Exception as size_error:
                 logger.error(f"Error fetching custom kit for size {size_num}: {str(size_error)}", exc_info=True)
                 # Continue with other sizes even if one fails
                 continue
 
-        logger.info(f"Successfully fetched {len(kits)} custom kits")
+        logger.info(f"Successfully fetched {len(kits)} custom kits for dimension {dimension}")
         return {"kits": kits}
     except HTTPException:
         raise  # Re-raise HTTP exceptions
@@ -90,27 +93,29 @@ async def get_all_custom_kits():
 
 
 @router.get("/products/custom-kit-by-size")
-async def get_custom_kit_by_size(product_size: int):
+async def get_custom_kit_by_size(product_size: int, dimension: str = None):
     """
-    Get custom kit product from Sanity by size.
+    Get custom kit product from Sanity by size and optional dimension.
 
     Args:
         product_size: Product size (1=small/2 boards, 2=medium/4 boards, 3=large/6 boards)
+        dimension: Optional aspect ratio (e.g., "3:4", "4:3", "1:1")
 
     Returns:
-        Sanity product data for custom kit with matching size
+        Sanity product data for custom kit with matching size and dimension
     """
     if product_size not in [1, 2, 3]:
         raise HTTPException(status_code=400, detail="product_size must be 1, 2, or 3")
 
     try:
         sanity_service = SanityService()
-        product = await sanity_service.get_custom_kit_by_size(product_size)
+        product = await sanity_service.get_custom_kit_by_size(product_size, dimension)
 
         if not product:
+            dimension_msg = f" and dimension={dimension}" if dimension else ""
             raise HTTPException(
                 status_code=404,
-                detail=f"No custom kit product found for size {product_size}. Please create one in Sanity with productType='custom_kit' and productSize={product_size}"
+                detail=f"No custom kit product found for size {product_size}{dimension_msg}. Please create one in Sanity with productType='custom_kit' and productSize={product_size}{dimension_msg}"
             )
 
         return product

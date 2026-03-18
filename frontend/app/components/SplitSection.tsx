@@ -30,7 +30,7 @@ export default function SplitSection({ data }: SplitSectionProps) {
       className="w-full"
       style={{ backgroundColor: data.backgroundColor || 'var(--background)' }}
     >
-      <div className="max-w-7xl mx-auto px-4 py-7 md:py-14">
+      <div className="max-w-6xl mx-auto px-4 py-7 md:py-14">
       <div className={`flex flex-col ${imageRight ? 'md:flex-row-reverse' : 'md:flex-row'}`}>
         {/* Image — only rendered if imageSrc exists */}
         {imageSrc && (

@@ -186,8 +186,8 @@ async def generate_three_sizes(request: GenerateThreeSizesRequest):
 
             return PatternSizeResult(
                 size=size_config["name"],
-                boardsWidth=boards_w,
-                boardsHeight=boards_h,
+                boardsWidth=pattern_data.get("boards_width", 0),
+                boardsHeight=pattern_data.get("boards_height", 0),
                 patternBase64=pattern_base64,
                 mockupBase64=None,  # Load separately via /patterns/generate-mockup
                 colorsUsed=colors_used,
