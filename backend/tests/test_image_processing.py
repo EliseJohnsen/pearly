@@ -13,7 +13,7 @@ sys.modules['databutton'] = MagicMock()
 # Add the app directory to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'app'))
 
-from services.image_processing import (
+from app.services.image_processing import (
     get_perle_colors,
     suggest_board_dimensions,
     hex_to_rgb

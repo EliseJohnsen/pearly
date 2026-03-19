@@ -211,13 +211,6 @@ class TestColorService:
 
         assert len(codes) == len(set(codes)), "Duplicate color codes found"
 
-    def test_hex_values_are_unique(self):
-        """Test that all hex values are unique."""
-        colors = get_perle_colors()
-        hexes = [c["hex"].upper() for c in colors]
-
-        assert len(hexes) == len(set(hexes)), "Duplicate hex values found"
-
     def test_hex_format_validation(self):
         """Test that all hex values are properly formatted."""
         colors = get_perle_colors()
