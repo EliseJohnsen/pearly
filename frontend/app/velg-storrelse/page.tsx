@@ -95,11 +95,9 @@ export default function VelgStorrelsePage() {
 
       const result = await response.json();
       setCustomKits(result.kits);
-      console.log(`Successfully fetched ${result.kits.length} custom kits for aspect ratio ${aspectRatio || 'all'}`);
     } catch (err) {
       // Ignore AbortError - this happens when component unmounts or in React Strict Mode
       if (err instanceof Error && err.name === 'AbortError') {
-        console.log('Custom kits fetch was cancelled (component unmounted or strict mode)');
         return;
       }
 
@@ -112,12 +110,10 @@ export default function VelgStorrelsePage() {
 
       // Retry if we haven't exceeded max retries
       if (retryCount < maxRetries) {
-        console.log(`Retrying in ${retryDelay}ms...`);
         setTimeout(() => {
           fetchCustomKits(retryCount + 1, abortSignal, aspectRatio);
         }, retryDelay);
       } else {
-        console.error("Failed to fetch custom kits after all retries - prices will not display");
         // Don't show error to user - prices will just not display
       }
     }
@@ -199,10 +195,8 @@ export default function VelgStorrelsePage() {
 
             // If we have the patterns but not the images, we'll need to regenerate
             if (reconstructedPatterns.length === 0 || !reconstructedPatterns[0].patternBase64) {
-              console.log("Pattern data found but images missing - regenerating patterns");
               generatePatterns(data);
             } else {
-              console.log("Loaded patterns from storage - skipping generation");
               setPatterns(reconstructedPatterns);
 
               // Start generating mockups for patterns that don't have them yet
@@ -212,12 +206,10 @@ export default function VelgStorrelsePage() {
               }
             }
           } catch (e) {
-            console.error("Failed to parse stored pattern data - regenerating:", e);
             generatePatterns(data);
           }
         } else {
           // No stored patterns - generate new ones
-          console.log("No stored patterns found - generating new patterns");
           generatePatterns(data);
         }
 

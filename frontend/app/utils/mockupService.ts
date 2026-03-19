@@ -107,7 +107,6 @@ export async function generateMockup(
 
   // Check if already generating
   if (isMockupGenerating(size)) {
-    console.log(`Mockup for ${size} is already being generated`);
     return null;
   }
 
@@ -170,7 +169,6 @@ export async function generateMockup(
       console.warn("Could not update pattern images storage:", e);
     }
 
-    console.log(`Successfully generated mockup for ${size}`);
     return mockupBase64;
   } catch (err) {
     console.error(`Error generating mockup for ${size}:`, err);

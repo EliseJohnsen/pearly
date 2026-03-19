@@ -50,7 +50,6 @@ export default function LastOppBildePage() {
       // Clear pattern images from sessionStorage
       sessionStorage.removeItem("custom_patterns_images");
       sessionStorage.removeItem("custom_pattern_images");
-      console.log("Cleared all pattern data - starting fresh");
     } catch (e) {
       console.error("Failed to clear stored flow data", e);
     }
