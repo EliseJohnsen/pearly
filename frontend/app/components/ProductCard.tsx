@@ -130,7 +130,7 @@ export default function ProductCard({
         onClick={onClick}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
-        className={`${baseClasses} ${selectedClasses} ${className}`}
+        className={`${baseClasses} ${selectedClasses} hover:shadow-lg ${className}`}
       >
         {cardContent}
       </button>

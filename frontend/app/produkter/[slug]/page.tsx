@@ -19,6 +19,7 @@ import { formatPrice } from "@/app/utils/priceFormatter";
 import ImageCarousel from "@/app/components/ImageCarousel";
 import ProductCarousel from '@/app/components/ProductCarousel'
 import PearlyButton from "@/app/components/PearlyButton";
+import { getMockup, subscribeMockupUpdates, generateMockup } from "@/app/utils/mockupService";
 
 interface ProductVariant {
   sku: string;
@@ -119,6 +120,7 @@ export default function ProductDetailPage({
   const [loading, setLoading] = useState(true);
   const [addedToCart, setAddedToCart] = useState(false);
   const [addonQuantities, setAddonQuantities] = useState<Record<string, number>>({});
+  const [mockupFromService, setMockupFromService] = useState<string | null>(null);
   const { addItem } = useCart();
 
   const bytteOgReturHeader = useUIString("bytte_og_retur_header");
@@ -181,6 +183,24 @@ export default function ProductDetailPage({
 
               setCustomPattern(fullPattern);
 
+              // If mockup is missing from sessionStorage, check the mockup service
+              if (!mockupBase64 && pattern.size) {
+                const serviceMockup = getMockup(pattern.size);
+                if (serviceMockup) {
+                  setMockupFromService(serviceMockup);
+                  fullPattern.mockupBase64 = serviceMockup;
+                  setCustomPattern(fullPattern);
+                } else if (patternBase64 && pattern.patternData) {
+                  // Mockup hasn't been generated yet - trigger generation
+                  generateMockup(
+                    pattern.size,
+                    patternBase64,
+                    pattern.patternData.width,
+                    pattern.patternData.height
+                  );
+                }
+              }
+
               // Set required boards based on pattern dimensions
               const requiredBoards = pattern.boardsWidth * pattern.boardsHeight;
               data.requiredBoards = requiredBoards;
@@ -215,6 +235,22 @@ export default function ProductDetailPage({
     fetchProduct();
   }, [slug, isCustomPattern]);
 
+  // Subscribe to mockup updates if we're waiting for one to generate
+  useEffect(() => {
+    if (!isCustomPattern || !customPattern || customPattern.mockupBase64 || mockupFromService) {
+      return;
+    }
+
+    const unsubscribe = subscribeMockupUpdates(customPattern.size, (mockupBase64) => {
+      if (mockupBase64) {
+        setMockupFromService(mockupBase64);
+        setCustomPattern((prev) => prev ? { ...prev, mockupBase64 } : null);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [isCustomPattern, customPattern, mockupFromService]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[var(--background)] flex items-center justify-center">
@@ -228,6 +264,7 @@ export default function ProductDetailPage({
   }
 
   // Use custom pattern images if available, otherwise use Sanity product images
+  const effectiveMockup = mockupFromService || customPattern?.mockupBase64;
   const customImages = customPattern
     ? [
         {
@@ -235,10 +272,10 @@ export default function ProductDetailPage({
           alt: "Ditt perlemønster",
           isPattern: true,
         },
-        ...(customPattern.mockupBase64
+        ...(effectiveMockup
           ? [
               {
-                url: customPattern.mockupBase64,
+                url: effectiveMockup,
                 alt: "Interiørbilde",
                 isPattern: false,
               },

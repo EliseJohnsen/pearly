@@ -23,10 +23,6 @@ export default function PatternsListPage() {
   useEffect(() => {
     const fetchPatterns = async () => {
       try {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[patterns] Starting to fetch patterns')
-          console.log('[patterns] All cookies before fetch:', document.cookie)
-        }
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
         const response = await authenticatedFetch(`${apiUrl}/api/patterns`);
 
