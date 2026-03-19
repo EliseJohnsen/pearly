@@ -10,6 +10,7 @@ import ProductCard from "../components/ProductCard";
 import { useUIString } from "../hooks/useSanityData";
 import { formatPrice } from "../utils/priceFormatter";
 import PearlyButton from "../components/PearlyButton";
+import { generateMockups, subscribeMockupUpdates } from "../utils/mockupService";
 
 const STORAGE_KEY = "pearly_pattern_flow";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -59,10 +60,10 @@ export default function VelgStorrelsePage() {
   const [customKits, setCustomKits] = useState<CustomKit[]>([]);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [loadingMockups, setLoadingMockups] = useState<Set<string>>(new Set());
   const [hoveredPattern, setHoveredPattern] = useState<string | null>(null);
   const [showGhostCards, setShowGhostCards] = useState(false);
   const [loadingStage, setLoadingStage] = useState<'ai-generation' | 'pattern-generation'>('ai-generation');
+  const [mockupStates, setMockupStates] = useState<Record<string, string | null>>({});
 
   // Ref to prevent double execution of pattern generation
   const patternsGeneratedRef = useRef(false);
@@ -204,11 +205,10 @@ export default function VelgStorrelsePage() {
               console.log("Loaded patterns from storage - skipping generation");
               setPatterns(reconstructedPatterns);
 
-              // Load mockups for patterns that don't have them yet
-              for (const pattern of reconstructedPatterns) {
-                if (!pattern.mockupBase64) {
-                  loadMockup(pattern);
-                }
+              // Start generating mockups for patterns that don't have them yet
+              const patternsNeedingMockups = reconstructedPatterns.filter(p => !p.mockupBase64);
+              if (patternsNeedingMockups.length > 0) {
+                generateMockups(patternsNeedingMockups);
               }
             }
           } catch (e) {
@@ -275,13 +275,17 @@ export default function VelgStorrelsePage() {
       const result = await response.json();
       setPatterns(result.patterns);
 
-      // Store all patterns in localStorage for later retrieval
+      // Store all patterns in localStorage for later retrieval (minimal patternData to save space)
       try {
         const patternsForStorage = result.patterns.map((p: PatternSize) => ({
           size: p.size,
           boardsWidth: p.boardsWidth,
           boardsHeight: p.boardsHeight,
-          patternData: p.patternData,
+          patternData: {
+            width: p.patternData.width,
+            height: p.patternData.height,
+            // grid: p.patternData.grid,  // REMOVED - only store dimensions, not the full grid
+          },
           colorsUsed: p.colorsUsed,
           beadCount: p.beadCount,
         }));
@@ -298,9 +302,8 @@ export default function VelgStorrelsePage() {
         console.warn("Could not store generated patterns:", e);
       }
 
-      for (const pattern of result.patterns) {
-        loadMockup(pattern);
-      }
+      // Start generating mockups using the service (runs independently of component)
+      generateMockups(result.patterns);
     } catch (err) {
       console.error("Error generating patterns:", err);
       setError("Kunne ikke generere perlemønstre. Vennligst prøv igjen.");
@@ -312,66 +315,29 @@ export default function VelgStorrelsePage() {
     }
   };
 
-  const loadMockup = async (pattern: PatternSize) => {
-    // Skip if mockup already loaded or is currently loading
-    if (pattern.mockupBase64 || loadingMockups.has(pattern.size)) {
-      return;
-    }
+  // Subscribe to mockup updates from the service
+  useEffect(() => {
+    if (patterns.length === 0) return;
 
-    // Mark as loading
-    setLoadingMockups((prev) => new Set(prev).add(pattern.size));
+    const unsubscribers: (() => void)[] = [];
 
-    try {
-      const response = await fetch(`${API_URL}/api/patterns/generate-mockup`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          patternBase64: pattern.patternBase64,
-          width: pattern.patternData.width,
-          height: pattern.patternData.height,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to generate mockup");
-      }
-
-      const result = await response.json();
-
-      // Update pattern with mockup
-      setPatterns((prevPatterns) =>
-        prevPatterns.map((p) =>
-          p.size === pattern.size ? { ...p, mockupBase64: result.mockupBase64 } : p
-        )
-      );
-
-      // Update the mockup in sessionStorage so it persists
-      try {
-        const storedImages = sessionStorage.getItem("custom_patterns_images");
-        if (storedImages) {
-          const imagesData = JSON.parse(storedImages);
-          const updatedImages = imagesData.map((img: any) =>
-            img.size === pattern.size ? { ...img, mockupBase64: result.mockupBase64 } : img
-          );
-          sessionStorage.setItem("custom_patterns_images", JSON.stringify(updatedImages));
+    patterns.forEach((pattern) => {
+      const unsubscribe = subscribeMockupUpdates(pattern.size, (mockupBase64) => {
+        if (mockupBase64) {
+          setMockupStates((prev) => ({
+            ...prev,
+            [pattern.size]: mockupBase64,
+          }));
         }
-      } catch (e) {
-        console.warn("Could not update mockup in sessionStorage:", e);
-      }
-    } catch (err) {
-      console.error(`Error generating mockup for ${pattern.size}:`, err);
-      // Don't show error to user - just continue without mockup
-    } finally {
-      // Remove from loading set
-      setLoadingMockups((prev) => {
-        const next = new Set(prev);
-        next.delete(pattern.size);
-        return next;
       });
-    }
-  };
+      unsubscribers.push(unsubscribe);
+    });
+
+    // Cleanup subscriptions on unmount
+    return () => {
+      unsubscribers.forEach((unsub) => unsub());
+    };
+  }, [patterns]);
 
   const handleSizeSelect = async (size: string) => {
     setSelectedSize(size);
@@ -400,9 +366,14 @@ export default function VelgStorrelsePage() {
 
       // Store images separately in sessionStorage (if available)
       try {
+        // Check if mockup has been generated by the service
+        const mockupFromService = mockupStates[selectedPattern.size];
+        const effectiveMockup = mockupFromService || selectedPattern.mockupBase64;
+
         sessionStorage.setItem("custom_pattern_images", JSON.stringify({
+          size: selectedPattern.size,  // Store size so we can verify it matches
           patternBase64: selectedPattern.patternBase64,
-          mockupBase64: selectedPattern.mockupBase64,
+          mockupBase64: effectiveMockup,
         }));
       } catch (e) {
         console.warn("Could not store pattern images in sessionStorage:", e);
@@ -498,18 +469,40 @@ export default function VelgStorrelsePage() {
                     </p>
                   </div>
                   <div className="flex flex-col-reverse md:grid md:grid-cols-2 gap-6 mb-8">
-                    {['small', 'large'].map((size) => (
-                      <div
-                        key={size}
-                        className="rounded-lg p-4 border-2 border-[#C4B5C7] bg-white animate-pulse"
-                      >
-                        <div className="aspect-square bg-primary-pink/30 rounded mb-2"></div>
-                        <div className="py-2">
-                          <div className="h-6 bg-[#C4B5C7]/30 rounded w-2/3 mb-2"></div>
-                          <div className="h-5 bg-[#C4B5C7]/20 rounded w-1/2"></div>
+                    {['small', 'large'].map((size) => {
+                      const customKit = customKits.find((kit) => kit.sizeName === size);
+                      const sizeLabels: Record<string, string> = {
+                        small: "Liten",
+                        medium: "Medium",
+                        large: "Stor",
+                      };
+
+                      return (
+                        <div
+                          key={size}
+                          className="rounded-lg p-4 border-2 border-[#C4B5C7] bg-white animate-pulse"
+                        >
+                          <div className="aspect-square bg-primary-pink/30 rounded mb-2 animate-pulse"></div>
+                          <div className="py-2">
+                            {customKit ? (
+                              <>
+                                <h3 className="text-lg font-semibold text-[#6B4E71] mb-1">
+                                  {sizeLabels[size] || size}
+                                </h3>
+                                <p className="text-lg font-bold text-[#6B4E71]">
+                                  {formatPrice(customKit.price, "NOK")}
+                                </p>
+                              </>
+                            ) : (
+                              <>
+                                <div className="h-6 bg-[#C4B5C7]/30 rounded w-2/3 mb-2 animate-pulse"></div>
+                                <div className="h-5 bg-[#C4B5C7]/20 rounded w-1/2 animate-pulse"></div>
+                              </>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -535,18 +528,20 @@ export default function VelgStorrelsePage() {
               <div className="flex flex-col-reverse md:grid md:grid-cols-2 gap-6 mb-8">
                 {patterns.map((pattern) => {
                   const isHovered = hoveredPattern === pattern.size;
-                  const showMockup = isHovered && pattern.mockupBase64;
-                  const isLoadingMockup = loadingMockups.has(pattern.size);
+                  const mockupFromService = mockupStates[pattern.size];
+                  const hasMockup = mockupFromService || pattern.mockupBase64;
+                  const showMockup = isHovered && hasMockup;
+                  const isLoadingMockup = isHovered && !hasMockup;
                   const customKit = customKits.find((kit) => kit.sizeName === pattern.size);
 
                   return (
                     <ProductCard
                       key={pattern.size}
                       title={getSizeLabel(pattern.size, pattern.patternData, pattern.boardsHeight)}
-                      imageUrl={showMockup ? pattern.mockupBase64! : pattern.patternBase64}
+                      imageUrl={showMockup ? (mockupFromService || pattern.mockupBase64!) : pattern.patternBase64}
                       imageAlt={`${pattern.size} ${showMockup ? "mockup" : "pattern"}`}
                       imageOverlay={
-                        isLoadingMockup && isHovered ? (
+                        isLoadingMockup ? (
                           <div className="absolute inset-0 bg-primary-pink bg-opacity-30 flex items-center justify-center rounded-lg">
                             <LoadingSpinner loadingMessage="Henter interiørbilder" />
                           </div>
