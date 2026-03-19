@@ -389,6 +389,18 @@ export default function ProductDetailPage({
                 <span className="inline-block text-xs font-semibold uppercase tracking-wide bg-yellow-100 text-yellow-800 border border-yellow-200 px-2 py-0.5 rounded-full mb-3">Kommer snart</span>
               )}
               <h1 className="font-display text-5xl leading-none text-dark-purple mb-2">{product.title}</h1>
+              {product.price && (
+                <div className="flex items-baseline gap-3 mt-6 mb-1">
+                  {product.originalPrice && (
+                    <span className="text-lg text-original-price line-through">
+                      {formatPrice(product.originalPrice, product.currency)}
+                    </span>
+                  )}
+                  <span className={`text-2xl${product.originalPrice ? ' font-semibold' : ''}`}>
+                    {formatPrice(product.price, product.currency)}
+                  </span>
+                </div>
+              )}
             </div>
 
             {product.description && (

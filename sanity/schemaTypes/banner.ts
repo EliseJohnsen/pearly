@@ -2,60 +2,84 @@ import {defineField, defineType} from 'sanity'
 
 export default defineType({
   name: 'banner',
-  title: 'Banner',
-  type: 'object',
+  title: 'Kampanjebanner (global)',
+  type: 'document',
   fields: [
     defineField({
-      name: 'text',
-      title: 'Banner Text',
-      type: 'string',
-      description: 'Main text displayed in the banner',
-      validation: (Rule) => Rule.required(),
-    }),
-    defineField({
-      name: 'backgroundColor',
-      title: 'Custom Background Color',
-      type: 'string',
-      description: 'Optional custom background color (e.g., #FBE7F5). Leave empty to use default.',
-    }),
-    defineField({
       name: 'isActive',
-      title: 'Active',
+      title: 'Aktiv',
       type: 'boolean',
-      description: 'Toggle to show or hide this banner',
+      description: 'Skru banneret av/på',
       initialValue: true,
     }),
     defineField({
-      name: 'link',
-      title: 'Optional Link',
-      type: 'object',
-      description: 'Make the banner clickable',
-      fields: [
+      name: 'title',
+      title: 'Tittel',
+      type: 'string',
+      description: 'Valgfri tittel for banneret',
+    }),
+    defineField({
+      name: 'body',
+      title: 'Innhold',
+      type: 'array',
+      description: 'Rikt tekstinnhold med formatering',
+      of: [
         {
-          name: 'text',
-          type: 'string',
-          title: 'Link Text',
-          validation: (Rule) => Rule.required(),
-        },
-        {
-          name: 'href',
-          type: 'string',
-          title: 'URL',
-          validation: (Rule) => Rule.required(),
+          type: 'block',
+          styles: [
+            {title: 'Normal', value: 'normal'},
+            {title: 'H2', value: 'h2'},
+            {title: 'H3', value: 'h3'},
+          ],
+          lists: [],
+          marks: {
+            decorators: [
+              {title: 'Fet', value: 'strong'},
+              {title: 'Kursiv', value: 'em'},
+            ],
+          },
         },
       ],
+    }),
+    defineField({
+      name: 'backgroundColor',
+      title: 'Bakgrunnsfarge',
+      type: 'string',
+      description: 'Velg bakgrunnsfarge for banneret',
+      initialValue: 'var(--primary-neon-green)',
+      options: {
+        list: [
+          {title: 'Mørk rosa', value: 'var(--primary-dark-pink)'},
+          {title: 'Lavendel rosa', value: 'var(--lavender-pink)'},
+          {title: 'Lilla', value: 'var(--purple)'},
+          {title: 'Mørk lilla', value: 'var(--dark-purple)'},
+          {title: 'Ekstra mørk lilla', value: 'var(--purple-extra-dark)'},
+          {title: 'Neon grønn', value: 'var(--primary-neon-green)'},
+          {title: 'Oransje/rød (primær)', value: 'var(--primary)'},
+        ],
+      },
+    }),
+    defineField({
+      name: 'customBackgroundColor',
+      title: 'Egendefinert bakgrunnsfarge (HEX)',
+      type: 'string',
+      description: 'Skriv inn en HEX-kode (f.eks. #F5EDE8) — overstyrer fargevalget over',
+    }),
+    defineField({
+      name: 'link',
+      title: 'Lenke',
+      type: 'string',
+      description: 'Valgfri lenke — gjør hele banneret klikkbart (f.eks. /produkter eller https://...)',
     }),
   ],
   preview: {
     select: {
-      title: 'text',
-      type: 'type',
+      title: 'title',
       isActive: 'isActive',
     },
-    prepare({title, type, isActive}) {
+    prepare({title, isActive}) {
       return {
-        title: isActive ? title : `[INACTIVE] ${title}`,
-        subtitle: `Type: ${type}`,
+        title: isActive ? (title || 'Kampanjebanner') : `[INAKTIV] ${title || 'Kampanjebanner'}`,
       }
     },
   },

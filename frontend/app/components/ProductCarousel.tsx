@@ -16,6 +16,8 @@ interface CarouselProduct {
   title: string
   slug: { current: string }
   price?: number
+  originalPrice?: number
+  requiredBoards?: number
   images?: ProductImage[]
   image?: ProductImage
 }

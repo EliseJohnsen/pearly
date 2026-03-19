@@ -8,8 +8,8 @@ export const navigationByTypeQuery = (type: string) => groq`*[_type == "navigati
 // Hero/CTA query
 export const heroQuery = groq`*[_type == "hero" && isActive == true][0]{_id,heading,subheading,image{asset->{_id,url,metadata{lqip,dimensions{width,height}}},alt,hotspot,crop},ctaButton{text,href},isActive}`
 
-// Banner query
-export const bannerQuery = groq`*[_type == "banner" && isActive == true][0]{_id,text,backgroundColor,isActive,link{text,href}}`
+// Global kampanjebanner query
+export const kampanjeBannerQuery = groq`*[_type == "banner"][0]{_id,isActive,title,body,backgroundColor,customBackgroundColor,link}`
 
 // How It Works query
 export const howItWorksQuery = groq`*[_type == "howItWorks"][0]{_id,sectionTitle,sectionSubtitle,steps[]{title,description,icon,image{asset->{_id,url,metadata{lqip,dimensions{width,height}}},alt},order}|order(order asc)}`
@@ -46,11 +46,12 @@ export const pageBySlugQuery = (slug: string) => groq`*[_type == "page" && slug.
       isActive
     },
     _type == "banner" => {
-      text,
-      type,
-      backgroundColor,
       isActive,
-      link{text,href}
+      title,
+      body,
+      backgroundColor,
+      customBackgroundColor,
+      link
     },
     _type == "howItWorks" => {
       sectionTitle,
@@ -62,7 +63,7 @@ export const pageBySlugQuery = (slug: string) => groq`*[_type == "page" && slug.
     _type == "productsSection" => {
       sectionTitle,
       sectionSubtitle,
-      products[]->{_id,title,slug,description,image{asset->{_id,url,metadata{lqip,dimensions{width,height}}},alt},category->{_id,name,slug,description},difficulty},
+      products[]->{_id,title,slug,description,price,originalPrice,requiredBoards,"images":images[]{asset->{_id,url,metadata{lqip,dimensions{width,height}}},alt,isPrimary},image{asset->{_id,url,metadata{lqip,dimensions{width,height}}},alt},category->{_id,name,slug,description},difficulty},
       showFeaturedOnly
     },
     _type == "content" => {
