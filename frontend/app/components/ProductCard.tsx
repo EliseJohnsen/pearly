@@ -22,6 +22,8 @@ interface ProductCardProps {
     price?: number;
     originalPrice?: number;
     requiredBoards?: number;
+    width?: number;
+    height?: number;
   };
   // Pattern-specific props
   title?: string;
