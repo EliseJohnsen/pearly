@@ -85,7 +85,7 @@
   --color-foreground: var(--foreground);
   --color-card: var(--card-bg);
   --color-disabled: var(--disabled-bg);
-  --color-disabled-muted: var(--disabled-text-muted);
+  --color-disabled-muted: #B39DB3;
 
   /* Primærfarger - bruk som bg-primary, hover:bg-primary-hover */
   --color-primary: var(--primary);
