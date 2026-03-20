@@ -65,6 +65,7 @@
   /* Disabled states */
   --disabled-bg: #ECDDED;
   --disabled-text: #BA7EB9;
+  --disabled-text-muted: #B39DB3;
 
   /* Gradient bakgrunn */
   --gradient-from: #eff6ff;
@@ -84,6 +85,7 @@
   --color-foreground: var(--foreground);
   --color-card: var(--card-bg);
   --color-disabled: var(--disabled-bg);
+  --color-disabled-muted: var(--disabled-text-muted);
 
   /* Primærfarger - bruk som bg-primary, hover:bg-primary-hover */
   --color-primary: var(--primary);
