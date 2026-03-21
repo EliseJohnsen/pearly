@@ -63,7 +63,7 @@ export const pageBySlugQuery = (slug: string) => groq`*[_type == "page" && slug.
     _type == "productsSection" => {
       sectionTitle,
       sectionSubtitle,
-      products[]->{_id,title,slug,description,price,originalPrice,requiredBoards,"images":images[]{asset->{_id,url,metadata{lqip,dimensions{width,height}}},alt,isPrimary},image{asset->{_id,url,metadata{lqip,dimensions{width,height}}},alt},category->{_id,name,slug,description},difficulty},
+      products[]->{_id,title,slug,description,price,originalPrice,requiredBoards,width,height,"images":images[]{asset->{_id,url,metadata{lqip,dimensions{width,height}}},alt,isPrimary},image{asset->{_id,url,metadata{lqip,dimensions{width,height}}},alt},category->{_id,name,slug,description},difficulty},
       showFeaturedOnly
     },
     _type == "content" => {
@@ -134,6 +134,8 @@ export const productQuery = groq`*[_type == "products" && slug.current == $slug]
   currency,
   vatRate,
   requiredBoards,
+  width,
+  height,
   "images": images[]{
     asset->{_id, url, metadata{lqip, dimensions{width, height}}},
     alt,

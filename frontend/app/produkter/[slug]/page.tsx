@@ -76,6 +76,8 @@ interface Product {
   price: number;
   originalPrice?: number;
   requiredBoards?: number;
+  width?: number;
+  height?: number;
   images?: ProductImage[];
   image?: ProductImage;
   variants?: ProductVariant[];
@@ -426,6 +428,9 @@ export default function ProductDetailPage({
                 <span className="inline-block text-xs font-semibold uppercase tracking-wide bg-yellow-100 text-yellow-800 border border-yellow-200 px-2 py-0.5 rounded-full mb-3">Kommer snart</span>
               )}
               <h1 className="font-display text-5xl leading-none text-dark-purple mb-2">{product.title}</h1>
+              {product.width && product.height && (
+                <p className="inline-block text-base font-semibold text-dark-purple bg-primary-pink rounded-full px-2.5 py-px mt-4">{product.width} x {product.height} cm</p>
+              )}
               {product.price && (
                 <div className="flex items-baseline gap-3 mt-6 mb-1">
                   {product.originalPrice && (
